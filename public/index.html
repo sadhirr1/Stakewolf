@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101513">
+  <meta name="description" content="Enter a product launch under pressure. Hear the stakeholders, follow the evidence, and live with your decisions. A five-round product management game.">
+  <title>Stakewolf — The launch room</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d5f478'/%3E%3Cpath d='M5 9l5 15 6-10 6 10 5-15M10 24l6-17 6 17' fill='none' stroke='%23101513' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the game</a>
+  <header class="topbar">
+    <a href="./" class="brand" aria-label="Stakewolf home"><span class="brand-mark" aria-hidden="true">W</span> STAKEWOLF<span class="edition">VOL. 01</span></a>
+    <span class="top-case">THE LAUNCH ROOM <span>/</span> A PRODUCT JUDGMENT GAME</span>
+    <button class="text-button" id="how-button">How to play</button>
+  </header>
+  <div id="app"></div>
+  <div class="sr-only" aria-live="polite" id="announcement"></div>
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <div class="dialog-top"><span class="eyebrow">FIELD GUIDE</span><button class="icon-button" data-close-dialog aria-label="Close guide">×</button></div>
+    <h2 id="help-title">Listen closely.<br>Decide deliberately.</h2>
+    <p>You are the product manager at Relay, a fictional team building an AI meeting assistant. Five rounds take you from launch planning to the boardroom.</p>
+    <ol class="guide-list"><li><strong>Read the room.</strong> Each round gives you two conversations. Choose who to hear from; different questions reveal different evidence.</li><li><strong>Make your call.</strong> Choose an approach or write a decision. A written decision is matched to an approach that you review and confirm.</li><li><strong>Watch the consequences.</strong> Read immediate reactions and later callbacks. Delivery, trust, and product quality move independently.</li><li><strong>Read the debrief.</strong> Review the evidence behind your outcome and discover the stakeholders’ private agendas.</li></ol>
+    <p class="fine-print">This first edition uses authored dialogue and explicit game rules. It does not use a live AI model or measure your personality. Progress lasts for this page session; refreshing starts over.</p>
+    <button class="primary" data-close-dialog>Understood</button>
+  </dialog>
+  <dialog id="restart-dialog" aria-labelledby="restart-title"><div class="dialog-top"><span class="eyebrow">NEW ATTEMPT</span><button class="icon-button" data-close-dialog aria-label="Cancel restart">×</button></div><h2 id="restart-title">Leave this attempt?</h2><p>Your current decisions will be cleared. Your next attempt begins at the first briefing.</p><div class="button-row"><button class="secondary" data-close-dialog>Keep playing</button><button class="primary" id="confirm-restart">Start again</button></div></dialog>
+  <dialog id="conversation-dialog" class="conversation-dialog" aria-labelledby="conversation-title"><div id="conversation-content"></div></dialog>
+  <dialog id="proposal-dialog" aria-labelledby="proposal-title"><div id="proposal-content"></div></dialog>
+</body>
+</html>
