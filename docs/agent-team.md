@@ -102,12 +102,12 @@ A handoff also identifies the current branch and revision, changed files or arti
 
 ## Daily scrum and work scheduling
 
-The user allows work at any time and requested a daily scrum at 8 p.m. Los Angeles local time (`America/Los_Angeles`, including daylight saving). The coordinator verified both automations as **ACTIVE** through the scheduling tool and saved configuration:
+The user requested work sessions from 6 a.m. through 1 p.m. and a daily scrum at 8 p.m. Los Angeles local time (`America/Los_Angeles`, including daylight saving). The coordinator verified both automations as **ACTIVE** through the scheduling tool and saved configuration:
 
 - `stakewolf-daily-scrum`: daily at 8 p.m., through October 13, 2026, inclusive.
-- `stakewolf-daily-work-sessions`: eight daily opportunities to run work, at noon and 1, 2, 3, 4, 5, 6, and 7 p.m., through October 13, 2026, inclusive.
+- `stakewolf-daily-work-sessions`: eight daily opportunities to run work, at 6, 7, 8, 9, 10, and 11 a.m., noon, and 1 p.m., through October 13, 2026, inclusive.
 
-All times use Los Angeles local time. The coordinator selected the noon-to-7 p.m. opportunities within the user's flexible working preference; this does not restrict authorized work to those hours. Activation means the schedules are saved and enabled, not that every future run or eight hours of execution has already occurred.
+All times use Los Angeles local time. This is the user's revised schedule as of September 29 and can be changed later. Activation means the schedules are saved and enabled, not that every future run or eight hours of execution has already occurred.
 
 The scrum report includes each role's completed work, evidence, next action, blockers, review results, release progress, and decisions needed from the user. It distinguishes finished work from plans and flags changes that affect the two-week target.
 

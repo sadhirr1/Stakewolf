@@ -25,7 +25,7 @@ Final independent QA review found no blocker to publishing the planning change a
 - Jira project SCRUM, board 1, the existing active sprint 2, issue types and workflow statuses were read before creating work.
 - Epic SCRUM-5 and thirteen child tickets SCRUM-6 through SCRUM-18 were created; each child was assigned to sprint 2.
 - The current sprint ends October 13, 2026 at 8:48 p.m. PDT. The agents did not create or start this existing sprint.
-- Both thread automations were created ACTIVE and their saved configuration was read back. Work sessions are hourly at noon through 7 p.m.; scrum is at 8 p.m.; schedules end after October 13. The computer's timezone is Pacific Time (US and Canada), matching America/Los_Angeles during this sprint.
+- Both thread automations were created ACTIVE and their saved configuration was read back. The original work schedule was noon through 7 p.m.; the owner subsequently changed it to hourly starts from 6 a.m. through 1 p.m. on September 29. The scrum remains at 8 p.m.; schedules end after October 13. The computer's timezone is Pacific Time (US and Canada), matching America/Los_Angeles during this sprint.
 - Relative file links in all nine Markdown files and Git whitespace checks passed after the consistency fixes. These checks do not validate remote destinations beyond the Jira/GitHub access checks above.
 
 ## Limits and next work

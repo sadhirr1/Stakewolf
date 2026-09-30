@@ -2,7 +2,7 @@
 
 Status: initial planning baseline for the existing Jira `SCRUM Sprint 0` (ID `2`), under [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). Its recorded start is September 29, 2026, at 8:48 p.m. PDT and its recorded end is October 13, 2026, at 8:48 p.m. PDT. The target is first-release acceptance by October 13. These dates come from an existing sprint; the agents did not establish its start through this document.
 
-The exact Jira timestamps are `2026-09-30T03:48:27.098Z` through `2026-10-14T03:48:27.098Z`, a 14-calendar-day interval. All target dates below are in 2026, in America/Los_Angeles local time, and do not claim completed activity. Jira due dates govern the containing work items; earlier action dates are internal checkpoints. Daily scrum is at 8 p.m. local time. The requested eight hours of daily work may occur at any time; there is no agreed fixed noon-to-evening window.
+The exact Jira timestamps are `2026-09-30T03:48:27.098Z` through `2026-10-14T03:48:27.098Z`, a 14-calendar-day interval. All target dates below are in 2026, in America/Los_Angeles local time, and do not claim completed activity. Jira due dates govern the containing work items; earlier action dates are internal checkpoints. Daily scrum is at 8 p.m. local time. The user's revised work-session schedule runs hourly from 6 a.m. through 1 p.m.
 
 ## Sprint goal
 
@@ -114,7 +114,7 @@ At 8 p.m. America/Los_Angeles local time each day, the coordinator should report
 
 The coordinator confirmed active scrum automation `stakewolf-daily-scrum` through October 13. Its existence does not establish that a future briefing or any work session has executed.
 
-The user requested eight hours of work per day and clarified that those hours can occur anytime. Schedule work opportunities through the day and record execution prerequisites and interruptions. Log measured activity only where it can be supported. Do not treat scheduled time, overlapping agent activity, waiting, or an open application as proof of eight hours worked; never sum overlapping agent durations into a misleading elapsed-work figure.
+The user requested eight hours of work per day and subsequently selected hourly session starts from 6 a.m. through 1 p.m. Use that morning schedule and record execution prerequisites and interruptions. Log measured activity only where it can be supported. Do not treat scheduled time, overlapping agent activity, waiting, or an open application as proof of eight hours worked; never sum overlapping agent durations into a misleading elapsed-work figure.
 
 Work logs should capture meaningful actions and results rather than internal reasoning or exhaustive tool traces. If work stops, retain a durable handoff: role, ticket, artifact location, last verified state, review findings, blocker, and exact next action.
 

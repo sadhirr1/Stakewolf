@@ -18,7 +18,7 @@ The intended player outcome is to practice making and explaining product decisio
 | Work updated in GitHub | Use the supplied repository, [sadhirr1/Stakewolf](https://github.com/sadhirr1/Stakewolf), for source, documentation, reviewable changes, and release history. |
 | Every person's work reviewed by another specialist | An author cannot approve their own deliverable by changing role labels. Assign a separate reviewing agent. |
 | Daily scrum at 8 p.m. | Provide a role-by-role briefing with actual outcomes, reviews, blockers, and next actions at 8 p.m. America/Los_Angeles local time. This is PDT during the current sprint. |
-| Eight hours of work per day, at any time | Work may be distributed through the day rather than restricted to a fixed window. Report measured execution honestly; scheduled time is not evidence of eight hours worked. |
+| Requested eight hours of daily work; scheduled sessions from 6 a.m. through 1 p.m. | Use the revised morning schedule in Los Angeles time. Report measured execution honestly; scheduled time is not evidence of eight hours worked. |
 | Completion in two weeks | Use the existing `SCRUM Sprint 0` (ID `2`), September 29–October 13, 2026. Target first-release acceptance by its existing end, October 13 at 8:48 p.m. Los Angeles time. |
 
 Jira account ownership and agent role ownership are different concepts. Record the specialist role explicitly without inventing user accounts or claiming that each agent has an independent Jira identity.
@@ -68,7 +68,7 @@ Hosting destination and public release permissions are unresolved. A runnable re
 | --- | --- | --- | --- |
 | D-01 | Confirmed | Use specialist agents, Agile tracking, independent review, Jira, and GitHub. | User instructions; Jira project `SCRUM` and supplied GitHub repository. |
 | D-02 | Confirmed existing sprint | Use `SCRUM Sprint 0` (ID `2`) and [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). The recorded sprint runs September 29, 2026, 8:48 p.m. PDT to October 13, 2026, 8:48 p.m. PDT. | Existing Jira sprint metadata, reported by the coordinator. This record does not claim the agents created or started the sprint. |
-| D-03 | Confirmed working preference; scrum activated | Daily 8 p.m. America/Los_Angeles scrum; eight hours of work may occur at any time of day. The coordinator confirmed active automation `stakewolf-daily-scrum` through October 13. | User clarification and coordinator verification. Work scheduling and measured execution are separate from scrum activation. |
+| D-03 | Confirmed revised schedule; automations active | Daily work-session starts hourly from 6 a.m. through 1 p.m.; scrum at 8 p.m., America/Los_Angeles. Both schedules continue through October 13. | User's September 29 schedule change and coordinator verification. Scheduled opportunities and measured execution are separate. |
 | D-04 | Proposed | One scenario, four stakeholders, five rounds. | Product manager validates scope against the desired player experience. |
 | D-05 | Proposed | Bounded typed-intent interpretation with a visible confirmation step. | Developer feasibility check; UX and QA review against AC-05. |
 | D-06 | Proposed | No accounts or server dependency unless required by an accepted technical decision. | Developer and product manager evaluate architecture and release needs. |

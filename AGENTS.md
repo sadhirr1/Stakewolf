@@ -28,6 +28,6 @@ Apply the quality plan's severity and release gates. Run meaningful checks appro
 
 ## Scheduling and continuity
 
-Two thread automations were configured during setup: Stakewolf daily work sessions at 12:00 through 19:00 each day, and Stakewolf daily scrum at 20:00, America/Los_Angeles, through October 13, 2026. Recheck automation state before reporting it as current. These are eight hourly work opportunities, not evidence of eight continuous hours worked.
+The current thread automations schedule Stakewolf work sessions hourly from 06:00 through 13:00 each day, and the daily scrum at 20:00, America/Los_Angeles, through October 13, 2026. The user changed the work-session times on September 29. Recheck automation state before reporting it as current. These are eight hourly work opportunities, not evidence of eight continuous hours worked.
 
 At each work wake-up, inspect active work and the latest Jira handoff, select an unblocked priority, complete a useful reviewed increment, update GitHub and Jira, and leave a checkpoint. Avoid overlapping changes from scheduled runs. Routine progress belongs in Jira; notify the owner for meaningful completion, failure, required action, or material delivery risk. At the daily scrum, report every role's actual completed work, evidence, review results, blockers and next actions, including roles with no activity. Do not initiate voice calls or extend the release window automatically.

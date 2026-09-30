@@ -24,6 +24,6 @@ The initial team setup has been cross-reviewed by product, engineering and QA ag
 
 ## Daily rhythm
 
-During the release window, work sessions are scheduled hourly from noon through 7 p.m. and the daily scrum at 8 p.m., America/Los_Angeles. These schedules are configured in the project chat, not by this repository. They require the local computer and app to be available and sufficient usage capacity. Eight scheduled opportunities do not guarantee eight uninterrupted hours of execution.
+During the release window, work sessions are scheduled hourly from 6 a.m. through 1 p.m. and the daily scrum at 8 p.m., America/Los_Angeles. These schedules are configured in the project chat, not by this repository. They require the local computer and app to be available and sufficient usage capacity. Eight scheduled opportunities do not guarantee eight uninterrupted hours of execution.
 
 Every role reports concrete results, evidence, review findings, blockers and its next action. Jira is authoritative for current status; this repository records the reviewed deliverables.
