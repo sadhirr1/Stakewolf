@@ -1,0 +1,27 @@
+# Local dependencies and generated application output
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# Generated test output and caches
+coverage/
+playwright-report/
+test-results/
+.cache/
+*.tsbuildinfo
+
+# Local configuration and secrets; keep shareable examples
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keep package lockfiles and shared editor configuration tracked.
