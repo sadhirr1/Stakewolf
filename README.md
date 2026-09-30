@@ -4,12 +4,45 @@ A product management simulation inspired by Werewolf: stakeholders have competin
 
 ## Project status
 
-This repository is being established as Stakewolf's source of truth. The first update sets up the product plan, agent responsibilities, independent reviews, and release tracking. It does not yet contain an accepted playable implementation.
+This repository contains an imported browser prototype and a dependency-free local development baseline. The prototype has four stakeholders, five rounds, prepared and typed decisions, scripted consequences, and a debrief. It is a starting point for the release work, not an accepted final game. Product review, scenario improvements, browser validation, and release acceptance remain tracked in Jira.
 
 - [Release epic — SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5)
 - [GitHub repository](https://github.com/sadhirr1/Stakewolf)
 
 The current release target is October 13, 2026, using the existing two-week Jira sprint. Progress and completion claims must be supported by reviewed artifacts and test evidence.
+
+## Run locally
+
+Use Node.js 24.x; development was checked with Node.js 24.19.0. No package installation, account, API key, or build step is required. From the repository root, run:
+
+```sh
+node server.mjs
+```
+
+Open [Stakewolf on this computer](http://127.0.0.1:4173). Stop the server with Ctrl+C. If that port is occupied, choose another with `node server.mjs 4174` and open the printed address. The server binds only to this computer's loopback address and serves the five known game assets from `public/`.
+
+Progress stays in the current page session. Refreshing, reopening, or choosing restart starts a clean attempt. Written decisions are matched to explicit authored approaches for the player to review and confirm; no live AI service is called. Private agendas are concealed during ordinary play but remain present in the downloadable client source.
+
+## Check the baseline
+
+Run the independent automated tests with Node's built-in test runner:
+
+```sh
+node --test
+```
+
+Check JavaScript syntax when changing the application or server:
+
+```sh
+node --check server.mjs
+node --check public/app.js
+node --check public/engine.js
+node --check public/scenario.js
+```
+
+If npm is available, `npm start`, `npm test`, and `npm run check` are optional shortcuts; the direct Node commands work without npm. The [baseline workflow](.github/workflows/checks.yml) runs syntax checks and tests on Windows and Linux when triggered in GitHub. Its presence does not claim that a remote run has passed or branch protection is configured. Automated baseline checks do not establish full product, accessibility, or release acceptance.
+
+The authored browser files live in `public/`: `scenario.js` supplies scenario data, `engine.js` applies deterministic state transitions, and `app.js` renders the interface. `index.html` and `style.css` provide the page structure and styling. They were imported as an unchanged snapshot from the earlier prototype, then a missing closing tag in `app.js` was repaired after browser review found compressed game content. The original prototype, its hosting configuration, and its other files were left untouched. Make future changes in this repository and link them to the relevant Jira ticket.
 
 ## Delivery documents
 
@@ -18,6 +51,7 @@ The current release target is October 13, 2026, using the existing two-week Jira
 - [Live Jira ticket index](docs/backlog.md)
 - [Agent roles, reviews and handoffs](docs/agent-team.md)
 - [Quality plan and release gates](docs/quality-plan.md)
+- [Prototype assessment and known product gaps](docs/prototype-assessment.md)
 - [Agent working instructions](AGENTS.md)
 
 The initial team setup has been cross-reviewed by product, engineering and QA agents. Application implementation and executed gameplay tests are separate work items.

@@ -1,8 +1,8 @@
 # Stakewolf first-release quality plan
 
-Status: proposed acceptance plan; no application tests have been executed.
+Status: release quality plan with partial baseline regression evidence from September 30. The [baseline QA record](evidence/baseline-qa.md) reports the executed checks and their limits; full release acceptance remains pending.
 
-QA owns this document. Product and development must independently review it before the release scope is marked Ready. The current planning baseline is one scenario, four stakeholders, five decision rounds, preset and typed decisions, hidden objectives, changing relationships, delayed consequences, replay, and a debrief grounded in recorded events. Product must confirm this baseline; this plan does not claim that the full product vision can ship in two weeks.
+QA owns this document; product and development independently reviewed the planning coverage. The working scope is one scenario, four stakeholders, five decision rounds, preset and typed decisions, hidden objectives, changing relationships, delayed consequences, replay, and a debrief grounded in recorded events. The September 30 source audit selected a reusable prototype and clean-start session policy. Those decisions and partial regression results do not establish completed features or release readiness.
 
 ## Quality work and ownership
 
@@ -23,7 +23,7 @@ The implementation author cannot be the sole reviewer of a change. Test implemen
 
 - Product defines the completion condition, scoring or outcome categories, supported typed actions, and what hidden information the debrief may reveal.
 - Game design supplies the starting values, limits, immediate effects, delayed-effect triggers, and rules for competing effects in each round.
-- Development specifies reproducibility controls and how a confirmed action is applied once. Product and development choose the session policy after auditing any reusable prototype. The initial proposal uses a clean start after refresh/reopen; this is not authorization to remove an existing recovery feature. If persistence is retained or added, record its contract and include resume, interrupted-write, invalid-save, and version-migration checks.
+- Development specifies reproducibility controls and how a confirmed action is applied once. The audited prototype has no persistence implementation; product selected clean start after refresh/reopen, with a visible notice before play. No existing recovery feature is being removed. If persistence is added later, record its contract and include resume, interrupted-write, invalid-save, and version-migration checks.
 - UI/UX defines the confirmation, clarification, empty, loading, error, and completion states, including keyboard focus behavior.
 - Product and development agree on the fallback when typed input cannot be interpreted. If interpretation uses a remote service, service failure must have a defined user-visible outcome.
 - The team agrees on supported browsers and phone viewport sizes. Proposed minimum verification is current desktop Chromium and a 390 by 844 CSS-pixel mobile viewport; record actual versions at execution. A resized desktop viewport does not demonstrate testing on a physical phone.
@@ -45,7 +45,7 @@ The `AC` references below are requirements in [the product brief](product-brief.
 | QA-AC-07: debrief traceability | AC-06 | Every factual claim about player behavior, stakeholder reactions, and outcomes maps to a recorded event or decision. Evaluative feedback identifies its rubric and supporting evidence, explains tradeoffs and uncertainty, and supplies actionable reflection prompts. The debrief distinguishes interpretation from observed events and makes no unsupported hiring-performance claim. |
 | QA-AC-08: replay and isolation | AC-01, AC-10 | Restarting creates the documented initial state and a separate run. Prior relationship values, pending effects, decisions, and interpretation requests cannot contaminate the new run. Reopening an earlier result, if added to scope, cannot alter its recorded outcome. |
 | QA-AC-09: repeated submission | AC-03, AC-05, AC-10 | Rapid double-click, repeated Enter, and retried requests cause one committed decision and one round transition. A late interpretation response cannot replace a newer input or apply to a restarted run. Controls communicate that an action is being processed. |
-| QA-AC-10: refresh and reopen | AC-10 | Verify the session policy chosen after prototype audit. Under the initial clean-start proposal, explain before play that progress is not saved; refresh/reopen offers a clean start with the documented initial state, and no prior committed/unconfirmed action or late interpretation affects the new run. If persistence is retained or added instead, verify exact restoration of committed state, no duplicate effects after interruption, understandable handling of invalid saves, and defined version migration. Record the selected branch of this check before execution; do not require contradictory restart and resume behavior. |
+| QA-AC-10: refresh and reopen | AC-10 | Under the selected clean-start policy, visibly explain before play that progress is not saved. Refresh/reopen offers a clean start with the documented initial state, and no prior committed/unconfirmed action or late interpretation affects the new run. If persistence is added later through a recorded scope decision, add checks for exact restoration of committed state, no duplicate effects after interruption, understandable handling of invalid saves, and defined version migration. |
 | QA-AC-11: keyboard access | AC-07 | Start, choose/type, clarify, confirm, cancel, advance, open the debrief, and replay using only the keyboard. Focus is visible, order follows the interface, dialogs can be exited, and focus returns to a sensible control. No required action or consequence cue depends only on hover or color. |
 | QA-AC-12: responsive layout and zoom | AC-07 | At 200% browser zoom and each agreed phone/desktop viewport, stakeholder information, decision controls, confirmation, error messages, and debrief remain readable and operable without overlapping content or required horizontal scrolling. Long names and typed text remain contained. |
 | QA-AC-13: fresh setup | AC-08 | A separate reviewer starts from a fresh checkout using only documented prerequisites and setup steps, runs the documented automated engine checks, starts the game, and independently completes a full playthrough against the identified release candidate. Record actual commands, environment, and results; do not substitute the author's existing working environment as evidence. |
@@ -55,13 +55,13 @@ Each implementation ticket must reference applicable checks and any narrower fea
 
 ## Reproducible scenario paths
 
-Game design must approve concrete actions and expected results before these become executable test cases. The names below describe coverage targets, not completed scenarios or promised outcomes.
+Game design must approve concrete actions and expected results before these become release reference fixtures. The names below describe coverage targets, not completed scenarios or promised outcomes. The separately executed baseline fixtures regress the candidate's current rules; they are not approval of these release paths or the candidate's narrative accuracy.
 
 | Path | Decisions and behavior to cover | Required distinction |
 | --- | --- | --- |
 | PATH-A: cooperative choices | Preset choices that acknowledge competing stakeholder interests | A documented relationship trajectory and end result |
 | PATH-B: competing priorities | Choices that favor one stakeholder while creating costs for another | A different relationship trajectory and a triggered delayed consequence |
-| PATH-C: clarification and restart | Typed actions, one ambiguous input, an edited interpretation, and a separate interruption/reload variant following the agreed session policy | The same underlying rules hold across input methods; the completed reference run has a materially different event history or ending. The interruption variant verifies clean restart under the initial proposal, or exact restoration if persistence is accepted, and then completes the resulting run. |
+| PATH-C: clarification and restart | Typed actions, one ambiguous input, an edited interpretation, and a separate interruption/reload variant following the selected clean-start policy | The same underlying rules hold across input methods; the completed reference run has a materially different event history or ending. The interruption variant verifies clean restart and then completes the resulting fresh run. |
 
 For each fixture, record scenario/rules version, application commit, seed if randomness exists, starting state, the five confirmed actions, expected state after each round, expected delayed events, and the final debrief evidence. Include a control variant that removes a delayed-event trigger. Include a typed/preset equivalent pair to verify that equivalent approved actions have equivalent effects.
 
@@ -99,9 +99,9 @@ Release requires all in-scope acceptance checks to pass on the release candidate
 
 ## Current evidence status
 
-- Application/build under test: not yet available in this setup phase.
-- Executed acceptance checks: none.
-- Scenario fixtures and expected values: pending product/game-design approval.
-- Refresh/reopen policy: proposed clean restart; final selection pending prototype audit and a recorded product/development decision.
-- Browser and device checks: not run.
-- Release assessment: pending implementation and independent review.
+- Application baseline: imported candidate plus a new local server; tested files, base commit, hashes, and environment appear in the [baseline QA record](evidence/baseline-qa.md).
+- Executed baseline checks: 15 passing Node tests, including three hand-calculated candidate-rule paths and structural completion of all 243 preset paths. These are partial regression evidence, not complete product-criterion passes.
+- Release reference fixtures and expected values: pending game-design specification and approval.
+- Refresh/reopen policy: clean restart selected after source audit. The coordinator observed replay and narrow-viewport refresh returning to the intro. A visible intro notice and full release-path verification remain required.
+- Browser and device checks: the coordinator's [session handoff](evidence/session-2026-09-30-0600.md) records targeted desktop/narrow-viewport checks and their limits. The Node tests do not establish rendered layout, keyboard use, zoom, or phone usability.
+- Release assessment: not accepted. The recorded S1 false player attribution and other required scope gaps remain open; preserve the severity gates above.
