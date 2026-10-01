@@ -463,8 +463,8 @@ export const ROUNDS = [
     "label": "The room turns",
     "time": "TUESDAY · 09:15",
     "countdown": "23 HOURS TO LAUNCH",
-    "title": "Your decision has become someone else’s story.",
-    "description": "A cropped screenshot from your planning thread is circulating. The caption says Product has lost confidence in Engineering. Two engineers stop posting updates. Mara wants to handle it quietly; Ishan wants the full thread shared.",
+    "title": "An earlier team note has become someone else’s story.",
+    "description": "A cropped screenshot from a team planning note written before your first decision is circulating. The caption says Product has lost confidence in Engineering. Two engineers stop posting updates. Mara wants to handle it quietly; Ishan wants the full note shared.",
     "speaker": "A message in #launch",
     "quote": "Apparently Product thinks the team can’t deliver. Good to know.",
     "question": "How do you respond to the rumor?",
@@ -501,7 +501,7 @@ export const ROUNDS = [
         "headline": "Context travels farther than the crop.",
         "reactions": {
           "mara": "That was uncomfortable. I can see why the full context mattered.",
-          "ishan": "The team heard that you were asking for evidence, not assigning blame.",
+          "ishan": "The team heard that the note was asking for evidence, not assigning blame.",
           "leah": "Thank you for distinguishing a fact from an accusation.",
           "theo": "Support finally knows what to tell people."
         },
@@ -590,7 +590,7 @@ export const ROUNDS = [
         {
           "id": "screenshot-source",
           "question": "Where did the screenshot come from?",
-          "answer": "I shared it with two leads to explain the campaign change. I added ‘Product is nervous.’ I didn’t expect it to go further. That was my interpretation, not your wording.",
+          "answer": "I shared a crop of the earlier team note with two leads to discuss launch planning. I added ‘Product is nervous.’ I didn’t expect it to go further. That was my interpretation, not your wording.",
           "title": "An interpretation became a quote",
           "evidence": "Mara shared the crop and added her own interpretation. The wider circulation remains unverified.",
           "kind": "Firsthand admission"
@@ -608,9 +608,9 @@ export const ROUNDS = [
         {
           "id": "full-thread",
           "question": "Show me the full exchange.",
-          "answer": "You wrote, ‘What evidence would make a limited launch safe?’ The crop removed ‘limited’ and the sentence about a review gate. That changes the meaning.",
-          "title": "The missing context",
-          "evidence": "The full message asked for evidence supporting a limited launch and mentioned a review gate.",
+          "answer": "The earlier team note asks, ‘What evidence would make a limited launch safe?’ It predates your first decision. The crop removed ‘limited’ and the sentence about a review gate. It is not a quote from your decision or your typed wording.",
+          "title": "The earlier team note, in full",
+          "evidence": "A team planning note written before your first decision asked for evidence supporting a limited launch and mentioned a review gate. It records an earlier team discussion, not a statement made by you in this attempt.",
           "kind": "Source document"
         },
         {
