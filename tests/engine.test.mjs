@@ -116,11 +116,35 @@ test('typed review is side-effect free and only the confirmed approach changes s
   assert.equal(state.history.length, 0);
   // The player may override the keyword suggestion at confirmation.
   const typed = freeze(decide(state, 'delay', proposal.text));
-  const preset = decide(state, 'delay');
+  const preset = freeze(decide(start(), 'delay'));
   assert.deepEqual(typed.metrics, metrics(36, 59, 68));
   assert.equal(typed.history[0].writtenDecision, text.trim());
-  preset.history[0].writtenDecision = text.trim();
-  assert.deepEqual(typed, preset);
+  assert.equal(preset.history[0].writtenDecision, '');
+  assert.notEqual(typed.runId, preset.runId, 'separate fresh attempts have separate identities');
+  for (const key of ['phase', 'round', 'metrics', 'relationships', 'flags', 'evidence', 'asked', 'talksLeft', 'arrival']) {
+    assert.deepEqual(typed[key], preset[key], `equivalent gameplay: ${key}`);
+  }
+  for (const key of ['round', 'roundId', 'choiceId', 'title', 'headline', 'outcome', 'delta', 'bonus', 'reactions', 'heard', 'metrics', 'followup']) {
+    assert.deepEqual(typed.history[0][key], preset.history[0][key], `equivalent decision effect: ${key}`);
+  }
+  // Input/event identity is deliberately different; verify its meaning and
+  // privacy instead of deleting fields to force whole-state equality.
+  for (const [attempt, mode, words] of [[typed, 'typed', text.trim()], [preset, 'preset', '']]) {
+    const input = attempt.events.find(event => event.type === 'input');
+    const decision = attempt.events.find(event => event.type === 'decision');
+    assert.ok(input);
+    assert.ok(decision);
+    assert.deepEqual(input.audience, ['player']);
+    assert.deepEqual(input.details, { mode, text: words });
+    assert.equal(decision.details.choiceId, 'delay');
+    assert.equal(decision.details.inputEventId, input.eventId);
+    assert.ok(input.sequence < decision.sequence, 'confirmed input precedes its linked decision');
+    for (const person of ['mara', 'ishan', 'leah', 'theo']) {
+      assert.ok(decision.audience.includes(person));
+      assert.equal(attempt.knowledge[person].includes(input.eventId), false);
+    }
+    assert.equal(JSON.stringify(decision).includes(text.trim()), false);
+  }
   assert.deepEqual(state, original);
 });
 
