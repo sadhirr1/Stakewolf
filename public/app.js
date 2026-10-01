@@ -1,7 +1,7 @@
 import { PEOPLE, ROUNDS } from './scenario.js';
 import { createGame, beginGame, currentRound, askQuestion, decide, advance, interpretDecision, relationshipLabel, getDebrief, METRICS } from './engine.js';
 const app = document.querySelector('#app');
-app.innerHTML = `<main id="main" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">A product launch. Four stakeholders. Five decisions that change everything. Step into the room, find the missing context, and make the call.</p><div class="intro-actions"><button class="primary" id="start-game">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
+app.innerHTML = `<main id="main" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">A product launch. Four stakeholders. Five decisions that change everything. Step into the room, find the missing context, and make the call.</p><div class="intro-actions"><button class="primary" id="start-game" aria-describedby="session-policy">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div><p id="session-policy" class="fine-print">Progress is not saved. Refreshing or reopening this page starts a new attempt.</p></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
 const introHTML = app.innerHTML;
 let state = createGame();
 let selected = null;
@@ -9,6 +9,8 @@ let activeTab = 'decision';
 let customMode = false;
 let draft = '';
 let proposal = null;
+let screenVersion = 0;
+const dialogReturns = new WeakMap();
 const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const avatar = p => `<span class="avatar" style="color:var(--${p.color})" aria-hidden="true">${p.initials}</span>`;
 const announce = message => { document.querySelector('#announcement').textContent = message; };
@@ -50,13 +52,35 @@ function debriefHTML() {
   return `<main id="main" class="debrief"><span class="eyebrow lime">CASE CLOSED · YOUR DECISION TRACE</span><h1 id="scene-title" tabindex="-1">${d.title}</h1><p class="debrief-lead">${d.description}</p>${metricsHTML()}<div class="button-row" style="margin-top:26px"><button class="primary" data-action="replay">Play another attempt</button><button class="secondary" data-action="download">Download decision record</button></div><div class="debrief-layout"><div><section class="debrief-section"><span class="eyebrow">WHAT YOUR CHOICES REVEAL</span><h2 style="margin-top:12px">A pattern, with receipts.</h2>${d.reflections.map(r=>`<div class="reflection"><h3>${r.title}</h3><p>${r.text}</p></div>`).join('')}<p class="fine-print">These observations describe this attempt. They are not a personality profile, hiring score, or validated assessment.</p></section><section class="debrief-section"><h2>The five decisions</h2>${journalHTML()}</section></div><aside><section class="debrief-section"><span class="eyebrow">THE AGENDAS BEHIND THE ARGUMENTS</span><h2 style="margin-top:12px">What they weren’t saying.</h2>${PEOPLE.map(p=>`<article class="agenda-card"><div class="agenda-person">${avatar(p)}<span class="cast-name"><strong>${p.name}</strong><small>${p.role}</small></span></div><span class="agenda-label">PRIVATE MOTIVATION</span><p>${p.agenda}</p><p><strong>On a replay:</strong> ${p.tell}</p><div class="summary-stat"><span>Final relationship</span><strong>${relationshipLabel(state.relationships[p.id])}</strong></div></article>`).join('')}</section></aside></div><footer class="game-footer"><span>STAKEWOLF · THE LAUNCH ROOM</span><span>Fictional scenario · Authored rules · Your reasoning stays on this device</span></footer></main>`;
 }
 function render(focus=false) {
+  if(focus) screenVersion++;
   if(state.phase==='briefing') app.innerHTML=introHTML;
   else if(state.phase==='complete') app.innerHTML=debriefHTML();
   else app.innerHTML=`<div class="game">${roomHTML()}<main id="main" class="main"><div class="chapter-top"><span class="eyebrow">CASE 001 / ROUND ${String(state.round+1).padStart(2,'0')} OF 05</span><div class="chapter-steps" aria-hidden="true">${ROUNDS.map((r,i)=>`<span class="chapter-step ${i<state.round?'done':i===state.round?'current':''}"></span>`).join('')}</div></div>${state.phase==='play'?sceneHTML():resultHTML()}${metricsHTML()}<footer class="game-footer"><span>RELAY / INTERNAL DECISIONS</span><button class="text-button" data-action="restart">Restart attempt</button></footer></main></div>`;
   if(focus) {document.querySelector('#scene-title, #start-game')?.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
 }
 function resetUI() {selected=null;activeTab='decision';customMode=false;draft='';proposal=null;}
-function closeDialogs() {document.querySelectorAll('dialog[open]').forEach(d=>d.close());}
+function showDialog(dialog, returnFocus = document.activeElement) {
+  if(dialog.open) return;
+  dialogReturns.set(dialog, {returnFocus, screenVersion});
+  dialog.showModal();
+}
+function closeDialogs() {
+  document.querySelectorAll('dialog[open]').forEach(dialog=>{
+    // A committed action owns the next screen's focus, not the old opener.
+    dialogReturns.delete(dialog);
+    dialog.close();
+  });
+}
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('close',()=>{
+  if(dialog.open) return;
+  const saved = dialogReturns.get(dialog);
+  dialogReturns.delete(dialog);
+  if(!saved || saved.screenVersion!==screenVersion || document.querySelector('dialog[open]')) return;
+  const opener = typeof saved.returnFocus==='function' ? saved.returnFocus() : saved.returnFocus;
+  const target = opener?.isConnected && !opener.disabled && opener.getClientRects().length
+    ? opener : document.querySelector('#scene-title, #start-game');
+  target?.focus({preventScroll:true});
+}));
 function start() {state=beginGame(state);resetUI();render(true);announce('Round one. You have two stakeholder conversations.');}
 function commit(choiceId, text='') {state=decide(state,choiceId,text);closeDialogs();resetUI();render(true);announce('Decision recorded. Read the stakeholder reactions.');}
 function nextRound() {state=advance(state);resetUI();render(true);announce(state.phase==='complete'?'Your five-round debrief is ready.':'Round '+(state.round+1)+'. Two new conversations are available.');}
@@ -68,14 +92,14 @@ function openConversation(personId, answerId=null) {
   const answered=answerId?questions.find(q=>q.id===answerId):null;
   const dialog=document.querySelector('#conversation-dialog');
   document.querySelector('#conversation-content').innerHTML=`<div class="dialog-top"><span class="eyebrow">PRIVATE CONVERSATION · ${state.talksLeft} LEFT</span><button class="icon-button" data-close-dialog aria-label="Close conversation">×</button></div><div class="conversation-person">${avatar(p)}<div><h2 id="conversation-title">${p.name}</h2><p>${p.role} · ${relationshipLabel(state.relationships[p.id])}</p></div></div>${answered?`<div class="answer"><span class="eyebrow">YOU ASKED: ${esc(answered.question)}</span><blockquote style="margin-top:12px">“${answered.answer}”</blockquote><p><strong>Added to evidence:</strong> ${answered.title}</p></div>`:`<p>“${p.motto}”</p>`}<span class="eyebrow">${state.talksLeft?'CHOOSE ONE QUESTION · USES ONE CONVERSATION':'NO CONVERSATIONS REMAIN THIS ROUND'}</span>${questions.map(q=>`<button class="question" data-ask-person="${p.id}" data-question="${q.id}" ${state.asked.includes(q.id)||!state.talksLeft?'disabled':''}>${q.question}${state.asked.includes(q.id)?' · Asked':''}</button>`).join('')}<button class="secondary" data-close-dialog style="margin-top:15px">Back to the room</button>`;
-  if(!dialog.open)dialog.showModal();
+  showDialog(dialog, ()=>document.querySelector('[data-person="'+personId+'"]'));
   if(answered)dialog.querySelector('[data-close-dialog]').focus();
 }
 function reviewProposal(text) {
   proposal=interpretDecision(state,text);
   const r=currentRound(state);
-  document.querySelector('#proposal-content').innerHTML=`<div class="dialog-top"><span class="eyebrow">YOUR WORDS, YOUR CALL</span><button class="icon-button" data-close-dialog aria-label="Close approach review">×</button></div><h2 id="proposal-title">Confirm your approach.</h2><p>${proposal.suggestedId?'Words in your decision suggest the selected approach below. Change it if it doesn’t fit.':'There isn’t one clear match. Choose the approach that best captures your intention.'}</p><p class="fine-print">The game applies the selected approach’s consequences. Your full wording is preserved in the record.</p><form id="proposal-form"><fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Choose how the simulation should interpret your decision</legend><div class="proposal-options">${r.choices.map(c=>`<label class="proposal-option"><input type="radio" name="approach" value="${c.id}" required ${proposal.suggestedId===c.id?'checked':''}><span>${c.title}<small>${c.description}</small></span></label>`).join('')}</div></fieldset><div class="button-row"><button type="submit" class="primary">Confirm and make the call</button><button type="button" class="secondary" data-close-dialog>Edit my wording</button></div></form>`;
-  document.querySelector('#proposal-dialog').showModal();
+  document.querySelector('#proposal-content').innerHTML=`<div class="dialog-top"><span class="eyebrow">YOUR WORDS, YOUR CALL</span><button class="icon-button" data-close-dialog aria-label="Close approach review">×</button></div><h2 id="proposal-title">Confirm your approach.</h2><p>${proposal.suggestedId?'Words in your decision suggest the selected approach below. Change it if it doesn’t fit.':'There isn’t one clear match. Choose the approach that best captures your intention.'}</p><p class="fine-print">The game applies the selected approach’s consequences. Your full wording is preserved in the record.</p><form id="proposal-form"><fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Choose how the simulation should interpret your decision</legend><div class="proposal-options">${r.choices.map(c=>`<label class="proposal-option"><input type="radio" name="approach" value="${c.id}" required ${proposal.suggestedId===c.id?'checked':''}><span>${c.title}<small>${c.description}</small></span></label>`).join('')}</div></fieldset><div class="button-row"><button type="submit" class="primary">Confirm and make the call</button><button type="button" class="secondary" data-close-dialog data-edit-wording>Edit my wording</button></div></form>`;
+  showDialog(document.querySelector('#proposal-dialog'), ()=>document.querySelector('#custom-form [type="submit"]'));
 }
 function downloadRecord() {
   const d=getDebrief(state);
@@ -94,12 +118,16 @@ function downloadRecord() {
   const link=document.createElement('a');link.href=url;link.download='stakewolf-decision-record.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   announce('Your decision record has been downloaded.');
 }
-document.querySelector('#how-button').addEventListener('click',()=>document.querySelector('#help-dialog').showModal());
+document.querySelector('#how-button').addEventListener('click',()=>showDialog(document.querySelector('#help-dialog'), document.querySelector('#how-button')));
 document.querySelector('#confirm-restart').addEventListener('click',()=>{closeDialogs();state=createGame();resetUI();render(true);announce('A fresh attempt is ready.');});
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button||button.disabled)return;
   try {
-    if(button.hasAttribute('data-close-dialog')){button.closest('dialog').close();return;}
+    if(button.hasAttribute('data-close-dialog')){
+      const dialog=button.closest('dialog');
+      if(button.hasAttribute('data-edit-wording')) dialogReturns.set(dialog, {returnFocus:()=>document.querySelector('#written-decision'), screenVersion});
+      dialog.close();return;
+    }
     if(button.id==='start-game'){start();return;}
     if(button.dataset.person){openConversation(button.dataset.person);return;}
     if(button.dataset.question){state=askQuestion(state,button.dataset.askPerson,button.dataset.question);render();openConversation(button.dataset.askPerson,button.dataset.question);announce('Evidence added. '+state.talksLeft+' conversations remaining.');return;}
@@ -110,7 +138,7 @@ document.addEventListener('click',event=>{
       case 'advance':nextRound();break;
       case 'write':customMode=true;activeTab='decision';render();document.querySelector('#written-decision').focus();break;
       case 'show-choices':customMode=false;render();app.querySelector('[data-action="write"]').focus();break;
-      case 'restart':document.querySelector('#restart-dialog').showModal();break;
+      case 'restart':showDialog(document.querySelector('#restart-dialog'), button);break;
       case 'replay':state=createGame();resetUI();render(true);announce('A fresh attempt is ready.');break;
       case 'download':downloadRecord();break;
     }

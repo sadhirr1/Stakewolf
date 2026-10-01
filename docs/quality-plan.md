@@ -100,8 +100,8 @@ Release requires all in-scope acceptance checks to pass on the release candidate
 ## Current evidence status
 
 - Application baseline: imported candidate plus a new local server; tested files, base commit, hashes, and environment appear in the [baseline QA record](evidence/baseline-qa.md).
-- Executed baseline checks: 15 passing Node tests, including three hand-calculated candidate-rule paths and structural completion of all 243 preset paths. These are partial regression evidence, not complete product-criterion passes.
-- Release reference fixtures and expected values: pending game-design specification and approval.
-- Refresh/reopen policy: clean restart selected after source audit. The coordinator observed replay and narrow-viewport refresh returning to the intro. A visible intro notice and full release-path verification remain required.
+- Executed checks: the September 30 baseline passed 15 Node tests. The [October 1 checkpoint](evidence/session-2026-10-01.md) passes 22, adding six preset/typed narrative counterexamples and a bonus/control regression. The 243-path coverage remains structural, not narrative acceptance.
+- Release reference expectations: the reviewed [scenario contract](scenario-rules.md) now specifies three paths, arithmetic, information audiences, and debrief obligations. Executable coverage of the new memory/event/citation behavior remains pending implementation.
+- Refresh/reopen policy: clean restart selected after source audit. The coordinator observed replay and narrow-viewport refresh returning to the intro. The October 1 patch adds the visible intro notice and verifies focused dialog-return behavior; full release-path verification remains required.
 - Browser and device checks: the coordinator's [session handoff](evidence/session-2026-09-30-0600.md) records targeted desktop/narrow-viewport checks and their limits. The Node tests do not establish rendered layout, keyboard use, zoom, or phone usability.
-- Release assessment: not accepted. The recorded S1 false player attribution and other required scope gaps remain open; preserve the severity gates above.
+- Release assessment: not accepted. The specific S1 false player attribution has a reviewed correction and focused retests in the October 1 checkpoint. Other required scope gaps, including conditional memory, supported debrief claims, typed-language coverage, and full accessibility remain open; preserve the severity gates above.

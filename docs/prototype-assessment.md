@@ -2,6 +2,8 @@
 
 Assessment date: September 30, 2026, morning work session. Owner: product/game-design agent. Related work: [SCRUM-6](https://sadhirr1.atlassian.net/browse/SCRUM-6) and [SCRUM-10](https://sadhirr1.atlassian.net/browse/SCRUM-10).
 
+October 1 follow-up: the specific false player quotation described below has been corrected to refer explicitly to an earlier team planning note, with preset/typed regression checks. The intro now shows the clean-start notice and dialogs restore focus after closing. See the [reviewed rules](scenario-rules.md), [interaction contract](player-experience.md), and [verification record](evidence/session-2026-10-01.md). The September 30 findings below remain historical evidence; conditional memory, information boundaries, and debrief citations still require implementation.
+
 ## Recommendation and evidence boundary
 
 Reuse the inspected five-file browser prototype as a source baseline. Its separated scenario data, deterministic engine, confirmed action flow, decision journal, and existing interface give development useful material. This recommendation does not accept the game for release or establish that any product acceptance criterion has passed.
