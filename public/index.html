@@ -13,7 +13,7 @@
 <body>
   <a class="skip-link" href="#main">Skip to the game</a>
   <header class="topbar">
-    <a href="./" class="brand" aria-label="Stakewolf home"><span class="brand-mark" aria-hidden="true">W</span> STAKEWOLF<span class="edition">VOL. 01</span></a>
+    <a id="home-link" href="./" class="brand" aria-label="Stakewolf home"><span class="brand-mark" aria-hidden="true">W</span> STAKEWOLF<span class="edition">VOL. 01</span></a>
     <span class="top-case">THE LAUNCH ROOM <span>/</span> A PRODUCT JUDGMENT GAME</span>
     <button class="text-button" id="how-button">How to play</button>
   </header>
@@ -27,7 +27,7 @@
     <p class="fine-print">This first edition uses authored dialogue and explicit game rules. It does not use a live AI model or measure your personality. Progress lasts for this page session; refreshing starts over.</p>
     <button class="primary" data-close-dialog>Understood</button>
   </dialog>
-  <dialog id="restart-dialog" aria-labelledby="restart-title"><div class="dialog-top"><span class="eyebrow">NEW ATTEMPT</span><button class="icon-button" data-close-dialog aria-label="Cancel restart">×</button></div><h2 id="restart-title">Leave this attempt?</h2><p>Your current decisions will be cleared. Your next attempt begins at the first briefing.</p><div class="button-row"><button class="secondary" data-close-dialog>Keep playing</button><button class="primary" id="confirm-restart">Start again</button></div></dialog>
+  <dialog id="restart-dialog" aria-labelledby="restart-title"><div class="dialog-top"><span class="eyebrow">NEW ATTEMPT</span><button class="icon-button" data-close-dialog aria-label="Cancel restart">×</button></div><h2 id="restart-title">Leave this attempt?</h2><p>Your current decisions will be cleared. Your next attempt begins at the first briefing.</p><div class="button-row"><button class="secondary" id="keep-playing" data-close-dialog autofocus>Keep playing</button><button class="primary" id="confirm-restart">Start again</button></div></dialog>
   <dialog id="conversation-dialog" class="conversation-dialog" aria-labelledby="conversation-title"><div id="conversation-content"></div></dialog>
   <dialog id="proposal-dialog" aria-labelledby="proposal-title"><div id="proposal-content"></div></dialog>
 </body>

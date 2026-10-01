@@ -1,19 +1,67 @@
 import { PEOPLE, ROUNDS } from './scenario.js';
 import { createGame, beginGame, currentRound, askQuestion, decide, advance, interpretDecision, relationshipLabel, getDebrief, METRICS } from './engine.js';
 const app = document.querySelector('#app');
-app.innerHTML = `<main id="main" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">A product launch. Four stakeholders. Five decisions that change everything. Step into the room, find the missing context, and make the call.</p><div class="intro-actions"><button class="primary" id="start-game" aria-describedby="session-policy">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div><p id="session-policy" class="fine-print">Progress is not saved. Refreshing or reopening this page starts a new attempt.</p></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
+app.innerHTML = `<main id="main" tabindex="-1" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">A product launch. Four stakeholders. Five decisions that change everything. Step into the room, find the missing context, and make the call.</p><div class="intro-actions"><button class="primary" id="start-game" aria-describedby="session-policy">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div><p id="session-policy" class="fine-print">Progress is not saved. Refreshing or reopening this page starts a new attempt.</p></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
 const introHTML = app.innerHTML;
 let state = createGame();
 let selected = null;
 let activeTab = 'decision';
 let customMode = false;
 let draft = '';
+let draftError = '';
 let proposal = null;
 let screenVersion = 0;
 const dialogReturns = new WeakMap();
 const esc = value => String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const avatar = p => `<span class="avatar" style="color:var(--${p.color})" aria-hidden="true">${p.initials}</span>`;
 const announce = message => { document.querySelector('#announcement').textContent = message; };
+const recoverableErrors = new Set([
+  'There is no active decision right now.', 'This attempt has already started.',
+  'Choose a question from this round.', 'You already asked this question.',
+  'You have used both conversations this round.', 'Choose a valid approach.',
+  'Complete the current decision first.', 'Finish all five decisions to see the debrief.',
+  'Conversations are available during a decision round.',
+  'Choose an approach, or edit your wording.', 'Review your wording again before confirming.',
+]);
+function clearActionFeedback() {
+  document.querySelectorAll('[data-action-feedback]').forEach(element=>element.remove());
+}
+function showActionError(error, previousState, trigger=document.activeElement) {
+  clearActionFeedback();
+  const unchanged = state===previousState;
+  const message = unchanged
+    ? (recoverableErrors.has(error.message) ? error.message : 'That action could not be completed. Try again or choose another action.')+' Your recorded decisions have not changed.'
+    : 'The attempt changed before a display error occurred. Review the current screen before continuing. You can use Stakewolf home to start a fresh attempt; this clears the current decisions.';
+  const triggerContext = trigger?.isConnected ? trigger.closest('#workspace-panel, .round-result, .debrief') : null;
+  const context = document.querySelector('dialog[open]') || triggerContext || document.querySelector('#main') || app;
+  const feedback = document.createElement('p');
+  feedback.className='warning'; feedback.dataset.actionFeedback=''; feedback.tabIndex=-1;
+  feedback.textContent=message;
+  context.prepend(feedback);
+  feedback.scrollIntoView({block:'nearest'});
+  if(!document.activeElement?.isConnected || document.activeElement===document.body || document.activeElement.disabled) feedback.focus();
+  announce(message);
+}
+function validateDraft(text) {
+  if(text.length>1200) return 'Keep your decision within 1,200 characters.';
+  return text.trim().length<20 ? 'Write at least 20 characters, or use a prepared approach.' : '';
+}
+function setDraftError(message, notify=false) {
+  draftError=message;
+  const field=document.querySelector('#written-decision');
+  const feedback=document.querySelector('#written-decision-error');
+  if(!field || !feedback) return;
+  feedback.textContent=message; feedback.hidden=!message;
+  field.setAttribute('aria-invalid',String(Boolean(message)));
+  field.setAttribute('aria-describedby','written-decision-help character-count'+(message?' written-decision-error':''));
+  if(notify) {field.focus();announce(message);}
+}
+function setProposalError(message) {
+  const feedback=document.querySelector('#proposal-error');
+  if(!feedback) return;
+  feedback.textContent=message; feedback.hidden=!message;
+  document.querySelectorAll('#proposal-form input[name="approach"]').forEach(input=>input.setAttribute('aria-invalid',String(Boolean(message))));
+}
 const metricNames = {delivery:'Delivery',trust:'Team trust',quality:'Product quality'};
 const metricNotes = {delivery:'Momentum behind the commitment',trust:'Willingness to share and cooperate',quality:'Evidence of a dependable product'};
 const deltaHTML = delta => `<div class="delta-list">${METRICS.filter(k=>delta[k]).map(k=>`<span class="delta ${delta[k]<0?'negative':''}">${metricNames[k]}<strong>${delta[k]>0?'+':''}${delta[k]}</strong></span>`).join('')}</div>`;
@@ -28,7 +76,7 @@ function tabsHTML() {
 }
 function decisionHTML() {
   const round=currentRound(state);
-  if(customMode) return `<form id="custom-form" class="custom-form"><label for="written-decision">Make the call in your own words</label><p>Describe what you would do and why. You’ll review the matching approach before it affects the game.</p><textarea id="written-decision" name="decision" minlength="20" maxlength="1200" required placeholder="I would start with a limited pilot, ask Engineering to define a stop condition, and explain the change to Growth…">${esc(draft)}</textarea><div class="form-meta"><span>20–1,200 characters · Your reasoning stays in the record</span><span id="character-count">${draft.length} / 1200</span></div><div class="button-row"><button type="submit" class="primary">Review my approach</button><button type="button" class="secondary" data-action="show-choices">Use a prepared approach</button></div><p class="fine-print" style="margin:15px 0 0">This edition matches words to three authored approaches. You choose the interpretation; it isn’t live AI analysis.</p></form>`;
+  if(customMode) return `<form id="custom-form" class="custom-form" novalidate><label for="written-decision">Make the call in your own words</label><p id="written-decision-help">Describe what you would do and why. You’ll review the matching approach before it affects the game.</p><textarea aria-invalid="${Boolean(draftError)}" aria-describedby="written-decision-help character-count${draftError?' written-decision-error':''}" id="written-decision" name="decision" minlength="20" maxlength="1200" required placeholder="I would start with a limited pilot, ask Engineering to define a stop condition, and explain the change to Growth…">${esc(draft)}</textarea><p id="written-decision-error" class="warning" ${draftError?'':'hidden'}>${esc(draftError)}</p><div class="form-meta"><span>20–1,200 characters · Your reasoning stays in the record</span><span id="character-count">${draft.length} / 1200</span></div><div class="button-row"><button type="submit" class="primary">Review my approach</button><button type="button" class="secondary" data-action="show-choices">Use a prepared approach</button></div><p class="fine-print" style="margin:15px 0 0">This edition matches words to three authored approaches. You choose the interpretation; it isn’t live AI analysis.</p></form>`;
   return `<div class="decision-heading"><h3 style="margin:0">${round.question}</h3><span class="small-meta">${state.talksLeft?'You can still hear '+state.talksLeft+' perspective'+(state.talksLeft===1?'':'s')+'.':'Your conversations are complete.'}</span></div><div class="choices" role="group" aria-label="Available approaches">${round.choices.map((c,i)=>`<button class="choice ${selected===c.id?'selected':''}" data-choice="${c.id}" aria-pressed="${selected===c.id}"><span class="choice-letter">${String.fromCharCode(65+i)}</span><strong>${c.title}</strong><p>${c.description}</p></button>`).join('')}</div><div class="decision-footer"><button class="text-button" data-action="write">Write your own decision</button><button class="primary" data-action="commit" ${selected?'':'disabled'}>Commit to this approach</button></div>`;
 }
 function evidenceHTML() {
@@ -49,20 +97,24 @@ function resultHTML() {
 }
 function debriefHTML() {
   const d=getDebrief(state);
-  return `<main id="main" class="debrief"><span class="eyebrow lime">CASE CLOSED · YOUR DECISION TRACE</span><h1 id="scene-title" tabindex="-1">${d.title}</h1><p class="debrief-lead">${d.description}</p>${metricsHTML()}<div class="button-row" style="margin-top:26px"><button class="primary" data-action="replay">Play another attempt</button><button class="secondary" data-action="download">Download decision record</button></div><div class="debrief-layout"><div><section class="debrief-section"><span class="eyebrow">WHAT YOUR CHOICES REVEAL</span><h2 style="margin-top:12px">A pattern, with receipts.</h2>${d.reflections.map(r=>`<div class="reflection"><h3>${r.title}</h3><p>${r.text}</p></div>`).join('')}<p class="fine-print">These observations describe this attempt. They are not a personality profile, hiring score, or validated assessment.</p></section><section class="debrief-section"><h2>The five decisions</h2>${journalHTML()}</section></div><aside><section class="debrief-section"><span class="eyebrow">THE AGENDAS BEHIND THE ARGUMENTS</span><h2 style="margin-top:12px">What they weren’t saying.</h2>${PEOPLE.map(p=>`<article class="agenda-card"><div class="agenda-person">${avatar(p)}<span class="cast-name"><strong>${p.name}</strong><small>${p.role}</small></span></div><span class="agenda-label">PRIVATE MOTIVATION</span><p>${p.agenda}</p><p><strong>On a replay:</strong> ${p.tell}</p><div class="summary-stat"><span>Final relationship</span><strong>${relationshipLabel(state.relationships[p.id])}</strong></div></article>`).join('')}</section></aside></div><footer class="game-footer"><span>STAKEWOLF · THE LAUNCH ROOM</span><span>Fictional scenario · Authored rules · Your reasoning stays on this device</span></footer></main>`;
+  return `<main id="main" tabindex="-1" class="debrief"><span class="eyebrow lime">CASE CLOSED · YOUR DECISION TRACE</span><h1 id="scene-title" tabindex="-1">${d.title}</h1><p class="debrief-lead">${d.description}</p>${metricsHTML()}<div class="button-row" style="margin-top:26px"><button class="primary" data-action="replay">Play another attempt</button><button class="secondary" data-action="download">Download decision record</button></div><div class="debrief-layout"><div><section class="debrief-section"><span class="eyebrow">WHAT YOUR CHOICES REVEAL</span><h2 style="margin-top:12px">A pattern, with receipts.</h2>${d.reflections.map(r=>`<div class="reflection"><h3>${r.title}</h3><p>${r.text}</p></div>`).join('')}<p class="fine-print">These observations describe this attempt. They are not a personality profile, hiring score, or validated assessment.</p></section><section class="debrief-section"><h2>The five decisions</h2>${journalHTML()}</section></div><aside><section class="debrief-section"><span class="eyebrow">THE AGENDAS BEHIND THE ARGUMENTS</span><h2 style="margin-top:12px">What they weren’t saying.</h2>${PEOPLE.map(p=>`<article class="agenda-card"><div class="agenda-person">${avatar(p)}<span class="cast-name"><strong>${p.name}</strong><small>${p.role}</small></span></div><span class="agenda-label">PRIVATE MOTIVATION</span><p>${p.agenda}</p><p><strong>On a replay:</strong> ${p.tell}</p><div class="summary-stat"><span>Final relationship</span><strong>${relationshipLabel(state.relationships[p.id])}</strong></div></article>`).join('')}</section></aside></div><footer class="game-footer"><span>STAKEWOLF · THE LAUNCH ROOM</span><span>Fictional scenario · Authored rules · Your reasoning stays on this device</span></footer></main>`;
 }
 function render(focus=false) {
   if(focus) screenVersion++;
   if(state.phase==='briefing') app.innerHTML=introHTML;
   else if(state.phase==='complete') app.innerHTML=debriefHTML();
-  else app.innerHTML=`<div class="game">${roomHTML()}<main id="main" class="main"><div class="chapter-top"><span class="eyebrow">CASE 001 / ROUND ${String(state.round+1).padStart(2,'0')} OF 05</span><div class="chapter-steps" aria-hidden="true">${ROUNDS.map((r,i)=>`<span class="chapter-step ${i<state.round?'done':i===state.round?'current':''}"></span>`).join('')}</div></div>${state.phase==='play'?sceneHTML():resultHTML()}${metricsHTML()}<footer class="game-footer"><span>RELAY / INTERNAL DECISIONS</span><button class="text-button" data-action="restart">Restart attempt</button></footer></main></div>`;
+  else app.innerHTML=`<div class="game">${roomHTML()}<main id="main" tabindex="-1" class="main"><div class="chapter-top"><span class="eyebrow">CASE 001 / ROUND ${String(state.round+1).padStart(2,'0')} OF 05</span><div class="chapter-steps" aria-hidden="true">${ROUNDS.map((r,i)=>`<span class="chapter-step ${i<state.round?'done':i===state.round?'current':''}"></span>`).join('')}</div></div>${state.phase==='play'?sceneHTML():resultHTML()}${metricsHTML()}<footer class="game-footer"><span>RELAY / INTERNAL DECISIONS</span><button class="text-button" data-action="restart">Restart attempt</button></footer></main></div>`;
   if(focus) {document.querySelector('#scene-title, #start-game')?.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
 }
-function resetUI() {selected=null;activeTab='decision';customMode=false;draft='';proposal=null;}
+function resetUI() {selected=null;activeTab='decision';customMode=false;draft='';draftError='';proposal=null;clearActionFeedback();}
 function showDialog(dialog, returnFocus = document.activeElement) {
   if(dialog.open) return;
   dialogReturns.set(dialog, {returnFocus, screenVersion});
   dialog.showModal();
+}
+function showRestart(trigger) {
+  showDialog(document.querySelector('#restart-dialog'),trigger);
+  document.querySelector('#keep-playing').focus();
 }
 function closeDialogs() {
   document.querySelectorAll('dialog[open]').forEach(dialog=>{
@@ -78,7 +130,7 @@ document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('clo
   if(!saved || saved.screenVersion!==screenVersion || document.querySelector('dialog[open]')) return;
   const opener = typeof saved.returnFocus==='function' ? saved.returnFocus() : saved.returnFocus;
   const target = opener?.isConnected && !opener.disabled && opener.getClientRects().length
-    ? opener : document.querySelector('#scene-title, #start-game');
+    ? opener : document.querySelector('#scene-title, #start-game') || document.querySelector('#main');
   target?.focus({preventScroll:true});
 }));
 function start() {state=beginGame(state);resetUI();render(true);announce('Round one. You have two stakeholder conversations.');}
@@ -98,8 +150,10 @@ function openConversation(personId, answerId=null) {
 function reviewProposal(text) {
   proposal=interpretDecision(state,text);
   const r=currentRound(state);
-  document.querySelector('#proposal-content').innerHTML=`<div class="dialog-top"><span class="eyebrow">YOUR WORDS, YOUR CALL</span><button class="icon-button" data-close-dialog aria-label="Close approach review">×</button></div><h2 id="proposal-title">Confirm your approach.</h2><p>${proposal.suggestedId?'Words in your decision suggest the selected approach below. Change it if it doesn’t fit.':'There isn’t one clear match. Choose the approach that best captures your intention.'}</p><p class="fine-print">The game applies the selected approach’s consequences. Your full wording is preserved in the record.</p><form id="proposal-form"><fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Choose how the simulation should interpret your decision</legend><div class="proposal-options">${r.choices.map(c=>`<label class="proposal-option"><input type="radio" name="approach" value="${c.id}" required ${proposal.suggestedId===c.id?'checked':''}><span>${c.title}<small>${c.description}</small></span></label>`).join('')}</div></fieldset><div class="button-row"><button type="submit" class="primary">Confirm and make the call</button><button type="button" class="secondary" data-close-dialog data-edit-wording>Edit my wording</button></div></form>`;
+  document.querySelector('#proposal-content').innerHTML=`<div class="dialog-top"><span class="eyebrow">YOUR WORDS, YOUR CALL</span><button class="icon-button" data-close-dialog aria-label="Close approach review">×</button></div><h2 id="proposal-title">Confirm your approach.</h2><p>${proposal.suggestedId?'Words in your decision suggest the selected approach below. Change it if it doesn’t fit.':'There isn’t one clear match. Choose the approach that best captures your intention.'}</p><p class="fine-print">The game applies the selected approach’s consequences. Your full wording is preserved in the record.</p><form id="proposal-form" novalidate><fieldset style="border:0;padding:0;margin:0"><legend class="sr-only">Choose how the simulation should interpret your decision</legend><p id="proposal-error" class="warning" hidden></p><div class="proposal-options">${r.choices.map(c=>`<label class="proposal-option"><input aria-describedby="proposal-error" aria-invalid="false" type="radio" name="approach" value="${c.id}" required ${proposal.suggestedId===c.id?'checked':''}><span>${c.title}<small>${c.description}</small></span></label>`).join('')}</div></fieldset><div class="button-row"><button type="submit" class="primary">Confirm and make the call</button><button type="button" class="secondary" data-close-dialog data-edit-wording>Edit my wording</button></div></form>`;
   showDialog(document.querySelector('#proposal-dialog'), ()=>document.querySelector('#custom-form [type="submit"]'));
+  const dialog=document.querySelector('#proposal-dialog');
+  (dialog.querySelector('input[name="approach"]:checked') || dialog.querySelector('input[name="approach"]')).focus();
 }
 function downloadRecord() {
   const d=getDebrief(state);
@@ -119,9 +173,20 @@ function downloadRecord() {
   announce('Your decision record has been downloaded.');
 }
 document.querySelector('#how-button').addEventListener('click',()=>showDialog(document.querySelector('#help-dialog'), document.querySelector('#how-button')));
+document.querySelector('#home-link').addEventListener('click',event=>{
+  const link=event.currentTarget;
+  if(event.defaultPrevented || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey ||
+      (link.target && link.target!=='_self') || link.hasAttribute('download')) return;
+  if(state.phase==='play' || state.phase==='result') {
+    event.preventDefault();
+    showRestart(link);
+  }
+});
 document.querySelector('#confirm-restart').addEventListener('click',()=>{closeDialogs();state=createGame();resetUI();render(true);announce('A fresh attempt is ready.');});
 document.addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button||button.disabled)return;
+  const previousState=state;
+  clearActionFeedback();
   try {
     if(button.hasAttribute('data-close-dialog')){
       const dialog=button.closest('dialog');
@@ -138,17 +203,44 @@ document.addEventListener('click',event=>{
       case 'advance':nextRound();break;
       case 'write':customMode=true;activeTab='decision';render();document.querySelector('#written-decision').focus();break;
       case 'show-choices':customMode=false;render();app.querySelector('[data-action="write"]').focus();break;
-      case 'restart':showDialog(document.querySelector('#restart-dialog'), button);break;
+      case 'restart':showRestart(button);break;
       case 'replay':state=createGame();resetUI();render(true);announce('A fresh attempt is ready.');break;
       case 'download':downloadRecord();break;
     }
-  }catch(error){announce(error.message);}
+  }catch(error){showActionError(error,previousState,button);}
 });
-document.addEventListener('input',event=>{if(event.target.id==='written-decision'){draft=event.target.value;document.querySelector('#character-count').textContent=draft.length+' / 1200';}});
+document.addEventListener('input',event=>{
+  if(event.target.id==='written-decision') {
+    draft=event.target.value;
+    document.querySelector('#character-count').textContent=draft.length+' / 1200';
+    if(draftError) setDraftError(validateDraft(draft));
+  }
+  if(event.target.name==='approach') {setProposalError('');clearActionFeedback();}
+});
 document.addEventListener('submit',event=>{
   if(event.target.id!=='custom-form'&&event.target.id!=='proposal-form')return;
   event.preventDefault();
-  try{if(event.target.id==='custom-form')reviewProposal(draft);else if(proposal)commit(new FormData(event.target).get('approach'),proposal.text);}catch(error){announce(error.message);}
+  const previousState=state;
+  clearActionFeedback();
+  try {
+    if(event.target.id==='custom-form') {
+      draft=event.target.elements.decision.value;
+      const error=validateDraft(draft);
+      setDraftError(error,Boolean(error));
+      if(!error) reviewProposal(draft);
+    } else {
+      const choice=new FormData(event.target).get('approach');
+      if(!choice) {
+        const message='Choose an approach, or edit your wording. No decision has been made.';
+        setProposalError(message);
+        announce(message);
+        event.target.querySelector('input[name="approach"]').focus();
+        return;
+      }
+      if(!proposal) throw new Error('Review your wording again before confirming.');
+      commit(choice,proposal.text);
+    }
+  } catch(error) {showActionError(error,previousState,event.submitter);}
 });
 document.addEventListener('keydown',event=>{
   const tab=event.target.closest('[role="tab"]');
@@ -172,6 +264,16 @@ if(registry?.registerTool){
     {name:'commit_stakewolf_decision',title:'Commit a Stakewolf decision',description:'Commit an available approach immediately, applying its consequences and recording the decision. Use read_stakewolf_state to get valid choice IDs.',inputSchema:{type:'object',properties:{choiceId:{type:'string'}},required:['choiceId'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:input=>{if(!input||typeof input.choiceId!=='string')throw new Error('Provide a choice ID.');commit(input.choiceId);return result({phase:state.phase,decision:state.history.at(-1)});}},
     {name:'advance_stakewolf_round',title:'Continue Stakewolf',description:'Continue after a committed decision, applying delayed consequences and opening the next round or final debrief.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:false},execute:()=>{closeDialogs();nextRound();return result(snapshot());}}
   ];
-  for(const tool of tools){try{Promise.resolve(registry.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}}
+  for(const tool of tools){
+    if(!tool.annotations.readOnlyHint) {
+      const execute=tool.execute;
+      tool.execute=input=>{
+        const previousState=state;
+        clearActionFeedback();
+        try {return execute(input);} catch(error) {showActionError(error,previousState);throw error;}
+      };
+    }
+    try{Promise.resolve(registry.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}
+  }
   window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
 }
