@@ -55,6 +55,7 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 - [Reviewed scenario rules and reference paths](docs/scenario-rules.md)
 - [Reviewed player journey and interaction requirements](docs/player-experience.md)
 - [October 1 narrative and interaction verification](docs/evidence/session-2026-10-01.md)
+- [October 1 memory, event and reference-path verification](docs/evidence/session-2026-10-01-0600.md)
 - [Agent working instructions](AGENTS.md)
 
 The initial team setup has been cross-reviewed by product, engineering and QA agents. Application implementation and executed gameplay tests are separate work items.
