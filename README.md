@@ -51,6 +51,8 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 - [Live Jira ticket index](docs/backlog.md)
 - [Agent roles, reviews and handoffs](docs/agent-team.md)
 - [Quality plan and release gates](docs/quality-plan.md)
+- [Release-readiness evidence and remaining acceptance](docs/release-readiness.md)
+- [Runnable candidate handoff and next reviewer steps](docs/release-handoff.md)
 - [Prototype assessment and known product gaps](docs/prototype-assessment.md)
 - [Reviewed scenario rules and reference paths](docs/scenario-rules.md)
 - [Reviewed player journey and interaction requirements](docs/player-experience.md)
