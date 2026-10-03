@@ -1,5 +1,5 @@
 import { PEOPLE, ROUNDS } from './scenario.js';
-import { createGame, beginGame, currentRound, askQuestion, decide, advance, interpretDecision, relationshipLabel, getDebrief, getConversationMemory, METRICS } from './engine.js';
+import { createGame, beginGame, currentRound, askQuestion, decide, advance, interpretDecision, relationshipLabel, getDebrief, formatDecisionRecord, getConversationMemory, METRICS } from './engine.js';
 const app = document.querySelector('#app');
 app.innerHTML = `<main id="main" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">A product launch. Four stakeholders. Five decisions that change everything. Step into the room, find the missing context, and make the call.</p><div class="intro-actions"><button class="primary" id="start-game" aria-describedby="session-policy">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div><p id="session-policy" class="fine-print">Progress is not saved. Refreshing or reopening this page starts a new attempt.</p></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
 const introHTML = app.innerHTML;
@@ -47,9 +47,39 @@ function resultHTML() {
   const h=state.history.at(-1);
   return `<section class="round-result"><span class="eyebrow lime">YOUR CALL IS IN</span><h1 id="scene-title" tabindex="-1" style="font-family:var(--serif);font-size:clamp(2.2rem,3.8vw,3.75rem);line-height:1.12;font-weight:400;margin:18px 0">${h.headline}</h1><p class="small-meta">You chose: ${esc(h.title)}</p><p class="result-summary">${h.outcome}</p>${deltaHTML(h.delta)}${h.bonus?`<div class="consequence-note"><strong>Evidence mattered.</strong> ${esc(h.bonus)}</div>`:''}<div class="reaction-grid">${PEOPLE.map(p=>`<article class="reaction">${avatar(p)}<div><strong>${p.name}</strong><p>“${h.reactions[p.id]}”</p></div></article>`).join('')}</div><div class="result-controls"><span class="small-meta">The immediate response is only part of the story.</span><button class="primary" data-action="advance">${state.round===4?'Open your debrief':'Continue to round '+(state.round+2)}</button></div></section>`;
 }
+const evidenceStatusNames = {'authored-fact':'Authored scenario event','attributed-account':'Attributed stakeholder account','unverified-claim':'Unverified claim','confirmed-input':'Confirmed player input','interpretation':'Scenario interpretation'};
+function effectRecordHTML(effects, includeFinal=false) {
+  const rows=[];
+  for(const group of ['metrics','relationships']) for(const key of Object.keys(effects[group].before)) {
+    const effect=effects[group];
+    if(!includeFinal && effect.requested[key]===0 && effect.actual[key]===0) continue;
+    const name=group==='metrics'?metricNames[key]:PEOPLE.find(person=>person.id===key).name+' relationship';
+    const signed=value=>(value>0?'+':'')+value;
+    rows.push('<li>'+esc(name)+': '+effect.before[key]+' → '+effect.after[key]+' (actual '+signed(effect.actual[key])+'; requested '+signed(effect.requested[key])+')</li>');
+  }
+  return rows.length?'<ul class="guide-list">'+rows.join('')+'</ul>':'<p class="fine-print">No signal change in this record.</p>';
+}
 function debriefHTML() {
   const d=getDebrief(state);
-  return `<main id="main" class="debrief"><span class="eyebrow lime">CASE CLOSED · YOUR DECISION TRACE</span><h1 id="scene-title" tabindex="-1">${d.title}</h1><p class="debrief-lead">${d.description}</p>${metricsHTML()}<div class="button-row" style="margin-top:26px"><button class="primary" data-action="replay">Play another attempt</button><button class="secondary" data-action="download">Download decision record</button></div><div class="debrief-layout"><div><section class="debrief-section"><span class="eyebrow">WHAT YOUR CHOICES REVEAL</span><h2 style="margin-top:12px">A pattern, with receipts.</h2>${d.reflections.map(r=>`<div class="reflection"><h3>${r.title}</h3><p>${r.text}</p></div>`).join('')}<p class="fine-print">These observations describe this attempt. They are not a personality profile, hiring score, or validated assessment.</p></section><section class="debrief-section"><h2>The five decisions</h2>${journalHTML()}</section></div><aside><section class="debrief-section"><span class="eyebrow">THE AGENDAS BEHIND THE ARGUMENTS</span><h2 style="margin-top:12px">What they weren’t saying.</h2>${PEOPLE.map(p=>`<article class="agenda-card"><div class="agenda-person">${avatar(p)}<span class="cast-name"><strong>${p.name}</strong><small>${p.role}</small></span></div><span class="agenda-label">PRIVATE MOTIVATION</span><p>${p.agenda}</p><p><strong>On a replay:</strong> ${p.tell}</p><div class="summary-stat"><span>Final relationship</span><strong>${relationshipLabel(state.relationships[p.id])}</strong></div></article>`).join('')}</section></aside></div><footer class="game-footer"><span>STAKEWOLF · THE LAUNCH ROOM</span><span>Fictional scenario · Authored rules · Your reasoning stays on this device</span></footer></main>`;
+  const links=ids=>'<ul class="source-note">'+ids.map(id=>{
+    const index=d.citations.findIndex(item=>item.eventId===id), citation=d.citations[index];
+    return '<li><a href="#debrief-source-'+index+'" data-citation="debrief-source-'+index+'">'+esc(citation.label)+'</a></li>';
+  }).join('')+'</ul>';
+  const sources=ids=>'<details><summary>Supporting records ('+ids.length+')</summary>'+links(ids)+'</details>';
+  const record=decision=>'<article class="journal-entry"><span class="eyebrow">ROUND '+decision.round+' · '+esc(ROUNDS[decision.round-1].label)+'</span><h3>'+esc(decision.title)+'</h3>'+
+    (decision.inputMode==='typed'?'<p><strong>Your recorded wording</strong></p><blockquote class="quote-user">'+esc(decision.wording)+'</blockquote>':'')+
+    '<p><strong>Confirmed approach:</strong> '+esc(decision.title)+'</p><p><strong>Authored response:</strong> '+esc(decision.outcome)+'</p>'+effectRecordHTML(decision.effects)+
+    (decision.bonus?.eligible?'<p class="consequence-note">Evidence bonus: eligible; requested '+decision.bonus.requested+' '+esc(metricNames[decision.bonus.metric].toLowerCase())+' points. Additional points after caps: '+decision.bonus.marginalBenefit+'.</p>':'')+
+    '<details><summary>Stakeholder reactions</summary>'+PEOPLE.map(person=>'<p><strong>'+esc(person.name)+':</strong> “'+esc(decision.reactions[person.id])+'”</p>').join('')+'</details>'+
+    (decision.followup?'<p><strong>Later:</strong> '+esc(decision.followup.text)+'</p>'+effectRecordHTML(decision.followup.effects):'')+sources(decision.sourceEventIds)+'</article>';
+  return '<main id="main" class="debrief"><span class="eyebrow lime">CASE CLOSED · SCENARIO INTERPRETATION</span><h1 id="scene-title" tabindex="-1">'+esc(d.title)+'</h1><p class="debrief-lead">'+esc(d.description)+'</p><p><strong>Matched rubric:</strong> '+esc(d.outcome.predicate)+'. The first matching rule applies.</p><p><strong>Consider next:</strong> '+esc(d.outcome.prompt)+'</p>'+sources(d.outcome.sourceEventIds)+metricsHTML()+
+    '<div class="button-row" style="margin-top:26px"><button class="primary" data-action="replay">Play another attempt</button><button class="secondary" data-action="download">Download decision record</button></div><p class="fine-print">The download is a record of this attempt. It does not save progress for later play.</p><div class="debrief-layout"><div><section class="debrief-section"><span class="eyebrow">RECORDED FACTS AND REFLECTIONS</span><h2 style="margin-top:12px">Your attempt, with sources.</h2>'+
+    d.reflections.map(item=>'<article class="reflection"><h3>'+esc(item.title)+'</h3><p><strong>Recorded facts:</strong> '+esc(item.fact)+'</p><p><strong>Scenario interpretation:</strong> '+esc(item.interpretation)+'</p><p><strong>Consider next:</strong> '+esc(item.prompt)+'</p>'+sources(item.sourceEventIds)+'</article>').join('')+
+    '<p class="fine-print">These observations describe this attempt. They are not a personality profile, hiring score, or validated assessment.</p></section><section class="debrief-section"><h2>The five decisions</h2>'+d.decisions.map(record).join('')+'</section></div><aside><section class="debrief-section"><span class="eyebrow">COMPLETION REVEAL</span><h2 style="margin-top:12px">The authored motives.</h2><p class="fine-print">These motives are revealed after completion. They are not conversations you collected.</p>'+
+    d.agendas.map(agenda=>'<article class="agenda-card"><div class="agenda-person">'+avatar(PEOPLE.find(person=>person.id===agenda.personId))+'<span class="cast-name"><strong>'+esc(agenda.name)+'</strong><small>'+esc(agenda.role)+'</small></span></div><span class="agenda-label">AUTHORED MOTIVE</span><p>'+esc(agenda.text)+'</p><p><strong>Consider next:</strong> '+esc(agenda.prompt)+'</p><p><strong>Final relationship game signal:</strong> '+agenda.relationship+'/100 · '+esc(relationshipLabel(agenda.relationship))+'</p>'+sources(agenda.sourceEventIds)+'</article>').join('')+
+    '</section></aside></div><section class="debrief-section" aria-labelledby="sources-title"><h2 id="sources-title">Supporting records</h2><p class="fine-print">Open a record to inspect its source and effects. A stakeholder account can be incomplete; an unverified claim is not established fact. Only records available to you are shown.</p>'+
+    d.citations.map((citation,index)=>'<details class="evidence-card" id="debrief-source-'+index+'"><summary>'+esc(citation.label)+'</summary><p><strong>Source status:</strong> '+esc(evidenceStatusNames[citation.status]||citation.status)+'</p><p class="quote-user">'+esc(citation.text)+'</p>'+effectRecordHTML(citation.effects,citation.type==='completion')+(citation.sourceEventIds.length?'<p><strong>Earlier supporting records</strong></p>'+links(citation.sourceEventIds):'')+'</details>').join('')+
+    '</section><footer class="game-footer"><span>STAKEWOLF · THE LAUNCH ROOM</span><span>Fictional scenario · Authored rules · Local attempt record</span></footer></main>';
 }
 function render(focus=false) {
   if(focus) screenVersion++;
@@ -103,25 +133,20 @@ function reviewProposal(text) {
   showDialog(document.querySelector('#proposal-dialog'), ()=>document.querySelector('#custom-form [type="submit"]'));
 }
 function downloadRecord() {
-  const d=getDebrief(state);
-  const lines=['STAKEWOLF — THE LAUNCH ROOM','Decision record','',d.title,d.description,'',...METRICS.map(k=>metricNames[k]+': '+state.metrics[k]+'/100'),'','Game signals use authored rules; they are not an assessment of ability.',''];
-  for(const h of state.history) {
-    lines.push('ROUND '+(h.round+1)+' — '+ROUNDS[h.round].label,'Decision: '+h.title);
-    if(h.writtenDecision)lines.push('Your words: '+h.writtenDecision);
-    lines.push(h.outcome,'Immediate effects: '+METRICS.map(k=>metricNames[k]+' '+(h.delta[k]>0?'+':'')+h.delta[k]).join(', '));
-    if(h.bonus)lines.push('Evidence mattered: '+h.bonus);
-    for(const id of h.heard){const e=state.evidence.find(item=>item.id===id);lines.push('Heard from '+PEOPLE.find(p=>p.id===e.person).name+': '+e.text);}
-    if(h.followup)lines.push('Later: '+h.followup.text);
-    lines.push('');
-  }
-  lines.push('PRIVATE AGENDAS',...PEOPLE.flatMap(p=>[p.name+': '+p.agenda,'']),'This record was generated locally.');
-  const url=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'}));
+  const text=formatDecisionRecord(state);
+  const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));
   const link=document.createElement('a');link.href=url;link.download='stakewolf-decision-record.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  announce('Your decision record has been downloaded.');
+  announce('Your browser was asked to download the decision record.');
 }
 document.querySelector('#how-button').addEventListener('click',()=>showDialog(document.querySelector('#help-dialog'), document.querySelector('#how-button')));
 document.querySelector('#confirm-restart').addEventListener('click',()=>{closeDialogs();state=createGame();resetUI();render(true);announce('A fresh attempt is ready.');});
 document.addEventListener('click',event=>{
+  const citation=event.target.closest('a[data-citation]');
+  if(citation && event.button===0 && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+    const target=document.getElementById(citation.dataset.citation);
+    if(target) {event.preventDefault();target.open=true;target.querySelector('summary').focus();target.scrollIntoView({block:'start',behavior:'instant'});}
+    return;
+  }
   const button=event.target.closest('button');if(!button||button.disabled)return;
   try {
     if(button.hasAttribute('data-close-dialog')){

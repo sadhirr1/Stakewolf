@@ -1066,10 +1066,10 @@ export const ROUNDS = [
         },
         {
           "id": "theo-reflection",
-          "question": "Did we overfit to Atlas?",
-          "answer": "At times, yes. I know their team well, so their urgency feels like everyone’s. Next time I want the wider sample in the room earlier.",
+          "question": "How can your familiarity with Atlas affect your advice?",
+          "answer": "I know Atlas’s team well, so their urgency can feel like everyone’s. That is a bias in my advice, not proof that your decision overfit. Next time I want the wider sample in the room earlier.",
           "title": "Familiarity shaped the signal",
-          "evidence": "Theo recognizes that closeness to Atlas sometimes narrowed his view of demand.",
+          "evidence": "Theo describes how familiarity with Atlas can narrow his view of demand.",
           "kind": "Stakeholder reflection"
         }
       ]

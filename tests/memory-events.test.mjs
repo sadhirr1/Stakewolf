@@ -302,5 +302,5 @@ test('bonus provenance distinguishes positive marginal benefit from a zero-effec
   assert.deepEqual(shared.effects.metrics.requested, { delivery: -8, trust: 11, quality: 8 });
   assert.deepEqual(shared.effects.metrics.actual, { delivery: -8, trust: 4, quality: 0 });
   assert.deepEqual(completed.metrics, { delivery: 41, trust: 100, quality: 100 });
-  assert.match(getDebrief(completed).reflections.find(row => /listening changed/.test(row.title)).text, /4 decisions used/);
+  assert.match(getDebrief(completed).reflections.find(row => row.id === 'evidence-bonus').text, /4 decisions used/);
 });
