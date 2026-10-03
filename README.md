@@ -4,7 +4,7 @@ A product management simulation inspired by Werewolf: stakeholders have competin
 
 ## Project status
 
-This branch contains a reviewed combined proposal with four stakeholders, five rounds, prepared and typed decisions, conditional stakeholder memory, delayed consequences and a debrief linked to actual events. It runs locally without dependencies or an account. The [October 3 combined record](docs/evidence/session-2026-10-03-1000.md) and [independent QA record](docs/evidence/session-2026-10-03-1000-qa.md) identify executed checks and their limits. Integration approval and full release acceptance remain tracked in Jira.
+This branch contains a reviewed combined proposal with four stakeholders, five rounds, prepared and typed decisions, conditional stakeholder memory, delayed consequences and a debrief linked to actual events. It runs locally without dependencies or an account. The [October 3 combined record](docs/evidence/session-2026-10-03-1000.md) identifies integration checks. The subsequent [fresh setup and keyboard journey](docs/evidence/session-2026-10-03-1100.md) and [independent fresh-checkout QA](docs/evidence/session-2026-10-03-1100-qa.md) record 99 passing tests and an actual keyboard-only five-round path. Actual 200% zoom, delivered download and broader acceptance remain open. Integration approval and full release acceptance remain tracked in Jira.
 
 - [Release epic — SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5)
 - [GitHub repository](https://github.com/sadhirr1/Stakewolf)
