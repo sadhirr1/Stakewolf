@@ -1,17 +1,17 @@
 # Stakewolf candidate handoff
 
-Prepared October 3, 2026 by Development for [SCRUM-17](https://sadhirr1.atlassian.net/browse/SCRUM-17). Product, QA and the coordinator independently review this document. This is a runnable candidate handoff, **not an accepted release, merge or deployment**. The target remains October 13 at 8:48 p.m. America/Los_Angeles, subject to the [quality gates](quality-plan.md#defect-severity-and-release-rules).
+Prepared October 3, 2026 by Development for [SCRUM-17](https://sadhirr1.atlassian.net/browse/SCRUM-17); Product updated the candidate and supported startup clauses after the 13:00 correction. QA and the coordinator independently review those updates. This is a runnable candidate handoff, **not an accepted release, merge or deployment**. The target remains October 13 at 8:48 p.m. America/Los_Angeles, subject to the [quality gates](quality-plan.md#defect-severity-and-release-rules).
 
 ## Candidate to review
 
 | Item | Identity and meaning |
 | --- | --- |
-| Application candidate | [`387d6fbab5d86871912cf2f1f12378f8ddabd41c`](https://github.com/sadhirr1/Stakewolf/commit/387d6fbab5d86871912cf2f1f12378f8ddabd41c): combined memory/debrief, visual, session and typed-decision increments. |
-| Published documentation checkpoint | [`0cb12126dd2256bb417cfa65fb91bc8632cd5c4b`](https://github.com/sadhirr1/Stakewolf/commit/0cb12126dd2256bb417cfa65fb91bc8632cd5c4b): adds the fresh setup and keyboard evidence; the five application assets are unchanged from the candidate. This handoff is subsequent preparation, not part of that historical checkpoint. |
+| Current application/source checkpoint | [`22de1c4927d70054a1ce4ee7cffbeab4f34099de`](https://github.com/sadhirr1/Stakewolf/commit/22de1c4927d70054a1ce4ee7cffbeab4f34099de): combined feature candidate plus reviewed static recovery/bootstrap, narrow server allowlist and startup tests/check wiring. This is the pin used below. |
+| Historical gameplay/fresh evidence | [`387d6fbab5d86871912cf2f1f12378f8ddabd41c`](https://github.com/sadhirr1/Stakewolf/commit/387d6fbab5d86871912cf2f1f12378f8ddabd41c) is the preceding combined application; [`0cb12126dd2256bb417cfa65fb91bc8632cd5c4b`](https://github.com/sadhirr1/Stakewolf/commit/0cb12126dd2256bb417cfa65fb91bc8632cd5c4b) adds fresh setup and keyboard evidence. Those complete-path/fresh-checkout executions predate bootstrap and remain attached to their original source. |
 | Review proposal | Draft [PR #8](https://github.com/sadhirr1/Stakewolf/pull/8), branch `feature/SCRUM-16-combined-candidate`. The coordinator verified it open and unmerged at the start of this session. Prior PRs and main have not been replaced by this document. |
 | Live delivery status | [Release epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5), [validation SCRUM-16](https://sadhirr1.atlassian.net/browse/SCRUM-16), [handoff SCRUM-17](https://sadhirr1.atlassian.net/browse/SCRUM-17). The [readiness ledger](release-readiness.md) maps every required acceptance clause and remaining owner/action. |
 
-The [fresh-checkout QA record](evidence/session-2026-10-03-1100-qa.md) records all five SHA-256 identities. Its committed `app.js` hash `286BEB49…` differs from the earlier working copy `F18DCEE3…` solely through two CRLF-to-LF conversions, independently checked. Use the committed candidate identity when recording a new check, and identify any later source change explicitly.
+The [startup QA record](evidence/session-2026-10-03-1300-qa.md) records the corrected source/test SHA-256 identities and reconciliation with checkpoint `22de1c49…`. Gameplay app/engine/scenario/style content remains unchanged; HTML and the external bootstrap add recovery, and the server allows that one additional asset. The committed `app.js` hash `286BEB49…` differs from the working copy `F18DCEE3…` solely through the previously verified two CRLF-to-LF conversions. Use the pinned candidate identity when recording a new check, and identify any later source change explicitly.
 
 ## Obtain and run it locally
 
@@ -20,7 +20,7 @@ Use Node.js **24.x**; the recorded Windows environment used **24.19.0**. Git is 
 ```sh
 git clone --branch feature/SCRUM-16-combined-candidate --single-branch https://github.com/sadhirr1/Stakewolf.git Stakewolf-candidate
 cd Stakewolf-candidate
-git checkout --detach 0cb12126dd2256bb417cfa65fb91bc8632cd5c4b
+git checkout --detach 22de1c4927d70054a1ce4ee7cffbeab4f34099de
 node --version
 node server.mjs
 ```
@@ -31,20 +31,22 @@ For a new checkout, the documented checks are:
 
 ```sh
 node --check server.mjs
+node --check public/bootstrap.js
 node --check public/app.js
 node --check public/engine.js
 node --check public/scenario.js
 node --test
 ```
 
-Optional npm shortcuts are in [package.json](../package.json); npm is not required. These commands are instructions for the next executor, not claims of a new run during this documentation session. The prior fresh execution already passed; no application or test changes were made for this handoff.
+Optional npm shortcuts are in [package.json](../package.json); npm is not required. These commands are instructions for the next executor. The current source passed five syntax checks and 109 tests in the existing working checkout; the earlier clean-clone 99-test execution remains historical. A fresh-checkout run of the corrected bootstrap is not claimed. Updating this handoff itself does not change application or tests.
 
 ## Where the behavior lives
 
 | Entry point | Responsibility |
 | --- | --- |
-| [server.mjs](../server.mjs) | Dependency-free local server; serves only the five known public assets. |
-| [public/index.html](../public/index.html) | Page shell, application mount, skip link, native dialogs and module entry. |
+| [server.mjs](../server.mjs) | Dependency-free local server; serves only the six known public assets with unchanged restrictive CSP. |
+| [public/index.html](../public/index.html) | Page shell, static focusable recovery main/native reload/no-script guidance, skip link, native dialogs and bootstrap entry. |
+| [public/bootstrap.js](../public/bootstrap.js) | Awaits application initialization, validates usable intro, restores visible recovery after startup failure and enables Help only when ready. |
 | [public/style.css](../public/style.css) | Dark dossier/serif/lime visual system, readable controls, visible focus and selection, responsive and reduced-motion rules. |
 | [public/scenario.js](../public/scenario.js) | Four stakeholders, five rounds, authored dialogue, choices, numerical effects, delayed rules and memory copy. |
 | [public/engine.js](../public/engine.js) | Deterministic state transitions, event/knowledge provenance, conservative intent suggestions, debrief model and text-record formatter. |
@@ -69,6 +71,7 @@ Optional npm shortcuts are in [package.json](../package.json); npm is not requir
 | [Keyboard journey](evidence/session-2026-10-03-1100.md), [151 retained action/focus entries](evidence/keyboard-trail-2026-10-03-1100.json) | Coordinator-executed five-round path using current-focus native keys, independently reviewed by Development, QA and Product. Root authored earlier application patches; this is not a wholly separate application author's browser acceptance. |
 | [CI run 37147817198](https://github.com/sadhirr1/Stakewolf/actions/runs/37147817198) | Coordinator verified completed/success for publication checkpoint `0cb12126…`, both Ubuntu and Windows Node 24 syntax/test jobs. This historical run does not establish the status of a later publication. Workflow presence or passing CI does not establish branch protection or release acceptance. |
 | [12:00-slot QA attempt](evidence/session-2026-10-03-1200-qa.md) | QA's initial inventory returned `apps:[]` and `browsers:[]`. No independent UI actions or new tests ran. The missing worker capability does not invalidate earlier passes or satisfy the remaining browser gate. |
+| [Startup correction](evidence/session-2026-10-03-1300.md), [independent QA](evidence/session-2026-10-03-1300-qa.md), [Product review](evidence/session-2026-10-03-1300-review.md) | Preserves the approximately 13:07 controlled missing-app S2 failure and its corrected/retested recovery. QA independently ran **five syntax checks and 109/109 tests at 13:10:02 PDT**, 1198.0116 ms. Coordinator checked missing app/dependency, synthetic partial initializer, absent bootstrap and normal startup around 13:11–13:13; native skip/reload/Start/Help plus a locator-selected R1 launch/refresh passed within that scope. Native JavaScript-disabled rendering remains unverified. |
 
 Source/model reviews and formatter tests support their named clauses; they do not substitute for actual zoom, browser interaction or file receipt. The [readiness ledger](release-readiness.md) is the detailed acceptance map.
 
@@ -90,7 +93,7 @@ Coordination should assign a human reviewer or worker who did not author the app
 4. Request the decision record from the debrief. Confirm a file was actually received, open it, and compare its five choices, final signals, counts and cited effects with the visible debrief. Retain a sanitized copy or evidence summary. If the browser/tool cannot expose delivery, record that limitation rather than a pass. Replay and verify a clean intro and Start focus.
 5. In a **separate labelled attempt**, cover remaining interaction variants: use both conversations and close an exhausted dialog; cancel and confirm restart from the available triggers; submit repeated Enter/double-click and verify only one decision/advance; enter a draft, refresh and reopen, and verify a clean intro with no old draft. Keep this run separate from the zero-question arithmetic above.
 6. Set and visibly verify actual **200% browser zoom**. At the agreed desktop and narrow layouts, inspect briefing/stakeholders, prepared choices, a long typed draft, its validation and confirmation dialogs, result, debrief and an expanded source. Required controls and text must remain readable and operable without overlap or required horizontal scrolling. Record the browser's zoom setting and viewport; resizing or device-pixel ratio alone is not zoom evidence. Existing 390×844/desktop captures remain useful, bounded evidence.
-7. In a controlled separate check, prevent the initial application module from loading, then inspect a JavaScript-disabled load. The [player experience contract](player-experience.md#empty-error-clarification-and-loading-states) requires understandable initial-load failure and no-script fallback. Current source has an empty application container and static module script, with no implemented load-error/no-script fallback. This is a source-identified implementation gap; a failed-load browser reproduction and severity assessment have not yet been executed. Development should implement the assigned correction and QA should verify that failure gives a visible recovery message and a normal load still starts cleanly.
+7. Verify the remaining **native JavaScript-disabled load** on this candidate: visibly disable execution in a supported browser, reload, inspect enable-JavaScript/fresh-reload/no-save guidance and the keyboard skip/native reload path, then restore execution and verify normal startup. The [player experience contract](player-experience.md#empty-error-clarification-and-loading-states) requires that behavior. The former missing-module defect was reproduced as S2 acceptance-blocking and corrected/retested in the 13:00 record; useful static fallback also remained when bootstrap was deliberately omitted with JavaScript **enabled**. That result and semantic noscript tests do not substitute for this disabled-browser check. Inspect narrow recovery layout as well. Do not repeat unaffected full gameplay solely to rename the prior pass; investigate and retest any new failure concretely.
 
 Retain steps, results and captured states in a durable `docs/evidence` record or Jira attachment, identifying the executor separately from the reviewers. Call a path keyboard-only only if it actually used current-focus keyboard navigation throughout. The existing full keyboard run need not be repeated solely for a new label. Any new defect should include its trigger, expected/actual behavior, severity, owner and retest plan; test only the affected behavior and justified regressions after a correction.
 
@@ -100,9 +103,9 @@ Retain steps, results and captured states in a durable `docs/evidence` record or
 | --- | --- |
 | Coordinator + QA / SCRUM-16 | Arrange the independent browser executor and supported zoom/download access. Execute and review the missing clauses above. Current worker inventory is a capability blocker; root's browser cannot be relabelled as independent QA execution. |
 | Product + QA + UIUX / SCRUM-16 | Reconcile the resulting evidence against the readiness ledger, including remaining responsive/dialog/error states. Broader screen-reader/device/cross-browser observations remain unverified; do not infer them from one browser path. |
-| Development + QA / SCRUM-12 and SCRUM-16 | Track and reproduce the source-identified initial-module/no-script fallback gap above, implement the required visible fallback in an assigned increment, then independently verify failed and normal loads. This document does not make that source change or assign an unobserved severity. Other defects need concrete reproduction and targeted retesting. |
+| QA + UIUX / SCRUM-12 and SCRUM-16 | Execute native JavaScript-disabled rendering and narrow recovery checks on the pinned corrected source. Missing-app/dependency/partial-initializer recovery and normal R1/refresh have bounded execution evidence; the reproduced S2 condition is corrected/retested without accepting every startup clause. Development investigates any newly reproduced defect, with targeted retesting. |
 | Coordinator + Product + QA / SCRUM-17 | Record all required acceptance results and open defects. Apply the quality plan: no open S0/S1 or acceptance-blocking S2; remaining S3 issues need a linked owner and recorded release decision. Verify CI against the exact proposed publication and retain the run link. |
 | Owner + coordinator / SCRUM-17 | Review the concrete candidate and decide the requested merge/integration. Earlier automatic approval review rejected merging without explicit owner authorization; that authorization remains pending. Preparing and reviewing this package can continue. No prior PR is closed, main merged, or release accepted by this document. |
 | Owner + coordinator / SCRUM-17 | Decide the delivery destination if public website access is wanted, then authorize that deployment separately. Loopback startup and a public source repository do not publish a playable website. No hosting service or cost has been selected. |
 
-The release date does not waive these gates or extend itself. This handoff is submitted for independent Product, QA and coordinator review; findings and final review status are recorded in the [12:00-slot checkpoint](evidence/session-2026-10-03-1200.md). No new application, test, server or Git operation was performed by Development to prepare it.
+The release date does not waive these gates or extend itself. The original Development handoff and its Product/QA/coordinator reviews are retained in the [12:00-slot checkpoint](evidence/session-2026-10-03-1200.md). The 13:00 Product update pins the corrected source and reconciles only supported clauses, with independent QA/coordinator review recorded in the [startup checkpoint](evidence/session-2026-10-03-1300.md). Authorship of this documentation update is separate from Development's startup implementation and QA's execution; no new full playthrough, release or deployment is implied.
