@@ -4,10 +4,12 @@ A product management simulation inspired by Werewolf: stakeholders have competin
 
 ## Project status
 
-This repository contains an imported browser prototype and a dependency-free local development baseline. The prototype has four stakeholders, five rounds, prepared and typed decisions, scripted consequences, and a debrief. It is a starting point for the release work, not an accepted final game. Product review, scenario improvements, browser validation, and release acceptance remain tracked in Jira.
+This branch contains a reviewed combined proposal with four stakeholders, five rounds, prepared and typed decisions, conditional stakeholder memory, delayed consequences and a debrief linked to actual events. It runs locally without dependencies or an account. The [October 3 combined record](docs/evidence/session-2026-10-03-1000.md) identifies integration checks. The subsequent [fresh setup and keyboard journey](docs/evidence/session-2026-10-03-1100.md) and [independent fresh-checkout QA](docs/evidence/session-2026-10-03-1100-qa.md) record 99 passing tests and an actual keyboard-only five-round path. Actual 200% zoom, delivered download and broader acceptance remain open. Integration approval and full release acceptance remain tracked in Jira.
 
 - [Release epic — SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5)
 - [GitHub repository](https://github.com/sadhirr1/Stakewolf)
+
+The [October 3 startup recovery increment](docs/evidence/session-2026-10-03-1300.md) adds a usable failed-load reload screen and static no-script guidance. [Independent QA](docs/evidence/session-2026-10-03-1300-qa.md) passed 109 tests and five syntax checks; controlled missing-module, partial initialization and normal startup browser checks were independently reviewed. Actual JavaScript-disabled browser rendering remains unverified.
 
 The current release target is October 13, 2026, using the existing two-week Jira sprint. Progress and completion claims must be supported by reviewed artifacts and test evidence.
 
@@ -19,7 +21,7 @@ Use Node.js 24.x; development was checked with Node.js 24.19.0. No package insta
 node server.mjs
 ```
 
-Open [Stakewolf on this computer](http://127.0.0.1:4173). Stop the server with Ctrl+C. If that port is occupied, choose another with `node server.mjs 4174` and open the printed address. The server binds only to this computer's loopback address and serves the five known game assets from `public/`.
+Open [Stakewolf on this computer](http://127.0.0.1:4173). Stop the server with Ctrl+C. If that port is occupied, choose another with `node server.mjs 4174` and open the printed address. The server binds only to this computer's loopback address and serves the six known game assets from `public/`.
 
 Progress stays in the current page session. Refreshing, reopening, or choosing restart starts a clean attempt. Written decisions are matched to explicit authored approaches for the player to review and confirm; no live AI service is called. Private agendas are concealed during ordinary play but remain present in the downloadable client source.
 
@@ -35,6 +37,7 @@ Check JavaScript syntax when changing the application or server:
 
 ```sh
 node --check server.mjs
+node --check public/bootstrap.js
 node --check public/app.js
 node --check public/engine.js
 node --check public/scenario.js
@@ -42,7 +45,7 @@ node --check public/scenario.js
 
 If npm is available, `npm start`, `npm test`, and `npm run check` are optional shortcuts; the direct Node commands work without npm. The [baseline workflow](.github/workflows/checks.yml) runs syntax checks and tests on Windows and Linux when triggered in GitHub. Its presence does not claim that a remote run has passed or branch protection is configured. Automated baseline checks do not establish full product, accessibility, or release acceptance.
 
-The authored browser files live in `public/`: `scenario.js` supplies scenario data, `engine.js` applies deterministic state transitions, and `app.js` renders the interface. `index.html` and `style.css` provide the page structure and styling. They were imported as an unchanged snapshot from the earlier prototype, then a missing closing tag in `app.js` was repaired after browser review found compressed game content. The original prototype, its hosting configuration, and its other files were left untouched. Make future changes in this repository and link them to the relevant Jira ticket.
+The authored browser files live in `public/`: `scenario.js` supplies scenario data, `engine.js` applies deterministic state transitions, and `app.js` renders the interface. `bootstrap.js` loads the game and reports startup failure; `index.html` provides recovery before scripts run, with guidance when JavaScript is disabled. `style.css` provides styling. The initial assets were imported from the earlier prototype, then a missing closing tag in `app.js` was repaired after browser review found compressed game content. The original prototype, its hosting configuration, and its other files were left untouched. Make future changes in this repository and link them to the relevant Jira ticket.
 
 ## Delivery documents
 
@@ -51,10 +54,18 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 - [Live Jira ticket index](docs/backlog.md)
 - [Agent roles, reviews and handoffs](docs/agent-team.md)
 - [Quality plan and release gates](docs/quality-plan.md)
+- [Release-readiness evidence and remaining acceptance](docs/release-readiness.md)
+- [Runnable candidate handoff and next reviewer steps](docs/release-handoff.md)
 - [Prototype assessment and known product gaps](docs/prototype-assessment.md)
 - [Reviewed scenario rules and reference paths](docs/scenario-rules.md)
 - [Reviewed player journey and interaction requirements](docs/player-experience.md)
 - [October 1 narrative and interaction verification](docs/evidence/session-2026-10-01.md)
+- [October 1 memory, event and reference-path verification](docs/evidence/session-2026-10-01-0600.md)
+- [Typed-decision contract](docs/typed-decision-contract.md)
+- [Event-grounded debrief contract](docs/debrief-contract.md)
+- [Visual system](docs/visual-system.md)
+- [Combined gameplay-equivalence contract](docs/integration-contract.md)
+- [October 3 combined verification and retained captures](docs/evidence/session-2026-10-03-1000.md)
 - [Agent working instructions](AGENTS.md)
 
 The initial team setup has been cross-reviewed by product, engineering and QA agents. Application implementation and executed gameplay tests are separate work items.

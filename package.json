@@ -10,6 +10,6 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/engine.js && node --check public/scenario.js && node --test"
+    "check": "node --check server.mjs && node --check public/bootstrap.js && node --check public/app.js && node --check public/engine.js && node --check public/scenario.js && node --test"
   }
 }
