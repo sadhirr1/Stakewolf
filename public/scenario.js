@@ -1066,13 +1066,60 @@ export const ROUNDS = [
         },
         {
           "id": "theo-reflection",
-          "question": "Did we overfit to Atlas?",
-          "answer": "At times, yes. I know their team well, so their urgency feels like everyone’s. Next time I want the wider sample in the room earlier.",
+          "question": "How can your familiarity with Atlas affect your advice?",
+          "answer": "I know Atlas’s team well, so their urgency can feel like everyone’s. That is a bias in my advice, not proof that your decision overfit. Next time I want the wider sample in the room earlier.",
           "title": "Familiarity shaped the signal",
-          "evidence": "Theo recognizes that closeness to Atlas sometimes narrowed his view of demand.",
+          "evidence": "Theo describes how familiarity with Atlas can narrow his view of demand.",
           "kind": "Stakeholder reflection"
         }
       ]
     }
   }
+];
+
+// Authored rule metadata. These records add provenance, not new score tuning.
+export const RULES_VERSION = 'launch-room-rules-v1';
+export const DELAY_RULES = {
+  promise: {
+    pilot: { delta: {quality:3}, audience:['ishan','theo'], text:'Your small pilot brings back its first useful failure report. The review gate catches it before a summary reaches a customer.' },
+    launch: { delta: {trust:-4,quality:-2}, audience:['mara','ishan','leah','theo'], text:'Your public-launch commitment means the retention surprise reaches more teams. Support escalates it before the next invitation goes out.' },
+    delay: { delta: {delivery:4,quality:3}, audience:['ishan'], text:'The time you bought lets Engineering reproduce the long-meeting defect. The campaign is paused, but the review now has a concrete target.' },
+  },
+  consent: {
+    explicit: { delta: {trust:3}, audience:['leah','theo'], text:'The explicit consent notice gives Support a clear answer when the next customer asks about recordings.' },
+    quiet: { delta: {trust:-6}, audience:['leah','theo'], text:'The customer notices the changed default and asks why no one explained the earlier recordings. Your quiet fix has become a trust question.' },
+    exception: { delta: {quality:-2}, audience:['ishan','leah'], text:'Engineering has started maintaining Atlas’s separate retention policy. That exception now consumes review time.' },
+  },
+  rumor: {
+    open: { delta: {trust:2,quality:3}, audience:['mara','ishan','leah','theo'], text:'After the open correction, an engineer posts a blocker early enough to fix it. The room is sharing inconvenient information again.' },
+    broker: { delta: {trust:1}, audience:['mara','ishan','leah','theo'], text:'The joint leadership update reduces speculation, though Support still asks to see the decision record.' },
+    ignore: { delta: {trust:-3,quality:-5}, audience:['ishan'], text:'A defect reported privately did not reach the launch checklist. The shared channel is quieter, but the risk has grown.' },
+  },
+  scope: {
+    core: { delta: {quality:5}, audience:['ishan','theo'], text:'The shared action-item fix passes its review. Atlas is still waiting on a contract, but the core experience is stronger for every team.' },
+    custom: { delta: {delivery:4,quality:-3}, audience:['mara','ishan','theo'], text:'Atlas confirms the conditional commitment. The custom branch brings a commercial signal and another path to maintain.' },
+    both: { delta: {delivery:-6,quality:-4}, audience:['mara','ishan','theo'], text:'Both workstreams reach the same review bottleneck. One slips, and the other goes into the review with incomplete validation.' },
+  },
+};
+export const MEMORY_RULES = [
+  {ruleId:'memory:mara:promise',personId:'mara',round:2,originRound:1,text:{
+    pilot:'You kept a limited opening rather than the broad launch.',
+    launch:'You kept the public date; Growth is carrying that commitment.',
+    delay:'You moved the launch date; I need a revised commitment.',
+  }},
+  {ruleId:'memory:ishan:promise',personId:'ishan',round:2,originRound:1,text:{
+    pilot:'You chose containment; the review gate now matters.',
+    launch:'You kept the public launch despite the reliability risk.',
+    delay:'You gave us review time; the immediate fix and the rewrite remain separate.',
+  }},
+  {ruleId:'memory:leah:consent',personId:'leah',round:3,originRound:2,text:{
+    explicit:'You chose explicit consent, so the customer notice can name the policy.',
+    quiet:'You changed the default without explaining the earlier recordings.',
+    exception:'You chose a separate Atlas policy; it needs an owner.',
+  }},
+  {ruleId:'memory:theo:scope',personId:'theo',round:5,originRound:4,requiresDelayed:true,text:{
+    core:'You prioritized the shared core; Atlas still needs a follow-up.',
+    custom:"You prioritized Atlas's workflow; its commitment remains conditional.",
+    both:'You split the work; the review bottleneck has affected the plan.',
+  }},
 ];
