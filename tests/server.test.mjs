@@ -34,10 +34,11 @@ function read(port, path, method = 'GET') {
   });
 }
 
-test('the local server serves all five game assets with browser-usable content types', async t => {
+test('the local server serves all six game assets with browser-usable content types', async t => {
   const port = await listen(t);
   const files = [
     ['index.html', 'text/html'],
+    ['bootstrap.js', 'text/javascript'],
     ['app.js', 'text/javascript'],
     ['engine.js', 'text/javascript'],
     ['scenario.js', 'text/javascript'],
@@ -54,6 +55,25 @@ test('the local server serves all five game assets with browser-usable content t
   const index = await read(port, '/');
   assert.equal(index.status, 200);
   assert.deepEqual(index.body, await readFile(new URL('../public/index.html', import.meta.url)));
+});
+
+test('startup assets retain a same-origin script policy without network or inline-script exceptions', async t => {
+  const port = await listen(t);
+  for (const path of ['/', '/bootstrap.js', '/app.js']) {
+    const response = await read(port, path);
+    assert.equal(response.status, 200, path);
+    const policy = Object.fromEntries(response.headers['content-security-policy'].split(';')
+      .map(part => part.trim().split(/\s+/)).filter(([name]) => name)
+      .map(([name, ...sources]) => [name, sources]));
+    assert.deepEqual(policy['default-src'], ["'self'"]);
+    assert.deepEqual(policy['script-src'], ["'self'"]);
+    assert.deepEqual(policy['connect-src'], ["'none'"]);
+    assert.deepEqual(policy['object-src'], ["'none'"]);
+    assert.deepEqual(policy['base-uri'], ["'none'"]);
+    assert.deepEqual(policy['frame-ancestors'], ["'none'"]);
+    assert.deepEqual(policy['form-action'], ["'none'"]);
+  }
+  assert.equal((await read(port, '/unlisted-startup-helper.js')).status, 404);
 });
 
 test('HEAD is bodyless and query strings do not break module delivery', async t => {

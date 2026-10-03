@@ -8,16 +8,25 @@
   <title>Stakewolf — The launch room</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d5f478'/%3E%3Cpath d='M5 9l5 15 6-10 6 10 5-15M10 24l6-17 6 17' fill='none' stroke='%23101513' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./bootstrap.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to the game</a>
   <header class="topbar">
     <a id="home-link" href="./" class="brand" aria-label="Stakewolf home"><span class="brand-mark" aria-hidden="true">W</span> STAKEWOLF<span class="edition">VOL. 01</span></a>
     <span class="top-case">THE LAUNCH ROOM <span>/</span> A PRODUCT JUDGMENT GAME</span>
-    <button class="text-button" id="how-button">How to play</button>
+    <button class="text-button" id="how-button" hidden>How to play</button>
   </header>
-  <div id="app"></div>
+  <div id="app">
+    <main id="main" class="intro-error" tabindex="-1" aria-labelledby="startup-title">
+      <span class="eyebrow">THE LAUNCH ROOM</span>
+      <h1 id="startup-title">Stakewolf has not started.</h1>
+      <p id="startup-message" role="status">If the launch room does not appear, reload this page to try again.</p>
+      <noscript><p>JavaScript is turned off or unavailable. Enable JavaScript and reload to play.</p></noscript>
+      <p id="startup-policy">Progress is not saved. Reloading starts a new attempt.</p>
+      <a class="primary" id="reload-game" href="./" aria-describedby="startup-policy">Reload and start fresh</a>
+    </main>
+  </div>
   <div class="sr-only" aria-live="polite" id="announcement"></div>
   <dialog id="help-dialog" aria-labelledby="help-title">
     <div class="dialog-top"><span class="eyebrow">FIELD GUIDE</span><button class="icon-button" data-close-dialog aria-label="Close guide">×</button></div>
