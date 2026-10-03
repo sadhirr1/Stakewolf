@@ -4,7 +4,7 @@ A product management simulation inspired by Werewolf: stakeholders have competin
 
 ## Project status
 
-This repository contains an imported browser prototype and a dependency-free local development baseline. The prototype has four stakeholders, five rounds, prepared and typed decisions, scripted consequences, and a debrief. It is a starting point for the release work, not an accepted final game. Product review, scenario improvements, browser validation, and release acceptance remain tracked in Jira.
+This branch contains a reviewed combined proposal with four stakeholders, five rounds, prepared and typed decisions, conditional stakeholder memory, delayed consequences and a debrief linked to actual events. It runs locally without dependencies or an account. The [October 3 combined record](docs/evidence/session-2026-10-03-1000.md) and [independent QA record](docs/evidence/session-2026-10-03-1000-qa.md) identify executed checks and their limits. Integration approval and full release acceptance remain tracked in Jira.
 
 - [Release epic — SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5)
 - [GitHub repository](https://github.com/sadhirr1/Stakewolf)
@@ -56,6 +56,11 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 - [Reviewed player journey and interaction requirements](docs/player-experience.md)
 - [October 1 narrative and interaction verification](docs/evidence/session-2026-10-01.md)
 - [October 1 memory, event and reference-path verification](docs/evidence/session-2026-10-01-0600.md)
+- [Typed-decision contract](docs/typed-decision-contract.md)
+- [Event-grounded debrief contract](docs/debrief-contract.md)
+- [Visual system](docs/visual-system.md)
+- [Combined gameplay-equivalence contract](docs/integration-contract.md)
+- [October 3 combined verification and retained captures](docs/evidence/session-2026-10-03-1000.md)
 - [Agent working instructions](AGENTS.md)
 
 The initial team setup has been cross-reviewed by product, engineering and QA agents. Application implementation and executed gameplay tests are separate work items.

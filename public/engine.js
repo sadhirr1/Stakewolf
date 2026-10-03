@@ -230,15 +230,67 @@ export function advance(state) {
   enterRound(next);
   return next;
 }
+// A finite suggestion grammar, not a semantic interpretation of arbitrary prose.
+// All authored keywords still identify competing approaches; an action anchor
+// is an additional requirement before any one approach may be suggested.
+const INTENT_FRAMES = [
+  'i will', 'i would', 'i choose', 'i propose', 'i recommend', 'i plan to',
+  'we will', 'we should', 'we choose', 'we propose', 'we recommend', 'we plan to',
+];
+const UNCERTAIN_WORDS = new Set([
+  'no', 'not', 'never', 'neither', 'nor', 'without', 'avoid', 'avoiding',
+  'refuse', 'refusing', 'reject', 'rejecting', 'instead', 'rather',
+  'if', 'unless', 'until', 'when', 'provided', 'assuming', 'depending',
+  'otherwise', 'maybe', 'perhaps', 'might', 'could', 'or', 'either', 'versus', 'vs',
+  'dont', 'doesnt', 'didnt', 'cant', 'cannot', 'wont', 'wouldnt', 'shouldnt',
+  'couldnt', 'isnt', 'arent', 'wasnt', 'werent', 'havent', 'hasnt', 'hadnt',
+  'said', 'says', 'quote', 'quoted',
+]);
+const ACTION_ANCHORS = {
+  promise: {
+    pilot:['pilot', 'limited rollout', 'staged rollout'],
+    launch:['launch now', 'public launch', 'public release', 'release the product', 'all users'],
+    delay:['postpone', 'delay the launch', 'pause the launch', 'move the date'],
+  },
+  consent: {
+    explicit:['explicit consent', 'opt in', 'permission', 'deletion'],
+    quiet:['patch the retention', 'retention default', 'quiet fix', 'silently patch'],
+    exception:['atlas', 'retention exception'],
+  },
+  rumor: {
+    open:['full thread', 'all hands', 'share the context'],
+    broker:['broker', 'mediate', 'private reset', 'one on one'],
+    ignore:['ignore the rumor', 'dismiss the rumor', 'keep working', 'move on'],
+  },
+  scope: {
+    core:['shared core', 'reliability', 'all teams'],
+    custom:['atlas', 'custom workflow'],
+    both:['split the team', 'both workstreams', 'parallel workstreams', 'two teams'],
+  },
+  accountability: {
+    evidence:['bounded recommendation', 'present evidence', 'release gate', 'risk threshold'],
+    momentum:['lead with momentum', 'broad expansion', 'expand the launch'],
+    shared:['joint checkpoint', 'bring all leads together', 'align all leads'],
+  },
+};
+const matchText = text => text.toLowerCase().replace(/[‘’']/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 export function interpretDecision(state,text) {
   requirePlay(state);
   if(typeof text!=='string' || text.trim().length<20) throw new Error('Write at least 20 characters so you can record a meaningful decision.');
   if(text.length>1200) throw new Error('Keep your decision within 1,200 characters.');
-  const normalized=text.toLowerCase().replace(/[’']/g,'');
-  const scores=currentRound(state).choices.map(c=>({id:c.id,score:c.keywords.reduce((n,word)=>n+(normalized.includes(word)?1:0),0)})).sort((a,b)=>b.score-a.score);
-  // A tie or no match requires the player to select the approach. The match is
-  // only a convenience; it is never described as semantic or model analysis.
-  return {suggestedId:scores[0].score>0 && scores[0].score>scores[1].score?scores[0].id:null,text:text.trim()};
+  const wording=text.trim(), normalized=matchText(wording);
+  const result={suggestedId:null,text:wording};
+  // Quotation marks at word boundaries require a choice. Apostrophes within
+  // words (Atlas's, don't) remain available to the separate token/veto rules.
+  if(/[?"“”`]/u.test(wording) || /(^|[^\p{L}\p{N}])['‘’]|['‘’]($|[^\p{L}\p{N}])/u.test(wording)) return result;
+  if(!INTENT_FRAMES.some(frame=>normalized.startsWith(frame+' ')) ||
+      normalized.split(' ').some(word=>UNCERTAIN_WORDS.has(word))) return result;
+  const containsPhrase=phrase=>(' '+normalized+' ').includes(' '+matchText(phrase)+' ');
+  const round=currentRound(state);
+  const candidates=round.choices.filter(choice=>choice.keywords.some(containsPhrase));
+  if(candidates.length===1 && ACTION_ANCHORS[round.id][candidates[0].id].some(containsPhrase))
+    result.suggestedId=candidates[0].id;
+  return result;
 }
 export function relationshipLabel(value) {return value>=65?'Backing your decisions':value>=48?'Still open to persuasion':value>=32?'Guarded':'Trust is strained';}
 const OUTCOMES = [
