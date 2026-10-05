@@ -1,8 +1,8 @@
 # Stakewolf: revised one-case release plan
 
-**Independently reviewed proposal — October 4, 2026.** Tracked under [SCRUM-19](https://sadhirr1.atlassian.net/browse/SCRUM-19), within [release epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). Product/Game Design (`product_plan`) authored this proposal; Coordination reviewed it. The review does not approve the revised deadline, change Jira dates, activate schedules, spend reset credits, or claim new implementation.
+**Independently reviewed plan — October 4, 2026.** Tracked under [SCRUM-19](https://sadhirr1.atlassian.net/browse/SCRUM-19), within [release epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). Product/Game Design (`product_plan`) authored the initial proposal; Coordination reviewed it and recorded the owner's subsequent date and usage decisions. This document does not activate schedules, spend reset credits, or claim new implementation.
 
-**Proposed accelerated target: November 13, 2026, pending owner acceptance.** This is the coordinator's proposed date, not an owner-approved commitment. Release depends on evidence and the quality gates, not the calendar. The older October 13 sprint/date remains recorded in the existing documents; coordination must reconcile planning records and Jira after the revised direction is accepted, preserving historical evidence. Do not silently extend that sprint or treat this draft as a schedule change.
+**Owner-accepted target: November 13, 2026; complete candidate checkpoint: November 6, 2026.** The owner accepted these dates on October 4. Release depends on evidence and the quality gates, not the calendar. The older October 13 sprint/date remains historical; coordination must reconcile Jira planning records without silently extending the original sprint or rewriting its evidence.
 
 ## Player outcome and bounded scope
 
@@ -59,9 +59,9 @@ These `REV-AC` identifiers are proposed extensions, not replacements for product
 
 Plan a small formative session with representative players before content freeze, recording actual observations rather than claiming a validated usability study. If participants are unavailable, report the limitation, use independent task-based inspection and retain the uncertainty in the acceptance recommendation.
 
-## Proposed milestones to November 13
+## Working milestones to November 13
 
-Dates below are **2026 planning checkpoints in America/Los_Angeles**, pending acceptance of the target. They are not new sprint records or promised hours. Each increment receives review as it is built; the later validation period is not the first time QA sees it.
+Dates below are **2026 planning checkpoints in America/Los_Angeles**, under the owner-accepted target. They are not new sprint records or promised hours. Each increment receives review as it is built; the later validation period is not the first time QA sees it.
 
 | Window / checkpoint | Deliverable and exit evidence | Lead / separate reviewer |
 | --- | --- | --- |
@@ -69,7 +69,7 @@ Dates below are **2026 planning checkpoints in America/Los_Angeles**, pending ac
 | October 9–16: one playable investigation slice | Rounds 1–2 connect a discoverable artifact, conflicting account, confirmed choice and newly created obligation. Test audiences, state changes and accessible dossier/backlog controls. Review real screens, not only a design mockup. | Development; Game Design, UIUX and QA review |
 | October 17–23: complete case | All five rounds, scoped artifacts, both contradiction threads, carried obligations, delayed effects and debrief run together. Three rule-derived reference paths pass. No new case or system enters scope. | Development + Game Design; independent code reviewer, Product and QA |
 | October 24–30: content and visual finish | Edit dialogue for political credibility; finish all required screen/state treatments and hold the **owner integrated-screen review checkpoint**. Resolve findings, conduct formative playtests where available, verify reduced-motion/narrow behavior and measure performance before feature/content freeze. | UIUX/Visual + Development; owner visual feedback; QA and Product review |
-| October 31–November 6: independent acceptance | Fresh candidate playthrough, actual zoom/no-JS/recovery, received export, knowledge/backlog regressions, accessibility and severity review. Every unrun check has a named executor and next action. | QA; Product and independent developer review |
+| October 31–November 6: complete candidate checkpoint | Fresh candidate playthrough, actual zoom/no-JS/recovery, received export, knowledge/backlog regressions, accessibility and severity review. Deliver a complete, visually reviewed playable candidate by November 6; every unrun check has a named executor and next action. | QA; Product and independent developer review |
 | November 7–12: correction and release candidate | Fix acceptance failures, retest affected behavior, verify final CI/source/access instructions, complete known-issues and acceptance ledger. No discretionary expansion. | Development + coordination; QA and Product review |
 | November 13: release decision | Accept only if required evidence and independent reviews pass; otherwise state the exact unmet criteria, owner and revised forecast. Public deployment and merge follow the authorized review workflow. | Coordinator recommends; owner release decision with QA/Product evidence |
 
@@ -87,7 +87,7 @@ The account currently shows two available full-reset credits expiring **October 
 
 ## Jira action mapping and handoffs
 
-**SCRUM-19 tracks this revised plan. SCRUM-6, SCRUM-7 and other completed tickets remain historical anchors.** New implementation and design scope must receive **new linked issues** under the release epic, linked to SCRUM-19 and the relevant earlier evidence, before assignment. Do not reopen Done tickets or log new-scope execution against them. The table maps lineage and responsibilities; it is not permission to continue work on a completed issue. The coordinator verifies live status, creates the concrete follow-up issues and assigns their dates/authors/reviewers; this draft creates none and invents no new keys.
+**SCRUM-19 tracks this revised plan. SCRUM-6, SCRUM-7 and other completed tickets remain historical anchors.** New implementation and design scope receives **new linked issues** under the release epic, linked to SCRUM-19 and the relevant earlier evidence before assignment. Initial follow-up issues are [SCRUM-20](https://sadhirr1.atlassian.net/browse/SCRUM-20) for visual concepts and [SCRUM-21](https://sadhirr1.atlassian.net/browse/SCRUM-21) for case design. Do not reopen Done tickets or log new-scope execution against them. The table maps lineage and responsibilities; it is not permission to continue work on a completed issue. Coordination verifies live status and assigns remaining concrete follow-up issues with dates/authors/reviewers.
 
 | Plan / historical anchor | Proposed action for SCRUM-19 planning or a new linked follow-up issue | Owner / independent review |
 | --- | --- | --- |
@@ -111,5 +111,5 @@ Every assigned increment needs bounded owned files, dependencies, acceptance, se
 - **Visual/performance risk:** ambitious motion or asset work can harm reading, narrow layouts and review capacity. Prototype one real screen early, enforce reduced-motion behavior and measured budgets, and drop optional flourishes before required clarity.
 - **Delivery risk:** prior candidate reviews do not authorize every later merge or public hosting destination. Prepare concrete runnable artifacts while coordination resolves the actual approval/access path; do not treat routine packaging as blocked by an unrelated approval.
 
-The unchanged [quality severity gates](quality-plan.md#defect-severity-and-release-rules) apply: no open S0/S1 or unresolved acceptance-blocking S2 defects; permitted S3 issues need evidence, an owner and a recorded disposition. The coordinator's independent review corrected the visual-reference description, required owner review of rendered design, preserved completed Jira work as historical, and clarified usage/reset accounting. No revised target, implementation, schedule or release acceptance is claimed approved here.
+The unchanged [quality severity gates](quality-plan.md#defect-severity-and-release-rules) apply: no open S0/S1 or unresolved acceptance-blocking S2 defects; permitted S3 issues need evidence, an owner and a recorded disposition. The coordinator's independent review corrected the visual-reference description, required owner review of rendered design, preserved completed Jira work as historical, and clarified usage/reset accounting. The owner accepted the target and candidate checkpoint; implementation, automation changes and release acceptance are not claimed here.
 
