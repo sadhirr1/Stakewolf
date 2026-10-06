@@ -1272,6 +1272,9 @@ button:disabled .talk-state {
   .choice p {
     grid-column: 2;
   }
+  .choice-commitment {
+    grid-column: 1 / -1;
+  }
   .choice-status {
     grid-column: 2;
     margin-top: 0;
