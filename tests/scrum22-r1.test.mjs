@@ -1,10 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DOSSIER_ARTIFACTS } from '../public/scenario.js';
+import { DOSSIER_ARTIFACTS, ROUNDS } from '../public/scenario.js';
 import { createGame, beginGame, askQuestion, decide, advance, recordReadinessFinding } from '../public/engine.js';
 
 const start=()=>beginGame(createGame());
 const acquired=(state,id)=>state.artifacts.find(item=>item.artifactId===id);
+
+test('R1 launch wording matches its schedule effect and campaign evidence uses teams consistently',()=>{
+  const promise=ROUNDS[0];
+  const launch=promise.choices.find(choice=>choice.id==='launch');
+  assert.equal(launch.title,'Proceed with the public launch');
+  assert.match(launch.description,/honor the campaign/i);
+  assert.match(launch.commitment,/after broader exposure begins/i);
+  assert.match(promise.quote,/600 teams on the waitlist/i);
+  assert.match(DOSSIER_ARTIFACTS.find(item=>item.id==='KB-02').scope,/600 teams are waitlisted/i);
+});
 
 test('R1 dossier starts with only the launch brief and proposed containment runbook',()=>{
   const state=start();
