@@ -62,7 +62,7 @@ export const ROUNDS = [
     "title": "The date is public. The product isn’t ready.",
     "description": "You’ve inherited Relay’s first AI meeting-assistant launch. A campaign goes live in two days. Engineering says the summaries sometimes miss commitments, and nobody agrees on how often. Your CEO wants a launch plan before lunch.",
     "speaker": "Mara · Growth",
-    "quote": "We have 600 people on the waitlist. If we blink now, we lose the moment.",
+    "quote": "We have 600 teams on the waitlist. If we blink now, we lose the moment.",
     "question": "What will you commit to?",
     "choices": [
       {
@@ -111,7 +111,7 @@ export const ROUNDS = [
       },
       {
         "id": "launch",
-        "title": "Hold the public launch",
+        "title": "Proceed with the public launch",
         "description": "Honor the campaign and put the team on rapid-response duty.",
         "commitment": "Ishan will contain and validate the reliability boundary after broader exposure begins.",
         "delta": {
