@@ -594,6 +594,17 @@ strong {
   font-weight: 600;
   line-height: 1.4;
 }
+.choice-commitment {
+  display: block;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--body-text);
+  font-size: .8125rem;
+  line-height: 1.55;
+  font-weight: 400;
+}
+.choice-commitment strong { color: var(--lime); }
 .choice.selected .choice-status {
   visibility: visible;
 }
@@ -716,6 +727,34 @@ strong {
   color: var(--muted);
   margin-top: 10px;
 }
+.dossier-section-title, .interview-records > h3 {
+  margin: 0 0 12px;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+.dossier-locked {
+  margin: 0 0 10px;
+  padding: 12px 16px;
+  border: 1px dashed var(--line);
+}
+.comparison-card, .obligation-card {
+  margin: 18px 0;
+  padding: 20px;
+  border: 1px solid var(--control-border);
+  background: var(--raised);
+}
+.comparison-card h3, .obligation-card h2 { margin: 8px 0; }
+.comparison-card > p, .obligation-card > p { line-height: 1.6; }
+.comparison-card .source-note, .obligation-card .source-note {
+  color: var(--muted);
+  font-size: .8125rem;
+  margin: 12px 0 0;
+}
+.obligation-card { border-left: 3px solid var(--lime); }
+.obligation-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.obligation-status { color:var(--lime); font-size:.75rem; letter-spacing:.1em; }
+.interview-records { margin-top:26px; }
 .round-result h2 {
   margin: 18px 0;
 }
