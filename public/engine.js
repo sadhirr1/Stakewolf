@@ -1,4 +1,4 @@
-import { PEOPLE, ROUNDS, RULES_VERSION, DELAY_RULES, MEMORY_RULES } from './scenario.js';
+import { PEOPLE, ROUNDS, RULES_VERSION, DELAY_RULES, MEMORY_RULES, DOSSIER_ARTIFACTS } from './scenario.js';
 
 export const METRICS = ['delivery', 'trust', 'quality'];
 const PEOPLE_IDS = PEOPLE.map(person => person.id);
@@ -12,7 +12,7 @@ export function createGame() {
   return { version:1, runId:crypto.randomUUID(), rulesVersion:RULES_VERSION, events:[],
     knowledge:Object.fromEntries(['player', ...PEOPLE_IDS].map(id=>[id,[]])),
     phase:'briefing', round:0, metrics:{delivery:50,trust:55,quality:50},
-    relationships:Object.fromEntries(PEOPLE_IDS.map(id=>[id,50])), flags:[], evidence:[],
+    relationships:Object.fromEntries(PEOPLE_IDS.map(id=>[id,50])), flags:[], evidence:[], artifacts:[], findings:[], obligations:[],
     asked:[], talksLeft:2, history:[], arrival:null };
 }
 export function currentRound(state) { return ROUNDS[state.round]; }
@@ -136,7 +136,73 @@ export function getPlayerEvents(state) {
 }
 export function beginGame(state) {
   if (state.phase!=='briefing') throw new Error('This attempt has already started.');
-  const next = copy(state); next.phase='play'; enterRound(next); return next;
+  const next = copy(state); next.phase='play'; enterRound(next);
+  for (const artifact of DOSSIER_ARTIFACTS.filter(item=>item.access==='start')) acquireArtifact(next,artifact.id,null);
+  return next;
+}
+function acquireArtifact(state, artifactId, sourceEvent) {
+  const artifact=DOSSIER_ARTIFACTS.find(item=>item.id===artifactId);
+  if (!artifact || state.artifacts.some(item=>item.artifactId===artifactId)) throw invalidState(`duplicate or unknown dossier artifact ${artifactId}`);
+  const event=appendEvent(state,{type:'artifact',key:artifactId,ruleId:`artifact:acquire:${artifactId}`,actor:'narrator',
+    audience:['player'],evidenceStatus:artifact.reliability,sourceEventIds:sourceEvent?[sourceEvent.eventId]:[],
+    details:{artifactId,title:artifact.title,source:artifact.source,time:artifact.time,reliability:artifact.reliability,text:artifact.scope,
+      acquiredVia:sourceEvent?.ruleId||'case-entry'}});
+  state.artifacts.push({artifactId,eventId:event.eventId});
+  return event;
+}
+function acquireForQuestion(state, questionId) {
+  const artifact=DOSSIER_ARTIFACTS.find(item=>item.access===questionId);
+  if (!artifact) return;
+  const question=state.events.find(event=>event.type==='question'&&event.details.questionId===questionId&&event.round===1);
+  if (!question) throw invalidState(`missing access source for ${artifact.id}`);
+  acquireArtifact(state,artifact.id,question);
+}
+function requireArtifact(state, artifactId) {
+  const artifact=DOSSIER_ARTIFACTS.find(item=>item.id===artifactId);
+  const rows=state.artifacts?.filter(item=>item.artifactId===artifactId)||[];
+  if (!artifact || rows.length!==1) throw invalidState(`missing or duplicate dossier access for ${artifactId}`);
+  const event=requireEvent(state,'artifact',`artifact:acquire:${artifactId}`,1);
+  if (event.eventId!==rows[0].eventId || event.actor!=='narrator' || !event.playerVisible ||
+      event.audience.length!==1 || event.audience[0]!=='player' || !state.knowledge.player?.includes(event.eventId) ||
+      event.details.artifactId!==artifact.id || event.details.title!==artifact.title || event.details.source!==artifact.source ||
+      event.details.time!==artifact.time || event.details.reliability!==artifact.reliability || event.details.text!==artifact.scope)
+    throw invalidState(`contradictory dossier provenance for ${artifactId}`);
+  if (artifact.access==='start') {
+    if (event.details.acquiredVia!=='case-entry' || event.sourceEventIds.length) throw invalidState(`invalid entry access for ${artifactId}`);
+  } else {
+    const question=requireEvent(state,'question',`question:promise:${artifact.access}`,1);
+    if (question.details.questionId!==artifact.access || question.actor!==(artifact.access==='campaign'?'mara':'ishan') ||
+        event.details.acquiredVia!==question.ruleId || event.sourceEventIds.length!==1 || event.sourceEventIds[0]!==question.eventId)
+      throw invalidState(`invalid interview access for ${artifactId}`);
+  }
+  return event;
+}
+export function recordReadinessFinding(state) {
+  requirePlay(state);
+  if (state.round!==0) throw new Error('This comparison is available in round one.');
+  if (state.findings.includes('readiness-has-distinct-tests')) throw new Error('You already recorded this comparison.');
+  const required=['KB-02','KB-03','KB-04'];
+  if (required.some(id=>!state.artifacts.some(item=>item.artifactId===id)))
+    throw new Error('Acquire the campaign register, reliability report, and containment runbook before comparing them.');
+  for (const id of required) requireArtifact(state,id);
+  const next=copy(state);
+  const sources=required.map(id=>requireArtifact(next,id).eventId);
+  const event=appendEvent(next,{type:'finding',key:'readiness-has-distinct-tests',ruleId:'finding:readiness-has-distinct-tests',
+    actor:'player',audience:['player'],evidenceStatus:'player-interpretation',sourceEventIds:sources,
+    details:{findingId:'readiness-has-distinct-tests',title:'Reach and reliability are different questions',
+      text:'The waitlist measures interest, while the test report describes a bounded failure in reviewed long meetings. Together they do not prove that a broad launch is ready. The runbook describes a possible human-review control; it does not show that the control is enabled.'}});
+  next.findings.push('readiness-has-distinct-tests');
+  return next;
+}
+function createReliabilityObligation(state, decision) {
+  if (state.obligations.some(item=>item.obligationId==='OB-01')) throw invalidState('duplicate OB-01');
+  const commitment=currentRound(state).choices.find(choice=>choice.id===decision.details.choiceId)?.commitment;
+  if (!commitment) throw invalidState('missing OB-01 commitment for confirmed R1 choice');
+  const event=appendEvent(state,{type:'obligation',key:'OB-01-open',ruleId:'obligation:OB-01:created',actor:'player',
+    audience:['player','ishan'],evidenceStatus:'confirmed-commitment',sourceEventIds:[decision.eventId],
+    details:{obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,status:'open',text:commitment}});
+  state.obligations.push({obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,
+    status:'open',commitment,createdByDecision:decision.eventId,lastEventId:event.eventId});
 }
 export function askQuestion(state, personId, questionId) {
   requirePlay(state);
@@ -158,6 +224,7 @@ export function askQuestion(state, personId, questionId) {
     sourceEventIds:sources,details:{questionId,title:question.title,text:question.evidence,kind:question.kind},
     before,requested:{relationships:{[personId]:2}}});
   if (questionId==='full-thread') grant(next,['player'],sources[1]);
+  acquireForQuestion(next,questionId);
   return next;
 }
 function shiftMetrics(state, delta) {
@@ -194,6 +261,7 @@ export function decide(state, choiceId, writtenDecision='') {
     headline:choice.headline,outcome:choice.outcome,delta:actual,bonus:eligible && bonus.marginalBenefit>0?config.reason:null,
     reactions:{...choice.reactions},heard:state.evidence.filter(evidence=>evidence.round===state.round).map(evidence=>evidence.id),
     metrics:{...next.metrics},followup:null,eventId:decision.eventId,bonusEffect:bonus});
+  if (round.id==='promise') createReliabilityObligation(next,decision);
   if (round.id==='rumor' && choiceId!=='ignore') {
     const note=requireEvent(next,'story','story:planning-note',3);
     const rumor=requireEvent(next,'story','story:rumor-circulates',3);
@@ -225,6 +293,22 @@ export function advance(state) {
   const delayed=appendEvent(next,{type:'delayed',key:prior.choice.id,ruleId:`delay:${prior.round.id}:${prior.choice.id}`,
     sourceEventIds:[prior.decision.eventId],audience:rule.audience,details:{choiceId:prior.choice.id,text:rule.text},
     before,requested:{metrics:rule.delta}});
+  if (prior.round.id==='promise') {
+    const rows=next.obligations.filter(item=>item.obligationId==='OB-01');
+    if (rows.length!==1 || rows[0].status!=='open' || rows[0].createdByDecision!==prior.decision.eventId)
+      throw invalidState('missing or contradictory OB-01 before R2');
+    const obligation=rows[0];
+    const created=requireEvent(next,'obligation','obligation:OB-01:created',1);
+    if (created.eventId!==obligation.lastEventId || created.details.obligationId!=='OB-01' ||
+        created.details.owner!=='ishan' || created.details.dueRound!==5 || created.details.status!=='open' ||
+        created.sourceEventIds.length!==1 || created.sourceEventIds[0]!==prior.decision.eventId)
+      throw invalidState('contradictory OB-01 creation record');
+    const event=appendEvent(next,{type:'obligation',key:'OB-01-active',ruleId:'obligation:OB-01:active',actor:'narrator',
+      audience:['player','ishan'],evidenceStatus:'authored-status',sourceEventIds:[obligation.lastEventId,delayed.eventId],
+      details:{obligationId:'OB-01',title:obligation.title,owner:obligation.owner,dueRound:obligation.dueRound,status:'active',
+        text:delayed.details.text}});
+    obligation.status='active'; obligation.lastEventId=event.eventId;
+  }
   next.arrival={text:rule.text,delta:actual,eventId:delayed.eventId};
   next.history[next.history.length-1].followup={...next.arrival};
   enterRound(next);

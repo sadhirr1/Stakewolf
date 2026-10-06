@@ -44,6 +44,15 @@ export const PEOPLE = [
     "tell": "Ask how broadly the customer evidence applies."
   }
 ];
+// R1 dossier excerpts. Access is granted by engine rules, not by opening the
+// evidence panel: the launch brief and runbook are available at entry; the
+// campaign and reliability records are unlocked by their matching interviews.
+export const DOSSIER_ARTIFACTS = [
+  { id:'KB-01', title:'Launch brief', source:'Product launch brief', time:'Monday 08:30', reliability:'Authored scenario fact', scope:'A Wednesday launch target and the player’s recommendation role. An agreed date does not prove readiness.', access:'start' },
+  { id:'KB-02', title:'Campaign register', source:'Growth operations register', time:'Monday 08:40', reliability:'Dated operations record', scope:'600 teams are waitlisted and 20 are onboarded; placements remain cancellable until Monday evening. Interest is not usage or consent.', access:'campaign' },
+  { id:'KB-03', title:'Reliability report', source:'Relay beta test report · build relay-beta-17', time:'Friday 16:20', reliability:'Bounded test sample', scope:'Three of 40 reviewed long meetings missed an action owner; tested short meetings passed. This does not establish a population failure rate or safety on untested formats.', access:'failure' },
+  { id:'KB-04', title:'Containment runbook', source:'Engineering runbook', time:'Monday 08:10', reliability:'Proposed control, not an execution receipt', scope:'Risky long-meeting output can be held for human review. The gate is not shown as enabled; operation needs a named reviewer and rollback.', access:'start' },
+];
 export const ROUNDS = [
   {
     "id": "promise",
@@ -53,13 +62,14 @@ export const ROUNDS = [
     "title": "The date is public. The product isn’t ready.",
     "description": "You’ve inherited Relay’s first AI meeting-assistant launch. A campaign goes live in two days. Engineering says the summaries sometimes miss commitments, and nobody agrees on how often. Your CEO wants a launch plan before lunch.",
     "speaker": "Mara · Growth",
-    "quote": "We have 600 people on the waitlist. If we blink now, we lose the moment.",
+    "quote": "We have 600 teams on the waitlist. If we blink now, we lose the moment.",
     "question": "What will you commit to?",
     "choices": [
       {
         "id": "pilot",
         "title": "Open a small, gated pilot",
         "description": "Invite 20 teams. Keep the date, limit exposure, and define a stop condition.",
+        "commitment": "Ishan will operate the controlled pilot and validate its reliability boundary by the launch review.",
         "delta": {
           "delivery": 5,
           "trust": 5,
@@ -101,8 +111,9 @@ export const ROUNDS = [
       },
       {
         "id": "launch",
-        "title": "Hold the public launch",
+        "title": "Proceed with the public launch",
         "description": "Honor the campaign and put the team on rapid-response duty.",
+        "commitment": "Ishan will contain and validate the reliability boundary after broader exposure begins.",
         "delta": {
           "delivery": 18,
           "trust": -5,
@@ -139,6 +150,7 @@ export const ROUNDS = [
         "id": "delay",
         "title": "Move the launch date",
         "description": "Pause the campaign and finish a reliability review before reopening access.",
+        "commitment": "Ishan will reproduce the failure and bring evidence from the pause to the launch review.",
         "delta": {
           "delivery": -14,
           "trust": 4,
