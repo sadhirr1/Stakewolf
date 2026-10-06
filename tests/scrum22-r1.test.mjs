@@ -33,6 +33,27 @@ test('campaign and reliability artifacts unlock only through their matching R1 i
   assert.match(report.details.text,/does not establish a population failure rate/);
 });
 
+test('dossier access rejects the right question asked of the wrong stakeholder',()=>{
+  const state=askQuestion(askQuestion(start(),'mara','campaign'),'ishan','failure');
+  const campaign=state.events.find(event=>event.ruleId==='question:promise:campaign');
+  campaign.actor='ishan';
+  assert.throws(()=>recordReadinessFinding(state),/invalid interview access for KB-02/);
+});
+
+test('dossier access rejects a mismatched question provenance',()=>{
+  const state=askQuestion(askQuestion(start(),'mara','campaign'),'ishan','failure');
+  const campaign=state.events.find(event=>event.ruleId==='question:promise:campaign');
+  campaign.details.questionId='mara-pressure';
+  assert.throws(()=>recordReadinessFinding(state),/invalid interview access for KB-02/);
+});
+
+test('comparison rejects dossier text whose provenance was altered',()=>{
+  const state=askQuestion(askQuestion(start(),'mara','campaign'),'ishan','failure');
+  const artifact=state.events.find(event=>event.ruleId==='artifact:acquire:KB-02');
+  artifact.details.text='600 teams are ready to launch.';
+  assert.throws(()=>recordReadinessFinding(state),/contradictory dossier provenance for KB-02/);
+});
+
 test('readiness comparison records its acquired source chain without a conversation or score effect',()=>{
   let state=askQuestion(askQuestion(start(),'mara','campaign'),'ishan','failure');
   const before=structuredClone(state);
