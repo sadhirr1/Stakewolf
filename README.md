@@ -11,7 +11,7 @@ This branch contains a reviewed combined proposal with four stakeholders, five r
 
 The [October 3 startup recovery increment](docs/evidence/session-2026-10-03-1300.md) adds a usable failed-load reload screen and static no-script guidance. [Independent QA](docs/evidence/session-2026-10-03-1300-qa.md) passed 109 tests and five syntax checks; controlled missing-module, partial initialization and normal startup browser checks were independently reviewed. Actual JavaScript-disabled browser rendering remains unverified.
 
-The current release target is October 13, 2026, using the existing two-week Jira sprint. Progress and completion claims must be supported by reviewed artifacts and test evidence.
+The owner accepted a revised **November 6, 2026 complete-candidate checkpoint** and **November 13, 2026 first-case release decision target** on October 4. The original October 13 sprint is historical and was not extended. The revised scope is tracked under [SCRUM-19](https://sadhirr1.atlassian.net/browse/SCRUM-19) and its linked follow-up issues. The [revised release plan](docs/revised-release-plan.md) covers evidence-based investigation, accumulating obligations, and an original visual redesign. Progress and completion claims require reviewed artifacts and test evidence; the date alone does not establish release acceptance.
 
 ## Run locally
 
@@ -50,6 +50,7 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 ## Delivery documents
 
 - [Product brief and release acceptance](docs/product-brief.md)
+- [Revised one-case release plan and new acceptance checks](docs/revised-release-plan.md)
 - [Sprint plan and dependencies](docs/sprint-plan.md)
 - [Live Jira ticket index](docs/backlog.md)
 - [Agent roles, reviews and handoffs](docs/agent-team.md)
@@ -70,8 +71,9 @@ The authored browser files live in `public/`: `scenario.js` supplies scenario da
 
 The initial team setup has been cross-reviewed by product, engineering and QA agents. Application implementation and executed gameplay tests are separate work items.
 
-## Daily rhythm
+## Work rhythm
 
-During the release window, work sessions are scheduled hourly from 6 a.m. through 1 p.m. and the daily scrum at 8 p.m., America/Los_Angeles. These schedules are configured in the project chat, not by this repository. They require the local computer and app to be available and sufficient usage capacity. Eight scheduled opportunities do not guarantee eight uninterrupted hours of execution.
+The former hourly work-session and daily-scrum automations were canceled when the owner paused the project; they have not been restarted. Work has resumed in focused, manually initiated sessions. The ordinary Stakewolf usage ceiling is 55% of a weekly Codex allowance; the owner permits up to 155% of a normal weekly allowance during each owner-defined October 16–22 and October 22–29 work period, using available reset credits when useful. Account reset windows may differ from those project periods. No scheduled time is counted as work performed.
 
-Every role reports concrete results, evidence, review findings, blockers and its next action. Jira is authoritative for current status; this repository records the reviewed deliverables.
+Every active role records concrete results, evidence, review findings, blockers and its next action. Jira is authoritative for current status; this repository records reviewed deliverables.
+
