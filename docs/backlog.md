@@ -1,6 +1,6 @@
 # Stakewolf backlog index
 
-Jira is the live source of status. This setup index records the issues created under [SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5) and assigned to the existing SCRUM Sprint 0 (ID 2), ending October 13, 2026. Links and dates do not imply completed work.
+Jira is the live source of status. This table is the **historical** issue index for the original [SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5) / SCRUM Sprint 0 (ID 2), which ended October 13, 2026 and was not extended. Its dates and assignments do not govern current work. The owner accepted a complete playable-candidate checkpoint for November 6 and a first-case release decision target for November 13, 2026. See the [revised release plan](revised-release-plan.md) and linked current Jira follow-up issues for the active scope, dates, and usage-cap policy. Links and dates do not imply completed work.
 
 | Ticket | Action point | Owner role | Independent reviewer | Target |
 | --- | --- | --- | --- | --- |
@@ -16,8 +16,11 @@ Jira is the live source of status. This setup index records the issues created u
 | [SCRUM-15](https://sadhirr1.atlassian.net/browse/SCRUM-15) | Build a debrief that connects decisions with observed outcomes | Developer | Product manager and QA | 2026-10-07 |
 | [SCRUM-16](https://sadhirr1.atlassian.net/browse/SCRUM-16) | Run independent gameplay, accessibility and regression review | QA/tester | Independent reviewer and product manager | 2026-10-10 |
 | [SCRUM-17](https://sadhirr1.atlassian.net/browse/SCRUM-17) | Prepare the reviewed first release and handoff documentation | Release coordinator | QA and product manager | 2026-10-13 |
-| [SCRUM-18](https://sadhirr1.atlassian.net/browse/SCRUM-18) | Maintain agent action logs, daily scrum and scheduled work | Coordinator | Product manager and QA | 2026-10-13 |
+| [SCRUM-18](https://sadhirr1.atlassian.net/browse/SCRUM-18) | Historical coordination, scrum, and retrospective record | Coordinator | Product manager and QA | 2026-10-13 (historical) |
 
-Each issue contains its acceptance criteria, dependencies, artifact expectations and logging requirements. Update Jira when work starts, changes direction, is reviewed or blocked, and when acceptance is verified. Agent roles are recorded in labels and descriptions; no separate Jira user accounts were created.
+The table above does not represent the active November plan. [SCRUM-19](https://sadhirr1.atlassian.net/browse/SCRUM-19) tracks the owner-approved revised plan; current design and implementation work is tracked by its linked follow-up issues, including [SCRUM-20](https://sadhirr1.atlassian.net/browse/SCRUM-20), [SCRUM-21](https://sadhirr1.atlassian.net/browse/SCRUM-21), and [SCRUM-22](https://sadhirr1.atlassian.net/browse/SCRUM-22). Confirm live status, scope, dates and owners in Jira before taking action. The recurring work and scrum automations were canceled by the owner and remain off; work proceeds only in manually initiated sessions unless the owner explicitly requests a restart. Never claim hours without measured evidence.
+
+Each historical issue contains its original acceptance criteria, dependencies, artifact expectations and logging requirements. Update Jira when current work starts, changes direction, is reviewed or blocked, and when acceptance is verified. Agent roles are recorded in labels and descriptions; no separate Jira user accounts were created.
 
 The four pre-existing sample issues were not changed. The current Jira workflow is To Do, In Progress, In Review, Done. Reviews and verification must be recorded before Done.
+
