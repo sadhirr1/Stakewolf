@@ -4,7 +4,7 @@
 
 Build Stakewolf as an engaging product management simulation. Use Jira project SCRUM at https://sadhirr1.atlassian.net and release epic SCRUM-5 for live work status. Use https://github.com/sadhirr1/Stakewolf for reviewed source and delivery history.
 
-Read README.md, docs/product-brief.md, docs/sprint-plan.md, docs/agent-team.md, docs/quality-plan.md, and docs/backlog.md before choosing work. Reconcile their planning baseline with live Jira and the current repository state. The existing sprint ends October 13, 2026 at 8:48 p.m. America/Los_Angeles. Raise delivery risks early; never claim a release solely because the date arrived.
+Read README.md, docs/product-brief.md, docs/sprint-plan.md, docs/agent-team.md, docs/quality-plan.md, and docs/backlog.md before choosing work. Reconcile their planning baseline with live Jira and the current repository state. The original Jira sprint ended October 13, 2026 at 8:48 p.m. America/Los_Angeles; it is a historical record and has not been extended. The owner accepted a complete playable-candidate checkpoint for November 6 and a first-case release decision target of November 13, 2026. Use [docs/revised-release-plan.md](docs/revised-release-plan.md) as the current scope and schedule. Raise delivery risks early; never claim a release solely because the date arrived.
 
 ## Delegation and ownership
 
@@ -28,6 +28,7 @@ Apply the quality plan's severity and release gates. Run meaningful checks appro
 
 ## Scheduling and continuity
 
-The current thread automations schedule Stakewolf work sessions hourly from 06:00 through 13:00 each day, and the daily scrum at 20:00, America/Los_Angeles, through October 13, 2026. The user changed the work-session times on September 29. Recheck automation state before reporting it as current. These are eight hourly work opportunities, not evidence of eight continuous hours worked.
+The owner canceled the Stakewolf work-session and daily-scrum automations. They remain off unless the owner explicitly asks to restart them. Work proceeds only in manually initiated, focused sessions. Never describe a planned window as elapsed work or claim activity hours that were not measured.
 
-At each work wake-up, inspect active work and the latest Jira handoff, select an unblocked priority, complete a useful reviewed increment, update GitHub and Jira, and leave a checkpoint. Avoid overlapping changes from scheduled runs. Routine progress belongs in Jira; notify the owner for meaningful completion, failure, required action, or material delivery risk. At the daily scrum, report every role's actual completed work, evidence, review results, blockers and next actions, including roles with no activity. Do not initiate voice calls or extend the release window automatically.
+At each manually initiated session, inspect active work and the latest Jira handoff, select an unblocked priority, complete a useful reviewed increment, update GitHub and Jira, and leave a checkpoint. Avoid overlapping changes from other chats or agents. Routine progress belongs in Jira; notify the owner for meaningful completion, failure, required action, or material delivery risk. If the owner requests a scrum, report every role's actual completed work, evidence, review results, blockers and next actions, including roles with no activity. Do not initiate voice calls, create schedules, or extend the release window automatically.
+
