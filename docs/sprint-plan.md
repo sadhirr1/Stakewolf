@@ -1,8 +1,8 @@
 # Stakewolf two-week sprint plan
 
-Status: initial planning baseline for the existing Jira `SCRUM Sprint 0` (ID `2`), under [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). Its recorded start is September 29, 2026, at 8:48 p.m. PDT and its recorded end is October 13, 2026, at 8:48 p.m. PDT. The target is first-release acceptance by October 13. These dates come from an existing sprint; the agents did not establish its start through this document.
+Status: historical two-week planning baseline for Jira `SCRUM Sprint 0` (ID `2`), under [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). Its recorded start was September 29, 2026, at 8:48 p.m. PDT and its recorded end was October 13, 2026, at 8:48 p.m. PDT. This sprint was not extended. The owner replaced its target with a November 6 complete-candidate checkpoint and a November 13 first-case release decision target. The [revised release plan](revised-release-plan.md) is the current scope and schedule; the dates and work breakdown below are retained as historical planning facts.
 
-The exact Jira timestamps are `2026-09-30T03:48:27.098Z` through `2026-10-14T03:48:27.098Z`, a 14-calendar-day interval. All target dates below are in 2026, in America/Los_Angeles local time, and do not claim completed activity. Jira due dates govern the containing work items; earlier action dates are internal checkpoints. Daily scrum is at 8 p.m. local time. The user's revised work-session schedule runs hourly from 6 a.m. through 1 p.m.
+The exact Jira timestamps are `2026-09-30T03:48:27.098Z` through `2026-10-14T03:48:27.098Z`, a 14-calendar-day interval. All dates below are in 2026, in America/Los_Angeles local time, and do not claim completed activity. Jira due dates describe the original work items; earlier action dates were internal checkpoints. The owner canceled the recurring daily scrum and work-session automations; they remain off. Work occurs in manually initiated sessions only unless the owner explicitly restarts scheduling.
 
 ## Sprint goal
 
@@ -108,13 +108,11 @@ A work item is Done only when its deliverable exists, its acceptance criteria pa
 
 The release is accepted only when all required product criteria pass against the identified release candidate. Apply the [quality plan's severity and release rules](quality-plan.md#defect-severity-and-release-rules): no open S0 or S1 defects and no unresolved acceptance-blocking S2 defects. A deadline does not waive these gates. Minor defects require documented impact, a workaround if applicable, an owner, and a release decision. Scope changes require the quality plan's explicit acceptance and dependency review. Ticket completion alone does not establish release readiness.
 
-## Daily scrum and work logs
+## Historical scrum and work-log policy
 
-At 8 p.m. America/Los_Angeles local time each day, the coordinator should report each role's completed outcomes, current action point, next action, blockers, and review results. Include links to changed artifacts or playable evidence when available, decisions needing user input, and the next day's priorities. A role with no activity should be reported honestly.
+The original operating proposal called for an 8 p.m. daily role-by-role scrum. The owner later canceled the recurring scrum automation; it remains off. Provide a role-by-role report only when the owner requests one. Include verified outcomes, evidence, blockers and next actions, and identify roles with no activity honestly.
 
-The coordinator confirmed active scrum automation `stakewolf-daily-scrum` through October 13. Its existence does not establish that a future briefing or any work session has executed.
-
-The user requested eight hours of work per day and subsequently selected hourly session starts from 6 a.m. through 1 p.m. Use that morning schedule and record execution prerequisites and interruptions. Log measured activity only where it can be supported. Do not treat scheduled time, overlapping agent activity, waiting, or an open application as proof of eight hours worked; never sum overlapping agent durations into a misleading elapsed-work figure.
+Earlier planning material referred to recurring automations and hourly opportunities; those schedules were canceled by the owner and must not be presented as current. Do not claim hours or infer elapsed work from a planned schedule, agent overlap, waiting, or an open application. Record actual outcomes and evidence.
 
 Work logs should capture meaningful actions and results rather than internal reasoning or exhaustive tool traces. If work stops, retain a durable handoff: role, ticket, artifact location, last verified state, review findings, blocker, and exact next action.
 
@@ -132,4 +130,5 @@ New required work must identify its acceptance criteria, effort implications, an
 | Player feedback is unavailable | No representative tester can participate by October 10. | Conduct an independent UX inspection, label the evidence accurately, and retain player validation as an open follow-up. |
 | Deadline pressure hides quality gaps | Required failures remain late in the sprint. | Publish the specific remaining gap and corrective plan; accept the release only against verified criteria. |
 
-The existing Jira sprint, epic, tickets listed above, and active scrum automation are confirmed context reported by the coordinator. Their implementation outcomes, GitHub publication, work-session execution, and deployment require separate evidence. This setup is not the completed game.
+The original Jira sprint, epic, and tickets listed above are historical planning context. Their dates do not govern the revised release. The revised plan and Jira's current linked follow-up work are authoritative for the November target. Historical ticket setup does not prove implementation, GitHub publication, session execution, or deployment. This plan is not the completed game.
+
