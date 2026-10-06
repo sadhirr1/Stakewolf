@@ -1,6 +1,6 @@
 # Stakewolf product brief
 
-Status: first-release working scope, reconciled with the September 30 read-only prototype audit and independently reviewed by QA. Process requirements below are confirmed; game details are working defaults that agents may refine through independent review. Agents may make reversible design decisions within scope without requesting user permission for each choice. Escalate consequential scope, cost, or release changes. The existing Jira sprint supplies the delivery calendar. The candidate snapshot is imported into `public/` as a development baseline; this is not a release acceptance claim. See the [prototype assessment](prototype-assessment.md) for evidence and gaps.
+Status: historical baseline, reconciled with the September 30 read-only prototype audit and independently reviewed by QA. The current release scope and dates are in the [revised release plan](revised-release-plan.md): complete playable-candidate checkpoint November 6, 2026; first-case release decision target November 13, 2026. The original Jira sprint ending October 13 is historical and was not extended. Process requirements below remain confirmed unless superseded by the later owner decisions recorded here. Game details are working defaults that agents may refine through independent review. Agents may make reversible design decisions within scope without requesting user permission for each choice. Escalate consequential scope, cost, or release changes. The candidate snapshot is imported into `public/` as a development baseline; this is not a release acceptance claim. See the [prototype assessment](prototype-assessment.md) for evidence and gaps.
 
 ## Purpose
 
@@ -17,9 +17,9 @@ The intended player outcome is to practice making and explaining product decisio
 | Complete work tracked in Jira | Use the confirmed Stakewolf Jira project, key `SCRUM`, for work items, progress, blockers, reviews, and evidence links. |
 | Work updated in GitHub | Use the supplied repository, [sadhirr1/Stakewolf](https://github.com/sadhirr1/Stakewolf), for source, documentation, reviewable changes, and release history. |
 | Every person's work reviewed by another specialist | An author cannot approve their own deliverable by changing role labels. Assign a separate reviewing agent. |
-| Daily scrum at 8 p.m. | Provide a role-by-role briefing with actual outcomes, reviews, blockers, and next actions at 8 p.m. America/Los_Angeles local time. This is PDT during the current sprint. |
-| Requested eight hours of daily work; scheduled sessions from 6 a.m. through 1 p.m. | Use the revised morning schedule in Los Angeles time. Report measured execution honestly; scheduled time is not evidence of eight hours worked. |
-| Completion in two weeks | Use the existing `SCRUM Sprint 0` (ID `2`), September 29–October 13, 2026. Target first-release acceptance by its existing end, October 13 at 8:48 p.m. Los Angeles time. |
+| Scrum reporting when requested | Provide a role-by-role briefing with verified outcomes, reviews, blockers, and next actions. The owner canceled the recurring daily scrum; do not schedule one while it remains off. |
+| Honest activity reporting | Report concrete work and evidence. Do not claim hours or infer elapsed work from schedules, agent overlap, waiting, or an open application. |
+| Current delivery target | Use the owner-accepted November 6 complete-candidate checkpoint and November 13 first-case release decision target in the revised release plan. The previous October 13 target is historical. |
 
 Jira account ownership and agent role ownership are different concepts. Record the specialist role explicitly without inventing user accounts or claiming that each agent has an independent Jira identity.
 
@@ -67,17 +67,19 @@ Hosting destination and public release permissions are unresolved. A runnable re
 | ID | Status | Decision or open question | Owner / evidence needed |
 | --- | --- | --- | --- |
 | D-01 | Confirmed | Use specialist agents, Agile tracking, independent review, Jira, and GitHub. | User instructions; Jira project `SCRUM` and supplied GitHub repository. |
-| D-02 | Confirmed existing sprint | Use `SCRUM Sprint 0` (ID `2`) and [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). The recorded sprint runs September 29, 2026, 8:48 p.m. PDT to October 13, 2026, 8:48 p.m. PDT. | Existing Jira sprint metadata, reported by the coordinator. This record does not claim the agents created or started the sprint. |
-| D-03 | Confirmed revised schedule; automations active | Daily work-session starts hourly from 6 a.m. through 1 p.m.; scrum at 8 p.m., America/Los_Angeles. Both schedules continue through October 13. | User's September 29 schedule change and coordinator verification. Scheduled opportunities and measured execution are separate. |
+| D-02 | Historical sprint record | `SCRUM Sprint 0` (ID `2`) and [epic SCRUM-5](https://sadhirr1.atlassian.net/browse/SCRUM-5). The recorded sprint ran September 29, 2026, 8:48 p.m. PDT to October 13, 2026, 8:48 p.m. PDT. It was not extended; its target is superseded by D-10. | Existing Jira sprint metadata. This record does not claim the agents created or started the sprint. |
+| D-03 | Canceled; remains off | Work-session and daily-scrum automations are canceled and remain off. Work proceeds only in manually initiated sessions unless the owner explicitly asks to restart scheduling. | Owner's pause/cancel instruction. No schedule is activated by this document. |
 | D-04 | Selected working scope after source audit | Retain one scenario, four stakeholders, and five rounds. | September 30 product audit; scenario completeness and quality still require authored rules and independent validation. |
 | D-05 | Selected baseline; language validation outstanding | Retain bounded keyword-based intent suggestions with explicit confirmation and fallback choice. | Source audit of `interpretDecision` and proposal UI; SCRUM-14 owns language cases and AC-05 validation. |
 | D-06 | Selected technical direction | Keep client-only runtime behavior, without accounts, a backend service, or a paid AI provider for this baseline. | Inspected source uses local modules and browser APIs. Development owns reproducible serving and checks; introducing consequential cost requires a separate decision. |
 | D-07 | Source audit and initial import verified; layout repair recorded | The inspected five-file candidate snapshot is adopted into `public/` as a starting point, with a subsequent targeted `app.js` layout repair. | [Prototype assessment](prototype-assessment.md) records the original matching import hashes, the changed file's hash, browser evidence, AC mapping, and narrative defects. Provenance and the targeted repair do not establish release readiness. |
 | D-08 | Open | Release and hosting destination. | Coordinator establishes how the user will access the release candidate and whether deployment is authorized. |
 | D-09 | Selected session policy after source audit | Refresh or reopen starts a clean session; reliable saved progress is not part of this baseline. | No persistence or recovery implementation was found in the inspected snapshot. Earlier recovery claims do not apply to it. Nothing is being removed. SCRUM-8/12 must expose the warning before play; QA verifies the behavior. |
+| D-10 | Owner-confirmed revised target | Complete playable candidate checkpoint by November 6, 2026; first-case release decision target November 13, 2026. The decision remains conditional on required evidence and review; the date alone does not establish acceptance. | Owner confirmation in chat and [revised release plan](revised-release-plan.md). |
 
 ## Evidence and success
 
 Judge this release by the acceptance criteria above, the quality of independent reviews, and observed player experience. Record player feedback as observations with context. Small informal playtests do not establish general usability or recruiting effectiveness.
 
-The sprint plan translates this proposal into owned, reviewable work. Jira is the live work tracker; these repository documents preserve the product intent and agreed delivery rules.
+The original sprint plan is retained as historical context. The [revised release plan](revised-release-plan.md) now translates the owner's updated target and scope into current checkpoints. Jira is the live work tracker; these repository documents preserve the product intent and agreed delivery rules.
+
