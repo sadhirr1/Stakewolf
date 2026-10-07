@@ -55,11 +55,13 @@ export const DOSSIER_ARTIFACTS = [
   { id:'KB-06', title:'Retention configuration record', source:'Engineering configuration record', time:'Monday · R2 review', reliability:'Configuration account; not an old-data cleanup receipt', scope:'The current default is indefinite; a seven-day setting can apply to new transcripts. A setting change does not process existing data, and no linked business approval is recorded.', availableRound:2, access:'retention-fix', accessActor:'ishan' },
   { id:'KB-07', title:'Retained-account inventory', source:'Beta account inventory', time:'Monday · R2 review', reliability:'Twelve beta teams listed; object-level age and disposition are not established', scope:'Twelve teams have retained transcripts. The inventory does not enumerate every object, applicable duration, authorization, or cleanup result; a policy, scope, job, and receipt are still needed.', availableRound:2, access:['retention-fix','data-scope'], accessActor:'ishan' },
   { id:'KB-08', title:'Atlas retention request', source:'Theo’s customer notes', time:'Monday · customer follow-up', reliability:'Attributed request; not consent, approval, or a general policy', scope:'Atlas requested 30-day retention for comparing follow-ups. This request applies to Atlas only and does not establish approval, a usable revocation path, or a policy for other teams.', availableRound:2, access:'atlas-retention', accessActor:'theo' },
-  { id:'KB-08-R4', title:'Atlas approval and reference addendum', source:'Theo’s Atlas terms follow-up', time:'Tuesday · 14:30', reliability:'Attributed conditional commitment; reference rights need separate approval', scope:'Atlas will commit only if a working approval workflow exists. Public reference rights require separate approval. This addendum does not establish that the workflow works, that reference approval was granted, or that any Atlas request applies to other teams.', availableRound:4, access:'contract-terms', accessActor:'theo' },
+  { id:'KB-08-R4', title:'Atlas approval and reference addendum', source:'Theo’s Atlas terms follow-up', time:'Tuesday · 14:30', reliability:'Attributed conditional commitment; reference rights need separate approval', scope:'Atlas makes a conditional commitment: it will commit only if a working approval workflow exists. Reference rights need separate approval for any public reference use. This addendum does not establish that the workflow works, that reference approval was granted, or that any Atlas request applies to other teams.', availableRound:4, access:'contract-terms', accessActor:'theo' },
   { id:'KB-09', title:'Planning-note dossier index', source:'Dossier index', time:'R3 case-file index', reliability:'Index only · no child content', scope:'This index lists three separately permissioned records. It contains no planning-note text, screenshot crop, caption, or private admission.', availableRound:3, access:'round-entry', accessSourceRule:'story:rumor-circulates' },
   { id:'KB-09a', title:'Earlier planning note', source:'Relay launch planning note', time:'Monday · 08:15', reliability:'Original team-planning note authored before this attempt', scope:'“What evidence would make a limited launch safe?” The note also mentions the review gate. This is earlier team context, not the player’s decision or wording.', availableRound:3, access:'full-thread', accessActor:'ishan', decisionChoices:['open','broker'] },
   { id:'KB-09b', title:'Screenshot crop and caption', source:'Cropped team-planning screenshot', time:'Tuesday · 09:15', reliability:'Incomplete crop; attached caption is interpretation, not source wording', scope:'The crop omits the surrounding limited-launch context and review-gate sentence. Attached caption: “Product has lost confidence in Engineering.” The caption is added interpretation, not text from KB-09a; its author is not identified by this crop. The crop is known to have reached the four leads and engineering channel; wider circulation is unattributed.', availableRound:3, access:'round-entry', accessSourceRule:'story:rumor-circulates' },
   { id:'KB-09c', title:'Mara’s private source admission', source:'Mara’s account', time:'Tuesday · 09:20', reliability:'Firsthand admission about two recipients; wider spread unverified', scope:'Mara shared a crop with two leads to discuss launch planning and added the caption “Product has lost confidence in Engineering.” She says that was her interpretation, not wording in the note, and cannot confirm any wider circulation.', availableRound:3, access:'screenshot-source', accessActor:'mara', acquisitionAudience:['player','mara'] },
+  { id:'KB-10', title:'Review-capacity dossier index', source:'Dossier index', time:'R4 case-file index', reliability:'Index only · no receipt content', scope:'This index points to the capacity note available before the R4 choice. It contains no review result, test receipt, or proof that either workstream passed.', availableRound:4, access:'round-entry', accessSourceRule:'story:review-capacity' },
+  { id:'KB-10a', title:'Shared review capacity', source:'Integration review schedule', time:'Tuesday · 14:45', reliability:'Authored capacity constraint; not a test result', scope:'Two shared integration reviewers can validate one agreed change bundle before the launch review. The Atlas custom workflow uses the same review window. The carried work is Ishan’s R1 reliability-boundary commitment and Leah’s R2 retention follow-up, including Ishan’s cleanup work and Theo’s customer explanation. This note establishes capacity, not completion or verification.', availableRound:4, access:'round-entry', accessSourceRule:'story:review-capacity' },
 ];
 export const ROUNDS = [
   {
@@ -686,15 +688,15 @@ export const ROUNDS = [
     "time": "TUESDAY · 15:00",
     "countdown": "17 HOURS TO LAUNCH",
     "title": "Your biggest customer wants a different product.",
-    "description": "Atlas offers to become a paying reference account if Relay adds a custom approval workflow. Engineering can deliver that or harden the shared action-item experience this week. The CEO asks which opportunity you are willing to lose.",
+    "description": "Atlas makes a conditional commitment if Relay adds a working custom approval workflow. Public reference rights need separate approval. Engineering can pursue that branch or harden the shared action-item experience this week. The CEO asks which opportunity you are willing to lose.",
     "speaker": "Theo · Customer advocate",
-    "quote": "They’re ready to sign. We just have to make this one thing work.",
+    "quote": "They will commit if the approval workflow works. Reference rights still need separate approval.",
     "question": "Where will you spend the remaining capacity?",
     "choices": [
       {
         "id": "core",
         "title": "Protect the shared core",
-        "description": "Protect the shared core and include review of the selected retention workflow in the shared review bundle. No old transcripts are deleted by this choice; Atlas gets a temporary manual workflow.",
+        "description": "Schedule one shared review bundle for reliability hardening and the selected retention workflow. Scheduling is not a passing test. Old transcripts are not deleted; Atlas gets a temporary manual workflow, and its conditional commitment is not secured.",
         "delta": {
           "delivery": -3,
           "trust": 3,
@@ -718,7 +720,7 @@ export const ROUNDS = [
           "all teams",
           "focus"
         ],
-        "outcome": "The team improves the same workflow for everyone. Atlas accepts a manual workaround for now but postpones the contract. You keep the product coherent and take the revenue uncertainty yourself.",
+        "outcome": "The team prioritizes the shared workflow and schedules its review bundle. Atlas can use a manual workaround for now, but its conditional commitment is not secured. You keep the product coherent and accept the commercial uncertainty.",
         "headline": "One product. An uncomfortable no.",
         "reactions": {
           "mara": "We’ll have to tell a slower revenue story.",
@@ -736,7 +738,7 @@ export const ROUNDS = [
       {
         "id": "custom",
         "title": "Build the Atlas workflow",
-        "description": "Win the anchor account. Defer the shared reliability and retention-workflow review bundle for the Atlas branch; old-data cleanup remains open.",
+        "description": "Pursue Atlas’s conditional workflow commitment with a named owner and follow-up review. Defer the shared reliability and retention-workflow review bundle; old-data cleanup remains open, and public reference rights still need separate approval.",
         "delta": {
           "delivery": 14,
           "trust": 2,
@@ -760,7 +762,7 @@ export const ROUNDS = [
           "paying",
           "workflow"
         ],
-        "outcome": "Atlas signs a conditional commitment. The engineers deliver its approval path, deferring hardening for everyone else. Your near-term commercial story improves; the maintenance burden grows.",
+        "outcome": "Atlas confirms a conditional commitment that still depends on a working approval path. Engineering defers shared hardening while pursuing the branch; record a maintenance owner and follow-up review. Public reference rights remain separately unapproved.",
         "headline": "A customer win with a carrying cost.",
         "reactions": {
           "mara": "A real commercial signal. We needed that.",
@@ -778,7 +780,7 @@ export const ROUNDS = [
       {
         "id": "both",
         "title": "Split the team across both",
-        "description": "Pursue both streams with the same constrained reviewers. The shared validation bundle is blocked; old-data cleanup remains open.",
+        "description": "Pursue both streams with the same constrained reviewers. The shared review bundle is blocked; old-data cleanup remains open.",
         "delta": {
           "delivery": 6,
           "trust": -6,
@@ -833,10 +835,10 @@ export const ROUNDS = [
       "ishan": [
         {
           "id": "review-bottleneck",
-          "question": "Can we really do both?",
-          "answer": "We can write both. We cannot review both this week. The same two people own integration testing, and there’s no spare reviewer.",
+          "question": "Which of our remaining promises use the same reviewers, and what can they validate before the launch review?",
+          "answer": "There are two carried commitments: my R1 reliability boundary and Leah’s R2 retention follow-up, including my cleanup work and Theo’s customer explanation. The same two integration reviewers can validate one agreed bundle before the launch review. Atlas’s custom workflow uses that same window; writing both plans does not create another reviewer.",
           "title": "The shared bottleneck",
-          "evidence": "Both workstreams require the same two integration reviewers.",
+          "evidence": "The R4 capacity note and carried R1/R2 obligations show that the same two reviewers can validate one agreed bundle; the Atlas branch uses that window too.",
           "kind": "Capacity constraint"
         },
         {
@@ -1116,7 +1118,7 @@ export const DELAY_RULES = {
     ignore: { delta: {trust:-3,quality:-5}, audience:['ishan'], text:'A defect reported privately did not reach the launch checklist. The shared channel is quieter, but the risk has grown.' },
   },
   scope: {
-    core: { delta: {quality:5}, audience:['ishan','theo'], text:'The shared action-item fix passes its review. Atlas is still waiting on a contract, but the core experience is stronger for every team.' },
+    core: { delta: {quality:5}, audience:['ishan','theo'], text:'The shared action-item fix reaches review. Its scoped checks still need to run before anyone can call it passed. Atlas is still waiting on a contract, but the core experience is stronger for every team.' },
     custom: { delta: {delivery:4,quality:-3}, audience:['mara','ishan','theo'], text:'Atlas confirms the conditional commitment. The custom branch brings a commercial signal and another path to maintain.' },
     both: { delta: {delivery:-6,quality:-4}, audience:['mara','ishan','theo'], text:'Both workstreams reach the same review bottleneck. One slips, and the other goes into the review with incomplete validation.' },
   },
