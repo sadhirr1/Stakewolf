@@ -56,6 +56,10 @@ export const DOSSIER_ARTIFACTS = [
   { id:'KB-07', title:'Retained-account inventory', source:'Beta account inventory', time:'Monday · R2 review', reliability:'Twelve beta teams listed; object-level age and disposition are not established', scope:'Twelve teams have retained transcripts. The inventory does not enumerate every object, applicable duration, authorization, or cleanup result; a policy, scope, job, and receipt are still needed.', availableRound:2, access:['retention-fix','data-scope'], accessActor:'ishan' },
   { id:'KB-08', title:'Atlas retention request', source:'Theo’s customer notes', time:'Monday · customer follow-up', reliability:'Attributed request; not consent, approval, or a general policy', scope:'Atlas requested 30-day retention for comparing follow-ups. This request applies to Atlas only and does not establish approval, a usable revocation path, or a policy for other teams.', availableRound:2, access:'atlas-retention', accessActor:'theo' },
   { id:'KB-08-R4', title:'Atlas approval and reference addendum', source:'Theo’s Atlas terms follow-up', time:'Tuesday · 14:30', reliability:'Attributed conditional commitment; reference rights need separate approval', scope:'Atlas will commit only if a working approval workflow exists. Public reference rights require separate approval. This addendum does not establish that the workflow works, that reference approval was granted, or that any Atlas request applies to other teams.', availableRound:4, access:'contract-terms', accessActor:'theo' },
+  { id:'KB-09', title:'Planning-note dossier index', source:'Dossier index', time:'R3 case-file index', reliability:'Index only · no child content', scope:'This index lists three separately permissioned records. It contains no planning-note text, screenshot crop, caption, or private admission.', availableRound:3, access:'round-entry', accessSourceRule:'story:rumor-circulates' },
+  { id:'KB-09a', title:'Earlier planning note', source:'Relay launch planning note', time:'Monday · 08:15', reliability:'Original team-planning note authored before this attempt', scope:'“What evidence would make a limited launch safe?” The note also mentions the review gate. This is earlier team context, not the player’s decision or wording.', availableRound:3, access:'full-thread', accessActor:'ishan', decisionChoices:['open','broker'] },
+  { id:'KB-09b', title:'Screenshot crop and caption', source:'Cropped team-planning screenshot', time:'Tuesday · 09:15', reliability:'Incomplete crop; attached caption is interpretation, not source wording', scope:'The crop omits the surrounding limited-launch context and review-gate sentence. Attached caption: “Product has lost confidence in Engineering.” The caption is added interpretation, not text from KB-09a; its author is not identified by this crop. The crop is known to have reached the four leads and engineering channel; wider circulation is unattributed.', availableRound:3, access:'round-entry', accessSourceRule:'story:rumor-circulates' },
+  { id:'KB-09c', title:'Mara’s private source admission', source:'Mara’s account', time:'Tuesday · 09:20', reliability:'Firsthand admission about two recipients; wider spread unverified', scope:'Mara shared a crop with two leads to discuss launch planning and added the caption “Product has lost confidence in Engineering.” She says that was her interpretation, not wording in the note, and cannot confirm any wider circulation.', availableRound:3, access:'screenshot-source', accessActor:'mara', acquisitionAudience:['player','mara'] },
 ];
 export const ROUNDS = [
   {
@@ -480,7 +484,7 @@ export const ROUNDS = [
     "time": "TUESDAY · 09:15",
     "countdown": "23 HOURS TO LAUNCH",
     "title": "An earlier team note has become someone else’s story.",
-    "description": "A cropped screenshot from a team planning note written before your first decision is circulating. The caption says Product has lost confidence in Engineering. Two engineers stop posting updates. Mara wants to handle it quietly; Ishan wants the full note shared.",
+    "description": "A cropped screenshot from a team planning note written before your first decision is circulating. Its caption says Product has lost confidence in Engineering. Two engineers stop posting updates. Mara wants to handle it quietly; Ishan wants the full note considered.",
     "speaker": "A message in #launch",
     "quote": "Apparently Product thinks the team can’t deliver. Good to know.",
     "question": "How do you respond to the rumor?",
@@ -605,10 +609,10 @@ export const ROUNDS = [
       "mara": [
         {
           "id": "screenshot-source",
-          "question": "Where did the screenshot come from?",
-          "answer": "I shared a crop of the earlier team note with two leads to discuss launch planning. I added ‘Product is nervous.’ I didn’t expect it to go further. That was my interpretation, not your wording.",
+          "question": "What did you share, what wording did you add, and what can you actually confirm about its spread?",
+          "answer": "I shared a crop of the earlier team note with two leads to discuss launch planning. I added the caption ‘Product has lost confidence in Engineering.’ That was my interpretation, not wording in the note or your decision. I can confirm the two leads; I cannot confirm who spread it farther.",
           "title": "An interpretation became a quote",
-          "evidence": "Mara shared the crop and added her own interpretation. The wider circulation remains unverified.",
+          "evidence": "Mara shared the crop with two leads and added the caption as her interpretation. Wider circulation remains unverified.",
           "kind": "Firsthand admission"
         },
         {
@@ -623,10 +627,10 @@ export const ROUNDS = [
       "ishan": [
         {
           "id": "full-thread",
-          "question": "Show me the full exchange.",
-          "answer": "The earlier team note asks, ‘What evidence would make a limited launch safe?’ It predates your first decision. The crop removed ‘limited’ and the sentence about a review gate. It is not a quote from your decision or your typed wording.",
+          "question": "What does the complete planning note say, and when was it written?",
+          "answer": "This earlier team planning note was written Monday at 08:15, before your first decision. It asks, ‘What evidence would make a limited launch safe?’ and mentions the review gate. The crop removes the surrounding context. The note is not a quote from your decision or typed wording.",
           "title": "The earlier team note, in full",
-          "evidence": "A team planning note written before your first decision asked for evidence supporting a limited launch and mentioned a review gate. It records an earlier team discussion, not a statement made by you in this attempt.",
+          "evidence": "The original team planning note was authored Monday at 08:15, before this attempt. It asks for evidence supporting a limited launch and mentions a review gate; it is not a statement made by you in this attempt.",
           "kind": "Source document"
         },
         {
