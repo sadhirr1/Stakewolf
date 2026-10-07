@@ -105,6 +105,13 @@ function enterRound(state) {
     acquireArtifact(state,'KB-09',rumor,'round-entry');
     acquireArtifact(state,'KB-09b',rumor,'round-entry');
   }
+  if (state.round===3) {
+    const capacity=appendEvent(state,{type:'story',key:'review-capacity',ruleId:'story:review-capacity',
+      audience:['player'],evidenceStatus:'authored-capacity',details:{text:'Two shared integration reviewers can validate one agreed change bundle before the launch review. The Atlas custom workflow uses the same review window.',
+        carriedObligations:['OB-01','OB-02'],result:'capacity constraint; no review or test result'}});
+    acquireArtifact(state,'KB-10',capacity,'round-entry');
+    acquireArtifact(state,'KB-10a',capacity,'round-entry');
+  }
   for (const rule of MEMORY_RULES.filter(rule=>rule.round===state.round+1)) {
     const memory = memorySources(state,rule);
     appendEvent(state,{type:'memory',key:rule.personId,ruleId:rule.ruleId,actor:rule.personId,
@@ -295,7 +302,9 @@ function createReliabilityObligation(state, decision) {
     audience:['player','ishan'],evidenceStatus:'confirmed-commitment',sourceEventIds:[decision.eventId],
     details:{obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,status:'open',text:commitment}});
   state.obligations.push({obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,
-    status:'open',commitment,createdByDecision:decision.eventId,lastEventId:event.eventId});
+    status:'open',commitment,createdByDecision:decision.eventId,lastEventId:event.eventId,
+    verified:false,validationBundle:{id:'R4-SHARED-REVIEW-BUNDLE',status:'unselected',eventId:null},
+    reliabilityReview:{id:'OB-01-SHARED-RELIABILITY-REVIEW',status:'unselected',eventId:null}});
 }
 function createRetentionObligation(state, decision) {
   if(state.obligations.some(item=>item.obligationId==='OB-02')) throw invalidState('duplicate OB-02');
@@ -314,6 +323,7 @@ function createRetentionObligation(state, decision) {
     policyScope:{id:'OB-02-POLICY-SCOPE',owner:'leah',status:'open',followUp:'Thursday 12:00 in the fictional launch week',executionDeadline:null},
     customerExplanation:{id:'OB-02-CUSTOMER-EXPLANATION',owner:'theo',dueRound:3,status:'due'},
     workflowBundle:{id:'OB-02-RETENTION-WORKFLOW-REVIEW',owner:'leah',status:'unselected',sourceEventId:null},
+    validationBundle:{id:'R4-SHARED-REVIEW-BUNDLE',status:'unselected',eventId:null},
     atlasRequestEventId:null});
   const customerUpdate=appendEvent(state,{type:'obligation',key:'OB-02-customer-status-created',ruleId:'obligation:OB-02:customer-status',
     actor:'narrator',audience:['player','theo'],evidenceStatus:'authored-status',sourceEventIds:[event.eventId],
@@ -354,11 +364,50 @@ function recordWorkflowBundle(state, scopeDecision) {
         status==='deferred'?'The shared retention-workflow review bundle is deferred for the Atlas branch. OB-02 and old-data cleanup remain active and pending.':
           'The shared retention-workflow review bundle is blocked by competing review capacity. OB-02 and old-data cleanup remain active and pending.'}});
   obligation.workflowBundle.status=status; obligation.workflowBundle.sourceEventId=event.eventId;
+  obligation.workflowBundle.sharedReviewBundleEventId=obligation.validationBundle?.eventId||null;
+  obligation.status='active'; obligation.lastEventId=event.eventId;
+}
+function recordSharedReviewBundle(state, scopeDecision) {
+  const reliability=state.obligations.filter(item=>item.obligationId==='OB-01');
+  const retention=state.obligations.filter(item=>item.obligationId==='OB-02');
+  if(reliability.length!==1||retention.length!==1) throw invalidState('missing or duplicate obligations at R4 shared bundle');
+  const selection=scopeDecision.details.choiceId;
+  const status=selection==='core'?'scheduled':selection==='custom'?'deferred':'blocked';
+  const capacity=requireArtifact(state,'KB-10a');
+  const event=appendEvent(state,{type:'obligation',key:'shared-review-bundle-selected',ruleId:'obligation:shared-review-bundle:selected',
+    actor:'narrator',audience:['player','ishan','leah'],evidenceStatus:'authored-status',
+    sourceEventIds:[reliability[0].lastEventId,retention[0].lastEventId,scopeDecision.eventId,capacity.eventId],
+    details:{bundleId:'R4-SHARED-REVIEW-BUNDLE',status,choiceId:selection,owner:'ishan',reviewerCount:2,
+      obligationIds:['OB-01','OB-02'],subtaskIds:['OB-01-SHARED-RELIABILITY-REVIEW','OB-02-RETENTION-WORKFLOW-REVIEW'],
+      text:status==='scheduled'?'One shared review bundle is scheduled for the R5 launch review. It contains reliability validation and the selected retention workflow; scheduling is not verification.':
+        status==='deferred'?'The one shared review bundle is deferred while capacity goes to the Atlas branch. Both obligations remain active and unresolved.':
+          'The one shared review bundle is blocked because both workstreams use the same two reviewers. Both obligations remain active and unresolved.'}});
+  const projection={id:'R4-SHARED-REVIEW-BUNDLE',status,eventId:event.eventId};
+  reliability[0].validationBundle=copy(projection);
+  retention[0].validationBundle=copy(projection);
+  return event;
+}
+function recordReliabilityBundle(state, scopeDecision, sharedBundle) {
+  const rows=state.obligations.filter(item=>item.obligationId==='OB-01');
+  if(rows.length!==1) throw invalidState('missing or duplicate OB-01 at R4 decision');
+  const obligation=rows[0], selection=scopeDecision.details.choiceId;
+  const status=selection==='core'?'scheduled':selection==='custom'?'deferred':'blocked';
+  const capacity=requireArtifact(state,'KB-10a');
+  const event=appendEvent(state,{type:'obligation',key:`OB-01-review-bundle-${status}`,ruleId:`obligation:OB-01:bundle-${status}`,
+    actor:'narrator',audience:['player','ishan'],evidenceStatus:'authored-status',
+      sourceEventIds:[obligation.lastEventId,scopeDecision.eventId,capacity.eventId,sharedBundle.eventId],details:{obligationId:'OB-01',parentStatus:'active',
+      bundleId:obligation.reliabilityReview.id,bundleStatus:status,choiceId:selection,owner:'ishan',dueRound:5,
+        sharedBundleEventId:sharedBundle.eventId,
+      text:status==='scheduled'?'The shared reliability validation bundle is scheduled for the R5 review. Scheduling is not a passing test or verification.':
+        status==='deferred'?'Shared reliability validation is deferred while capacity goes to the Atlas workflow. OB-01 remains active and unresolved.':
+          'Shared reliability validation is blocked by competing work in the same reviewer window. OB-01 remains active and unresolved.'}});
+  obligation.reliabilityReview.status=status; obligation.reliabilityReview.eventId=event.eventId;
+  obligation.reliabilityReview.sharedBundleEventId=sharedBundle.eventId;
   obligation.status='active'; obligation.lastEventId=event.eventId;
 }
 function recordRetentionCheckpoint(state, finalDecision) {
   const obligation=state.obligations.find(item=>item.obligationId==='OB-02');
-  if(!obligation || obligation.status!=='active' || !obligation.workflowBundle.sourceEventId)
+  if(!obligation || obligation.status!=='active' || !obligation.workflowBundle.sourceEventId || !obligation.validationBundle?.eventId)
     throw invalidState('missing OB-02 parent or R4 bundle before R5 checkpoint');
   const consentDecision=state.events.find(event=>event.eventId===obligation.createdByDecision);
   const bundleEvent=state.events.find(event=>event.eventId===obligation.workflowBundle.sourceEventId);
@@ -380,10 +429,11 @@ function recordRetentionCheckpoint(state, finalDecision) {
   const atlasSources=[consentDecision.eventId,...(atlasEvent?[atlasEvent.eventId]:[]),...(atlasDurationSupported?[artifacts['KB-08']]:[])];
   const event=appendEvent(state,{type:'obligation',key:'OB-02-r5-checkpoint',ruleId:'obligation:OB-02:r5-checkpoint',actor:'narrator',
     audience:['player','leah','ishan'],evidenceStatus:'authored-status',
-    sourceEventIds:[obligation.lastEventId,consentDecision.eventId,scopeDecision.eventId,finalDecision.eventId,
+    sourceEventIds:[obligation.lastEventId,obligation.validationBundle.eventId,consentDecision.eventId,scopeDecision.eventId,finalDecision.eventId,
       ...checks.flatMap(check=>check.sourceEventIds.filter(id=>id!==consentDecision.eventId)),...atlasSources.slice(1)],
     details:{obligationId:'OB-02',checkpointId:'OB-02-R5-CHECKPOINT',parentStatus:'active',owner:'leah',
       selectedRetentionPath:consent,selectedCapacityPath:scope,
+      sharedReviewBundle:copy(obligation.validationBundle),
       workflowBundle:{id:obligation.workflowBundle.id,status:obligation.workflowBundle.status,sourceEventId:bundleEvent.eventId},
       checks,atlasException:exception?{status:'separate-request-retained',duration:atlasDurationSupported?'30 days':null,
         scope:'Atlas only',scopeStatus:'unresolved',verificationStatus:'not verified',consentOrApproval:'not established',
@@ -461,7 +511,11 @@ export function decide(state, choiceId, writtenDecision='') {
     metrics:{...next.metrics},followup:null,eventId:decision.eventId,bonusEffect:bonus});
   if (round.id==='promise') createReliabilityObligation(next,decision);
   if (round.id==='consent') createRetentionObligation(next,decision);
-  if (round.id==='scope') recordWorkflowBundle(next,decision);
+  if (round.id==='scope') {
+    const sharedBundle=recordSharedReviewBundle(next,decision);
+    recordReliabilityBundle(next,decision,sharedBundle);
+    recordWorkflowBundle(next,decision);
+  }
   if (round.id==='rumor' && choiceId!=='ignore') {
     const note=requireEvent(next,'story','story:planning-note',3);
     const rumor=requireEvent(next,'story','story:rumor-circulates',3);
@@ -704,6 +758,55 @@ function completedTrace(state) {
       (state.findingRecords||[]).length!==retentionFindingEvents.length)
     throw invalidState('retention finding active state disagrees with its append-only history');
   const r2=predecessor(state,1), r3=predecessor(state,2), r4=predecessor(state,3), r5=predecessor(state,4);
+  const capacityStory=requireEvent(state,'story','story:review-capacity',4);
+  if(capacityStory.evidenceStatus!=='authored-capacity' || JSON.stringify(capacityStory.audience)!==JSON.stringify(['player']) ||
+      capacityStory.details.result!=='capacity constraint; no review or test result')
+    throw invalidState('contradictory R4 review capacity record');
+  for(const id of ['KB-10','KB-10a']) {
+    const file=requireArtifact(state,id);
+    if(file.sourceEventIds.length!==1 || file.sourceEventIds[0]!==capacityStory.eventId || file.round!==4)
+      throw invalidState(`contradictory R4 access for ${id}`);
+  }
+  if(state.artifacts.some(item=>item.artifactId==='KB-10b'||item.artifactId==='KB-10c'))
+    throw invalidState('R5 receipt artifacts cannot be acquired from the R4 capacity record');
+  const reliabilityRows=state.obligations.filter(item=>item.obligationId==='OB-01');
+  if(reliabilityRows.length!==1) throw invalidState('missing or duplicate OB-01');
+  const reliability=reliabilityRows[0], r1=predecessor(state,0);
+  const reliabilityStatus=r4.choice.id==='core'?'scheduled':r4.choice.id==='custom'?'deferred':'blocked';
+  const reliabilityReview=requireEvent(state,'obligation',`obligation:OB-01:bundle-${reliabilityStatus}`,4);
+  const sharedBundle=requireEvent(state,'obligation','obligation:shared-review-bundle:selected',4);
+  const reliabilityActive=requireEvent(state,'obligation','obligation:OB-01:active',2);
+  const r3MilestoneName=r2.choice.id==='explicit'?'met':'missed';
+  const r3Milestone=requireEvent(state,'obligation',`obligation:OB-02:explanation-${r3MilestoneName}`,3);
+  if(reliability.createdByDecision!==r1.decision.eventId || reliability.owner!=='ishan' || reliability.dueRound!==5 ||
+      reliability.status!=='active' || reliability.verified!==false || reliability.validationBundle?.id!=='R4-SHARED-REVIEW-BUNDLE' ||
+      reliability.validationBundle.status!==reliabilityStatus || reliability.validationBundle.eventId!==sharedBundle.eventId ||
+      reliability.reliabilityReview?.id!=='OB-01-SHARED-RELIABILITY-REVIEW' ||
+      reliability.reliabilityReview.status!==reliabilityStatus || reliability.reliabilityReview.eventId!==reliabilityReview.eventId ||
+      reliabilityReview.details.choiceId!==r4.choice.id || reliabilityReview.details.bundleStatus!==reliabilityStatus ||
+      reliabilityReview.details.parentStatus!=='active' || reliabilityReview.details.owner!=='ishan' ||
+      reliabilityReview.details.sharedBundleEventId!==sharedBundle.eventId ||
+      JSON.stringify(reliabilityReview.audience)!==JSON.stringify(['player','ishan']) ||
+      JSON.stringify(reliabilityReview.sourceEventIds)!==JSON.stringify([reliabilityActive.eventId,r4.decision.eventId,requireArtifact(state,'KB-10a').eventId,sharedBundle.eventId]) ||
+      reliability.lastEventId!==reliabilityReview.eventId)
+    throw invalidState('contradictory OB-01 R4 capacity transition');
+  const sharedExpectedSources=[reliabilityActive.eventId,r3Milestone.eventId,r4.decision.eventId,requireArtifact(state,'KB-10a').eventId];
+  if(sharedBundle.details.bundleId!=='R4-SHARED-REVIEW-BUNDLE' || sharedBundle.details.status!==reliabilityStatus ||
+      sharedBundle.details.choiceId!==r4.choice.id || sharedBundle.details.owner!=='ishan' || sharedBundle.details.reviewerCount!==2 ||
+      JSON.stringify(sharedBundle.details.obligationIds)!==JSON.stringify(['OB-01','OB-02']) ||
+      JSON.stringify(sharedBundle.details.subtaskIds)!==JSON.stringify(['OB-01-SHARED-RELIABILITY-REVIEW','OB-02-RETENTION-WORKFLOW-REVIEW']) ||
+      JSON.stringify(sharedBundle.audience)!==JSON.stringify(['player','ishan','leah']) ||
+      JSON.stringify(sharedBundle.sourceEventIds)!==JSON.stringify(sharedExpectedSources) ||
+      sharedBundle.eventId!==eventId(state,4,'obligation','shared-review-bundle-selected') ||
+      JSON.stringify(sharedBundle.details.obligationIds)!==JSON.stringify(['OB-01','OB-02']) ||
+      sharedBundle.audience.includes('theo'))
+    throw invalidState('contradictory R4 shared review bundle');
+  if(state.events.filter(event=>event.type==='obligation'&&event.details.obligationId==='OB-01'&&event.round===4).length!==1)
+    throw invalidState('duplicate OB-01 R4 capacity transition');
+  const reliabilityEvents=state.events.filter(event=>event.type==='obligation'&&event.details.obligationId==='OB-01');
+  for(const event of reliabilityEvents) for(const group of ['metrics','relationships'])
+    if(Object.values(event.effects[group].requested).some(value=>value!==0)||Object.values(event.effects[group].actual).some(value=>value!==0))
+      throw invalidState('OB-01 event changed numeric signals');
   const obRows=state.obligations.filter(item=>item.obligationId==='OB-02');
   if(obRows.length!==1) throw invalidState('missing or duplicate OB-02');
   const obligation=obRows[0], created=requireEvent(state,'obligation','obligation:OB-02:created',2);
@@ -743,15 +846,20 @@ function completedTrace(state) {
       bundle.details.parentStatus!=='active' || bundle.details.choiceId!==r4.choice.id ||
       bundle.sourceEventIds.length!==2 || bundle.sourceEventIds[0]!==milestone.eventId || bundle.sourceEventIds[1]!==r4.decision.eventId ||
       obligation.workflowBundle.status!==bundleStatus || obligation.workflowBundle.sourceEventId!==bundle.eventId ||
+      obligation.workflowBundle.sharedReviewBundleEventId!==sharedBundle.eventId ||
+      obligation.validationBundle?.id!=='R4-SHARED-REVIEW-BUNDLE' || obligation.validationBundle.eventId!==sharedBundle.eventId ||
+      obligation.validationBundle.status!==bundleStatus ||
       obligation.status!=='active') throw invalidState('contradictory OB-02 R4 workflow bundle');
   const receipt=requireEvent(state,'obligation','obligation:OB-02:r5-checkpoint',5);
   if(receipt.eventId!==eventId(state,5,'obligation','OB-02-r5-checkpoint') || receipt.details.checkpointId!=='OB-02-R5-CHECKPOINT' ||
       JSON.stringify(receipt.audience)!==JSON.stringify(['player','leah','ishan']) ||
       receipt.details.parentStatus!=='active' || receipt.details.cleanup?.owner!=='ishan' || receipt.details.cleanup.status!=='pending' ||
       receipt.details.cleanup.verified!==false || receipt.details.cleanup.overdue!==false ||
-      receipt.details.workflowBundle?.status!==bundleStatus || receipt.details.explanationMilestone?.status!==milestoneName ||
+      receipt.details.workflowBundle?.status!==bundleStatus || receipt.details.sharedReviewBundle?.id!=='R4-SHARED-REVIEW-BUNDLE' ||
+      receipt.details.sharedReviewBundle?.status!==bundleStatus ||
+      receipt.details.sharedReviewBundle?.eventId!==sharedBundle.eventId || receipt.details.explanationMilestone?.status!==milestoneName ||
       receipt.details.selectedRetentionPath!==r2.choice.id || receipt.details.selectedCapacityPath!==r4.choice.id ||
-      receipt.sourceEventIds[0]!==bundle.eventId || !receipt.sourceEventIds.includes(r5.decision.eventId) ||
+      receipt.sourceEventIds[0]!==bundle.eventId || !receipt.sourceEventIds.includes(sharedBundle.eventId) || !receipt.sourceEventIds.includes(r5.decision.eventId) ||
       obligation.status!=='active' || obligation.lastEventId!==receipt.eventId || obligation.r5Checkpoint?.eventId!==receipt.eventId)
     throw invalidState('contradictory OB-02 R5 checkpoint');
   const expectedCheckIds=bundleStatus!=='scheduled'?[]:r2.choice.id==='explicit'?
@@ -796,7 +904,7 @@ function completedTrace(state) {
       if(delayed.sourceEventIds.length!==1 || delayed.sourceEventIds[0]!==decision.eventId || delayed.details.text!==rule.text || delayed.details.choiceId!==choice.id || METRICS.some(key=>delayed.effects.metrics.requested[key]!== (rule.delta[key]||0))) throw invalidState('contradictory delayed consequence');
     }
   }
-  return {decisions,completion,questions,obligationCheckpoint:receipt,obligation};
+  return {decisions,completion,questions,obligationCheckpoint:receipt,obligation,reliability,reliabilityBundle:sharedBundle,reliabilityReview};
 }
 function citationFor(event,visibleIds) {
   const person=PEOPLE.find(person=>person.id===event.actor);
@@ -806,7 +914,7 @@ function citationFor(event,visibleIds) {
   return {eventId:event.eventId,label:'Round '+event.round+' · '+names[event.type]+(detail?': '+detail:''),round:event.round,type:event.type,status:event.evidenceStatus,text,effects:copy(event.effects),sourceEventIds:event.sourceEventIds.filter(id=>visibleIds.has(id))};
 }
 export function getDebrief(state) {
-  const {decisions,completion,questions,obligationCheckpoint,obligation}=completedTrace(state);
+  const {decisions,completion,questions,obligationCheckpoint,obligation,reliability,reliabilityBundle,reliabilityReview}=completedTrace(state);
   const visible=getPlayerEvents(state), visibleIds=new Set(visible.map(event=>event.eventId));
   const citations=visible.map(event=>citationFor(event,visibleIds));
   const sources=ids=>{
@@ -869,6 +977,8 @@ export function getDebrief(state) {
   const counts={conversations:questions.length,stakeholders:new Set(questions.map(event=>event.actor)).size,positiveBonuses:positive.length,cappedBonuses:capped.length};
   const cited=new Set([outcome,...reflections,...decisionRecords,...agendas].flatMap(item=>item.sourceEventIds));
   cited.add(obligationCheckpoint.eventId);
+  cited.add(reliabilityBundle.eventId);
+  cited.add(reliabilityReview.eventId);
   // Follow only already-allowed ancestors. A visible account never reveals a private parent.
   for(const id of cited) for(const parent of citations.find(item=>item.eventId===id)?.sourceEventIds||[]) cited.add(parent);
   const obligations=[{obligationId:obligation.obligationId,title:obligation.title,owner:obligation.owner,status:obligation.status,
@@ -876,7 +986,13 @@ export function getDebrief(state) {
     explanationMilestone:copy(obligationCheckpoint.details.explanationMilestone),workflowBundle:copy(obligationCheckpoint.details.workflowBundle),
     checks:copy(obligationCheckpoint.details.checks),atlasException:copy(obligationCheckpoint.details.atlasException),
     sourceEventIds:sources([obligationCheckpoint.eventId])}];
-  return {title:outcome.title,description:outcome.description,outcome,counts,reflections,decisions:decisionRecords,agendas,obligations,retentionFindingHistory,citations:citations.filter(item=>cited.has(item.eventId))};
+  const reliabilityBundleSummary={obligationId:reliability.obligationId,title:reliability.title,owner:reliability.owner,status:reliability.status,
+    dueRound:reliability.dueRound,bundleId:reliability.validationBundle.id,bundleStatus:reliability.validationBundle.status,
+    sharedBundleId:reliability.validationBundle.id,sharedBundleStatus:reliability.validationBundle.status,
+    sharedBundleEventId:reliability.validationBundle.eventId,verified:reliability.verified,
+    text:reliabilityReview.details.text,sourceEventIds:sources([reliabilityReview.eventId,reliability.validationBundle.eventId])};
+  return {title:outcome.title,description:outcome.description,outcome,counts,reflections,decisions:decisionRecords,agendas,obligations,
+    reliabilityBundle:reliabilityBundleSummary,retentionFindingHistory,citations:citations.filter(item=>cited.has(item.eventId))};
 }
 export function formatDecisionRecord(state) {
   const debrief=getDebrief(state);
@@ -897,6 +1013,9 @@ export function formatDecisionRecord(state) {
     if(item.atlasException) lines.push('Atlas-only request: '+(item.atlasException.duration||'duration not established')+'; scope and verification unresolved; approval and deletion not established; no general default or authorization inferred.');
     lines.push('');
   }
+  lines.push('RELIABILITY VALIDATION: '+debrief.reliabilityBundle.bundleStatus+' — '+debrief.reliabilityBundle.text,
+    'Shared bundle: '+debrief.reliabilityBundle.sharedBundleId+' ('+debrief.reliabilityBundle.sharedBundleStatus+'). Parent status: '+debrief.reliabilityBundle.status+
+    '; owner: '+debrief.reliabilityBundle.owner+'; due R'+debrief.reliabilityBundle.dueRound+'.',refs(debrief.reliabilityBundle.sourceEventIds),'');
   if(debrief.retentionFindingHistory.length) {
     lines.push('PLAYER INVESTIGATION · DEFAULT IS NOT CLEANUP');
     for(const item of debrief.retentionFindingHistory) lines.push('Revision '+item.revision+' · R'+item.recordedAtRound+' · '+item.action+': '+item.interpretation,
