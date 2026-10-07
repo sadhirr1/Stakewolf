@@ -108,7 +108,7 @@ function evidenceHTML() {
   const dossier=acquired.map(({artifact,event})=>`<article class="evidence-card dossier-artifact"><span class="eyebrow">${esc(artifact.id)} · ${esc(artifact.time)}</span><h3>${esc(artifact.title)}</h3><p>${esc(artifact.scope)}</p><p class="source-note">Source: ${esc(artifact.source)} · ${esc(artifact.reliability)} · Accessed ${event.details.acquiredVia==='case-entry'?'at case entry':event.details.acquiredVia==='round-entry'?'at this round’s case-file review':'through '+(event.details.acquiredVia.split(':').at(-1)||'a stakeholder account')}.</p></article>`).join('');
   const locked=state.phase==='play'?DOSSIER_ARTIFACTS.filter(row=>row.availableRound===state.round+1&&!state.artifacts.some(item=>item.artifactId===row.id)).map(row=>{
     const access=Array.isArray(row.access)?row.access:[row.access];
-    const route=row.access==='round-entry'?'Available at this round’s case-file review.':`Ask ${row.accessActor==='ishan'?'Ishan':row.accessActor==='theo'?'Theo':'Mara'} about ${access.join(' or ')} to open this record.`;
+    const route=row.access==='round-entry'?'Available at this round’s case-file review.':row.id==='KB-09a'?'Ask Ishan for the complete note, or open a public correction or broker a private reset.':row.id==='KB-09c'?'Ask Mara what she shared and what she can confirm about its spread.':`Ask ${row.accessActor==='ishan'?'Ishan':row.accessActor==='theo'?'Theo':'Mara'} about ${access.join(' or ')} to open this record.`;
     return `<p class="small-meta dossier-locked"><strong>${esc(row.id)} · ${esc(row.title)}</strong> — ${esc(route)}</p>`;
   }).join(''):'';
   const ready=state.round===0&&['KB-02','KB-03','KB-04'].every(id=>state.artifacts.some(item=>item.artifactId===id));
