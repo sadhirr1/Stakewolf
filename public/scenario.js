@@ -44,14 +44,18 @@ export const PEOPLE = [
     "tell": "Ask how broadly the customer evidence applies."
   }
 ];
-// R1 dossier excerpts. Access is granted by engine rules, not by opening the
-// evidence panel: the launch brief and runbook are available at entry; the
-// campaign and reliability records are unlocked by their matching interviews.
+// Dossier excerpts. Access is granted by engine rules, not by opening the
+// evidence panel. Each record carries a round and an authored access route.
 export const DOSSIER_ARTIFACTS = [
-  { id:'KB-01', title:'Launch brief', source:'Product launch brief', time:'Monday 08:30', reliability:'Authored scenario fact', scope:'A Wednesday launch target and the player’s recommendation role. An agreed date does not prove readiness.', access:'start' },
-  { id:'KB-02', title:'Campaign register', source:'Growth operations register', time:'Monday 08:40', reliability:'Dated operations record', scope:'600 teams are waitlisted and 20 are onboarded; placements remain cancellable until Monday evening. Interest is not usage or consent.', access:'campaign' },
-  { id:'KB-03', title:'Reliability report', source:'Relay beta test report · build relay-beta-17', time:'Friday 16:20', reliability:'Bounded test sample', scope:'Three of 40 reviewed long meetings missed an action owner; tested short meetings passed. This does not establish a population failure rate or safety on untested formats.', access:'failure' },
-  { id:'KB-04', title:'Containment runbook', source:'Engineering runbook', time:'Monday 08:10', reliability:'Proposed control, not an execution receipt', scope:'Risky long-meeting output can be held for human review. The gate is not shown as enabled; operation needs a named reviewer and rollback.', access:'start' },
+  { id:'KB-01', title:'Launch brief', source:'Product launch brief', time:'Monday 08:30', reliability:'Authored scenario fact', scope:'A Wednesday launch target and the player’s recommendation role. An agreed date does not prove readiness.', availableRound:1, access:'start' },
+  { id:'KB-02', title:'Campaign register', source:'Growth operations register', time:'Monday 08:40', reliability:'Dated operations record', scope:'600 teams are waitlisted and 20 are onboarded; placements remain cancellable until Monday evening. Interest is not usage or consent.', availableRound:1, access:'campaign', accessActor:'mara' },
+  { id:'KB-03', title:'Reliability report', source:'Relay beta test report · build relay-beta-17', time:'Friday 16:20', reliability:'Bounded test sample', scope:'Three of 40 reviewed long meetings missed an action owner; tested short meetings passed. This does not establish a population failure rate or safety on untested formats.', availableRound:1, access:'failure', accessActor:'ishan' },
+  { id:'KB-04', title:'Containment runbook', source:'Engineering runbook', time:'Monday 08:10', reliability:'Proposed control, not an execution receipt', scope:'Risky long-meeting output can be held for human review. The gate is not shown as enabled; operation needs a named reviewer and rollback.', availableRound:1, access:'start' },
+  { id:'KB-05', title:'Preserved beta invitation', source:'Archived beta invitation', time:'Previous Thursday · 12:00', reliability:'Original wording preserved; scope is this invitation', scope:'The invitation described temporary processing. It does not state an exact retention duration or authorize keeping existing transcripts indefinitely.', availableRound:2, access:'round-entry' },
+  { id:'KB-06', title:'Retention configuration record', source:'Engineering configuration record', time:'Monday · R2 review', reliability:'Configuration account; not an old-data cleanup receipt', scope:'The current default is indefinite; a seven-day setting can apply to new transcripts. A setting change does not process existing data, and no linked business approval is recorded.', availableRound:2, access:'retention-fix', accessActor:'ishan' },
+  { id:'KB-07', title:'Retained-account inventory', source:'Beta account inventory', time:'Monday · R2 review', reliability:'Twelve beta teams listed; object-level age and disposition are not established', scope:'Twelve teams have retained transcripts. The inventory does not enumerate every object, applicable duration, authorization, or cleanup result; a policy, scope, job, and receipt are still needed.', availableRound:2, access:['retention-fix','data-scope'], accessActor:'ishan' },
+  { id:'KB-08', title:'Atlas retention request', source:'Theo’s customer notes', time:'Monday · customer follow-up', reliability:'Attributed request; not consent, approval, or a general policy', scope:'Atlas requested 30-day retention for comparing follow-ups. This request applies to Atlas only and does not establish approval, a usable revocation path, or a policy for other teams.', availableRound:2, access:'atlas-retention', accessActor:'theo' },
+  { id:'KB-08-R4', title:'Atlas approval and reference addendum', source:'Theo’s Atlas terms follow-up', time:'Tuesday · 14:30', reliability:'Attributed conditional commitment; reference rights need separate approval', scope:'Atlas will commit only if a working approval workflow exists. Public reference rights require separate approval. This addendum does not establish that the workflow works, that reference approval was granted, or that any Atlas request applies to other teams.', availableRound:4, access:'contract-terms', accessActor:'theo' },
 ];
 export const ROUNDS = [
   {
@@ -686,7 +690,7 @@ export const ROUNDS = [
       {
         "id": "core",
         "title": "Protect the shared core",
-        "description": "Harden action items for all teams and offer Atlas a temporary manual workflow.",
+        "description": "Protect the shared core and include review of the selected retention workflow in the shared review bundle. No old transcripts are deleted by this choice; Atlas gets a temporary manual workflow.",
         "delta": {
           "delivery": -3,
           "trust": 3,
@@ -728,7 +732,7 @@ export const ROUNDS = [
       {
         "id": "custom",
         "title": "Build the Atlas workflow",
-        "description": "Win the anchor account and accept a separate path to maintain.",
+        "description": "Win the anchor account. Defer the shared reliability and retention-workflow review bundle for the Atlas branch; old-data cleanup remains open.",
         "delta": {
           "delivery": 14,
           "trust": 2,
@@ -770,7 +774,7 @@ export const ROUNDS = [
       {
         "id": "both",
         "title": "Split the team across both",
-        "description": "Pursue the contract and broad launch improvements in parallel.",
+        "description": "Pursue both streams with the same constrained reviewers. The shared validation bundle is blocked; old-data cleanup remains open.",
         "delta": {
           "delivery": 6,
           "trust": -6,
