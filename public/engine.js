@@ -12,7 +12,7 @@ export function createGame() {
   return { version:1, runId:crypto.randomUUID(), rulesVersion:RULES_VERSION, events:[],
     knowledge:Object.fromEntries(['player', ...PEOPLE_IDS].map(id=>[id,[]])),
     phase:'briefing', round:0, metrics:{delivery:50,trust:55,quality:50},
-    relationships:Object.fromEntries(PEOPLE_IDS.map(id=>[id,50])), flags:[], evidence:[], artifacts:[], findings:[], obligations:[],
+    relationships:Object.fromEntries(PEOPLE_IDS.map(id=>[id,50])), flags:[], evidence:[], artifacts:[], findings:[], findingRecords:[], obligations:[],
     asked:[], talksLeft:2, history:[], arrival:null };
 }
 export function currentRound(state) { return ROUNDS[state.round]; }
@@ -137,41 +137,53 @@ export function getPlayerEvents(state) {
 export function beginGame(state) {
   if (state.phase!=='briefing') throw new Error('This attempt has already started.');
   const next = copy(state); next.phase='play'; enterRound(next);
-  for (const artifact of DOSSIER_ARTIFACTS.filter(item=>item.access==='start')) acquireArtifact(next,artifact.id,null);
+  for (const artifact of DOSSIER_ARTIFACTS.filter(item=>item.availableRound===1 && item.access==='start')) acquireArtifact(next,artifact.id,null,'case-entry');
   return next;
 }
-function acquireArtifact(state, artifactId, sourceEvent) {
+function acquireArtifact(state, artifactId, sourceEvent, accessMode) {
   const artifact=DOSSIER_ARTIFACTS.find(item=>item.id===artifactId);
   if (!artifact || state.artifacts.some(item=>item.artifactId===artifactId)) throw invalidState(`duplicate or unknown dossier artifact ${artifactId}`);
+  const expectedMode=artifact.access==='start'?'case-entry':artifact.access==='round-entry'?'round-entry':'interview';
+  if(accessMode!==expectedMode || state.round+1!==artifact.availableRound || (expectedMode!=='case-entry'&&!sourceEvent))
+    throw invalidState(`invalid access route for ${artifactId}`);
   const event=appendEvent(state,{type:'artifact',key:artifactId,ruleId:`artifact:acquire:${artifactId}`,actor:'narrator',
     audience:['player'],evidenceStatus:artifact.reliability,sourceEventIds:sourceEvent?[sourceEvent.eventId]:[],
     details:{artifactId,title:artifact.title,source:artifact.source,time:artifact.time,reliability:artifact.reliability,text:artifact.scope,
-      acquiredVia:sourceEvent?.ruleId||'case-entry'}});
-  state.artifacts.push({artifactId,eventId:event.eventId});
+      availableRound:artifact.availableRound,acquiredVia:accessMode==='round-entry'?'round-entry':sourceEvent?.ruleId||accessMode}});
+  state.artifacts.push({artifactId,eventId:event.eventId,acquiredAtRound:event.round,sequence:event.sequence});
   return event;
 }
 function acquireForQuestion(state, questionId) {
-  const artifact=DOSSIER_ARTIFACTS.find(item=>item.access===questionId);
-  if (!artifact) return;
-  const question=state.events.find(event=>event.type==='question'&&event.details.questionId===questionId&&event.round===1);
-  if (!question) throw invalidState(`missing access source for ${artifact.id}`);
-  acquireArtifact(state,artifact.id,question);
+  const question=state.events.find(event=>event.type==='question'&&event.details.questionId===questionId&&event.round===state.round+1);
+  if (!question) throw invalidState(`missing access source for ${questionId}`);
+  const artifacts=DOSSIER_ARTIFACTS.filter(item=>item.availableRound===state.round+1 &&
+    (Array.isArray(item.access)?item.access.includes(questionId):item.access===questionId));
+  for(const artifact of artifacts) {
+    if(artifact.accessActor!==question.actor) throw invalidState(`wrong stakeholder for ${artifact.id}`);
+    acquireArtifact(state,artifact.id,question,'interview');
+  }
 }
 function requireArtifact(state, artifactId) {
   const artifact=DOSSIER_ARTIFACTS.find(item=>item.id===artifactId);
   const rows=state.artifacts?.filter(item=>item.artifactId===artifactId)||[];
   if (!artifact || rows.length!==1) throw invalidState(`missing or duplicate dossier access for ${artifactId}`);
-  const event=requireEvent(state,'artifact',`artifact:acquire:${artifactId}`,1);
+  const event=requireEvent(state,'artifact',`artifact:acquire:${artifactId}`,artifact.availableRound);
   if (event.eventId!==rows[0].eventId || event.actor!=='narrator' || !event.playerVisible ||
       event.audience.length!==1 || event.audience[0]!=='player' || !state.knowledge.player?.includes(event.eventId) ||
       event.details.artifactId!==artifact.id || event.details.title!==artifact.title || event.details.source!==artifact.source ||
-      event.details.time!==artifact.time || event.details.reliability!==artifact.reliability || event.details.text!==artifact.scope)
+      event.details.time!==artifact.time || event.details.reliability!==artifact.reliability || event.details.text!==artifact.scope ||
+      event.details.availableRound!==artifact.availableRound || rows[0].acquiredAtRound!==event.round || rows[0].sequence!==event.sequence)
     throw invalidState(`contradictory dossier provenance for ${artifactId}`);
   if (artifact.access==='start') {
     if (event.details.acquiredVia!=='case-entry' || event.sourceEventIds.length) throw invalidState(`invalid entry access for ${artifactId}`);
+  } else if(artifact.access==='round-entry') {
+    const delayed=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.type==='delayed'&&row.round===artifact.availableRound);
+    if(event.details.acquiredVia!=='round-entry'||event.sourceEventIds.length!==1||!delayed||delayed.ruleId!=='delay:promise:'+state.history[0]?.choiceId)
+      throw invalidState(`invalid round-entry access for ${artifactId}`);
   } else {
-    const question=requireEvent(state,'question',`question:promise:${artifact.access}`,1);
-    if (question.details.questionId!==artifact.access || question.actor!==(artifact.access==='campaign'?'mara':'ishan') ||
+    const allowed=Array.isArray(artifact.access)?artifact.access:[artifact.access];
+    const question=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.type==='question'&&row.round===artifact.availableRound&&allowed.includes(row.details.questionId));
+    if (!question || question.actor!==artifact.accessActor ||
         event.details.acquiredVia!==question.ruleId || event.sourceEventIds.length!==1 || event.sourceEventIds[0]!==question.eventId)
       throw invalidState(`invalid interview access for ${artifactId}`);
   }
@@ -194,6 +206,73 @@ export function recordReadinessFinding(state) {
   next.findings.push('readiness-has-distinct-tests');
   return next;
 }
+const RETENTION_FINDING_ID='default-is-not-cleanup';
+const RETENTION_INTERPRETATIONS={
+  'scope-separated':'The invitation, configuration, and inventory describe different scopes. A changed default does not clean up earlier transcripts.',
+  unresolved:'The records do not establish the authorization, object-level scope, or completed cleanup of earlier transcripts.',
+};
+function latestRetentionFinding(state) {
+  return state.events.filter(event=>event.type==='finding'&&event.details.findingId===RETENTION_FINDING_ID).at(-1)||null;
+}
+function retentionSourceAcquisitions(state) {
+  const required=['KB-05','KB-06','KB-07'];
+  if(required.some(id=>!state.artifacts.some(item=>item.artifactId===id)))
+    throw new Error('Acquire the preserved invitation, configuration record, and retained-account inventory before recording this finding.');
+  const eligible=['KB-05','KB-06','KB-07','KB-08','KB-08-R4'].map(id=>state.artifacts.find(item=>item.artifactId===id)).filter(Boolean);
+  return eligible.map(row=>{
+    const event=requireArtifact(state,row.artifactId);
+    if(row.acquiredAtRound>state.round+1 || row.sequence>=state.events.length+1)
+      throw invalidState(`finding source ${row.artifactId} is not yet available`);
+    return {artifactId:row.artifactId,eventId:event.eventId,acquiredAtRound:row.acquiredAtRound,sequence:row.sequence};
+  });
+}
+export function recordRetentionFinding(state, interpretationId='scope-separated') {
+  requirePlay(state);
+  if(state.round<1||state.round>4) throw new Error('This finding can be recorded or revised from round two onward.');
+  const interpretation=RETENTION_INTERPRETATIONS[interpretationId];
+  if(!interpretation) throw new Error('Choose one of the available sourced interpretations.');
+  const next=copy(state), sources=retentionSourceAcquisitions(next), previous=latestRetentionFinding(next);
+  const nextSourceIds=sources.map(item=>item.eventId);
+  if(previous?.details.active && previous.details.interpretationId===interpretationId &&
+      JSON.stringify(previous.details.sourceAcquisitions.map(item=>item.eventId))===JSON.stringify(nextSourceIds))
+    throw new Error('This finding already records that interpretation and its currently acquired sources.');
+  const revision=(previous?.details.revision||0)+1;
+  const action=previous?(previous.details.active?'revised':'recorded-again'):'recorded';
+  const recordedAtRound=next.round+1;
+  const sourceEventIds=[...(previous?[previous.eventId]:[]),...nextSourceIds];
+  const event=appendEvent(next,{type:'finding',key:`${RETENTION_FINDING_ID}-revision-${revision}`,
+    ruleId:`finding:${RETENTION_FINDING_ID}`,actor:'player',audience:['player'],evidenceStatus:'player-interpretation',sourceEventIds,
+    details:{findingId:RETENTION_FINDING_ID,title:'The invitation, setting, and inventory answer different questions',
+      action,revision,recordedAtRound,sourceEventIds:nextSourceIds,sourceAcquisitions:sources,
+      interpretationId,interpretation,supersedesEventId:previous?.eventId||null,active:true,text:interpretation}});
+  const record={findingId:RETENTION_FINDING_ID,eventId:event.eventId,action,revision,recordedAtRound,
+    sourceEventIds:nextSourceIds,sourceAcquisitions:sources,interpretationId,interpretation,active:true,
+    supersedesEventId:previous?.eventId||null};
+  next.findingRecords.push(record);
+  if(!next.findings.includes(RETENTION_FINDING_ID)) next.findings.push(RETENTION_FINDING_ID);
+  return next;
+}
+export function clearRetentionFinding(state) {
+  requirePlay(state);
+  if(state.round<1||state.round>4) throw new Error('This finding can be cleared from round two onward.');
+  const previous=latestRetentionFinding(state);
+  if(!previous?.details.active) throw new Error('There is no active finding to clear.');
+  const next=copy(state), revision=previous.details.revision+1;
+  const sourceAcquisitions=retentionSourceAcquisitions(next);
+  const event=appendEvent(next,{type:'finding',key:`${RETENTION_FINDING_ID}-revision-${revision}`,
+    ruleId:`finding:${RETENTION_FINDING_ID}`,actor:'player',audience:['player'],evidenceStatus:'player-interpretation',
+    sourceEventIds:[previous.eventId,...sourceAcquisitions.map(item=>item.eventId)],details:{findingId:RETENTION_FINDING_ID,
+      title:'The invitation, setting, and inventory answer different questions',action:'cleared',revision,
+      recordedAtRound:next.round+1,sourceEventIds:sourceAcquisitions.map(item=>item.eventId),sourceAcquisitions,
+      interpretationId:previous.details.interpretationId,interpretation:previous.details.interpretation,
+      supersedesEventId:previous.eventId,active:false,text:'The player cleared this interpretation; the earlier entry remains in the case history.'}});
+  next.findingRecords.push({findingId:RETENTION_FINDING_ID,eventId:event.eventId,action:'cleared',revision,
+    recordedAtRound:next.round+1,sourceEventIds:sourceAcquisitions.map(item=>item.eventId),sourceAcquisitions,
+    interpretationId:previous.details.interpretationId,interpretation:previous.details.interpretation,active:false,
+    supersedesEventId:previous.eventId});
+  next.findings=next.findings.filter(id=>id!==RETENTION_FINDING_ID);
+  return next;
+}
 function createReliabilityObligation(state, decision) {
   if (state.obligations.some(item=>item.obligationId==='OB-01')) throw invalidState('duplicate OB-01');
   const commitment=currentRound(state).choices.find(choice=>choice.id===decision.details.choiceId)?.commitment;
@@ -203,6 +282,111 @@ function createReliabilityObligation(state, decision) {
     details:{obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,status:'open',text:commitment}});
   state.obligations.push({obligationId:'OB-01',title:'Verify the shared reliability boundary',owner:'ishan',dueRound:5,
     status:'open',commitment,createdByDecision:decision.eventId,lastEventId:event.eventId});
+}
+function createRetentionObligation(state, decision) {
+  if(state.obligations.some(item=>item.obligationId==='OB-02')) throw invalidState('duplicate OB-02');
+  const choice=ROUNDS[1].choices.find(item=>item.id===decision.details.choiceId);
+  if(!choice) throw invalidState('missing confirmed R2 choice for OB-02');
+  const event=appendEvent(state,{type:'obligation',key:'OB-02-created',ruleId:'obligation:OB-02:created',actor:'player',
+    audience:['player','leah','ishan'],evidenceStatus:'confirmed-commitment',sourceEventIds:[decision.eventId],
+      details:{obligationId:'OB-02',title:'Account for earlier retained transcripts',owner:'leah',dueRound:null,
+      status:'active',createdByDecision:decision.eventId,cleanup:{owner:'ishan',status:'pending',verified:false,overdue:false},
+      policyScope:{owner:'leah',status:'open',followUp:'Thursday 12:00 in the fictional launch week',executionDeadline:null},
+      customerExplanation:{owner:'theo',status:'due-at-R3-entry',dueRound:3},
+      text:'Define policy and scope, explain the retention decision to customers, and leave old-data cleanup pending until authorization and object scope are established.'}});
+  state.obligations.push({obligationId:'OB-02',title:'Account for earlier retained transcripts',owner:'leah',dueRound:null,status:'active',
+    createdByDecision:decision.eventId,lastEventId:event.eventId,
+    cleanup:{id:'OB-02-OLD-DATA-CLEANUP',owner:'ishan',status:'pending',verified:false,overdue:false},
+    policyScope:{id:'OB-02-POLICY-SCOPE',owner:'leah',status:'open',followUp:'Thursday 12:00 in the fictional launch week',executionDeadline:null},
+    customerExplanation:{id:'OB-02-CUSTOMER-EXPLANATION',owner:'theo',dueRound:3,status:'due'},
+    workflowBundle:{id:'OB-02-RETENTION-WORKFLOW-REVIEW',owner:'leah',status:'unselected',sourceEventId:null},
+    atlasRequestEventId:null});
+  const customerUpdate=appendEvent(state,{type:'obligation',key:'OB-02-customer-status-created',ruleId:'obligation:OB-02:customer-status',
+    actor:'narrator',audience:['player','theo'],evidenceStatus:'authored-status',sourceEventIds:[event.eventId],
+    details:{obligationId:'OB-02',status:'due',owner:'theo',dueRound:3,text:'A customer explanation is due at the start of R3.'}});
+  state.obligations.at(-1).customerExplanation.statusEventId=customerUpdate.eventId;
+}
+function recordExplanationMilestone(state, consentDecision, delayed) {
+  const rows=state.obligations.filter(item=>item.obligationId==='OB-02');
+  if(rows.length!==1) throw invalidState('missing or duplicate OB-02 at R3 entry');
+  const obligation=rows[0], met=consentDecision.details.choiceId==='explicit';
+  const ruleId=`obligation:OB-02:explanation-${met?'met':'missed'}`;
+  const sources=[obligation.lastEventId,consentDecision.eventId,delayed.eventId];
+  const event=appendEvent(state,{type:'obligation',key:`OB-02-explanation-${met?'met':'missed'}`,ruleId,actor:'narrator',
+    audience:['player','leah','ishan'],evidenceStatus:'authored-status',sourceEventIds:sources,
+    details:{obligationId:'OB-02',milestoneId:'OB-02-CUSTOMER-EXPLANATION',owner:'theo',dueRound:3,
+      status:met?'met':'missed',parentStatus:'active',choiceId:consentDecision.details.choiceId,
+      text:met?'The explicit path includes a clear explanation before the next invitation. This does not verify old-data cleanup.':
+        'The general explanation was not included before the customer asked again. The missed R3 milestone remains on record; old-data cleanup is still unverified.'}});
+  obligation.customerExplanation.status=met?'met':'missed';
+  obligation.customerExplanation.lastEventId=event.eventId;
+  obligation.status='active'; obligation.lastEventId=event.eventId;
+  const customerUpdate=appendEvent(state,{type:'obligation',key:`OB-02-customer-status-${met?'met':'missed'}`,
+    ruleId:'obligation:OB-02:customer-status',actor:'narrator',audience:['player','theo'],evidenceStatus:'authored-status',
+    sourceEventIds:[event.eventId],details:{obligationId:'OB-02',status:met?'met':'missed',owner:'theo',dueRound:3,
+      text:met?'The R3 customer-explanation milestone was met.':'The R3 customer-explanation milestone was missed.'}});
+  obligation.customerExplanation.statusEventId=customerUpdate.eventId;
+}
+function recordWorkflowBundle(state, scopeDecision) {
+  const rows=state.obligations.filter(item=>item.obligationId==='OB-02');
+  if(rows.length!==1) throw invalidState('missing or duplicate OB-02 at R4 decision');
+  const obligation=rows[0], selection=scopeDecision.details.choiceId;
+  const status=selection==='core'?'scheduled':selection==='custom'?'deferred':'blocked';
+  const event=appendEvent(state,{type:'obligation',key:`OB-02-workflow-bundle-${status}`,ruleId:`obligation:OB-02:bundle-${status}`,
+    actor:'narrator',audience:['player','leah','ishan'],evidenceStatus:'authored-status',
+    sourceEventIds:[obligation.lastEventId,scopeDecision.eventId],details:{obligationId:'OB-02',parentStatus:'active',
+      bundleId:obligation.workflowBundle.id,bundleStatus:status,choiceId:selection,owner:'leah',
+      text:status==='scheduled'?'The shared review bundle includes the selected retention workflow; it does not authorize or prove deletion of old transcripts.':
+        status==='deferred'?'The shared retention-workflow review bundle is deferred for the Atlas branch. OB-02 and old-data cleanup remain active and pending.':
+          'The shared retention-workflow review bundle is blocked by competing review capacity. OB-02 and old-data cleanup remain active and pending.'}});
+  obligation.workflowBundle.status=status; obligation.workflowBundle.sourceEventId=event.eventId;
+  obligation.status='active'; obligation.lastEventId=event.eventId;
+}
+function recordRetentionCheckpoint(state, finalDecision) {
+  const obligation=state.obligations.find(item=>item.obligationId==='OB-02');
+  if(!obligation || obligation.status!=='active' || !obligation.workflowBundle.sourceEventId)
+    throw invalidState('missing OB-02 parent or R4 bundle before R5 checkpoint');
+  const consentDecision=state.events.find(event=>event.eventId===obligation.createdByDecision);
+  const bundleEvent=state.events.find(event=>event.eventId===obligation.workflowBundle.sourceEventId);
+  const scopeDecision=state.events.find(event=>event.eventId===bundleEvent?.sourceEventIds?.[1]);
+  if(!consentDecision||!bundleEvent||!scopeDecision) throw invalidState('missing OB-02 checkpoint source');
+  const consent=consentDecision.details.choiceId, scope=scopeDecision.details.choiceId;
+  const artifacts=Object.fromEntries(state.artifacts.map(row=>[row.artifactId,row.eventId]));
+  const checks=[];
+  if(scope==='core'&&consent==='explicit') {
+    for(const id of ['participant-notice','new-data-default','deletion-request-workflow']) checks.push({checkId:id,status:'described-by-selected-path',sourceEventIds:[consentDecision.eventId,...(id==='new-data-default'&&artifacts['KB-06']?[artifacts['KB-06']]:id==='deletion-request-workflow'&&artifacts['KB-07']?[artifacts['KB-07']]:[])]});
+  } else if(scope==='core'&&consent==='quiet') {
+    checks.push({checkId:'new-data-default',status:'described-by-selected-path',sourceEventIds:[consentDecision.eventId,...(artifacts['KB-06']?[artifacts['KB-06']]:[])]});
+  }
+  // Exception+core has no general-policy checks. Preserve only the Atlas-specific
+  // request and mark its scope and verification unresolved; a request is not consent.
+  const atlasEvent=state.events.find(event=>event.type==='question'&&event.round===2&&event.actor==='theo'&&event.details.questionId==='atlas-retention');
+  const exception=consent==='exception';
+  const atlasDurationSupported=Boolean(atlasEvent&&artifacts['KB-08']);
+  const atlasSources=[consentDecision.eventId,...(atlasEvent?[atlasEvent.eventId]:[]),...(atlasDurationSupported?[artifacts['KB-08']]:[])];
+  const event=appendEvent(state,{type:'obligation',key:'OB-02-r5-checkpoint',ruleId:'obligation:OB-02:r5-checkpoint',actor:'narrator',
+    audience:['player','leah','ishan'],evidenceStatus:'authored-status',
+    sourceEventIds:[obligation.lastEventId,consentDecision.eventId,scopeDecision.eventId,finalDecision.eventId,
+      ...checks.flatMap(check=>check.sourceEventIds.filter(id=>id!==consentDecision.eventId)),...atlasSources.slice(1)],
+    details:{obligationId:'OB-02',checkpointId:'OB-02-R5-CHECKPOINT',parentStatus:'active',owner:'leah',
+      selectedRetentionPath:consent,selectedCapacityPath:scope,
+      workflowBundle:{id:obligation.workflowBundle.id,status:obligation.workflowBundle.status,sourceEventId:bundleEvent.eventId},
+      checks,atlasException:exception?{status:'separate-request-retained',duration:atlasDurationSupported?'30 days':null,
+        scope:'Atlas only',scopeStatus:'unresolved',verificationStatus:'not verified',consentOrApproval:'not established',
+        sourceEventIds:atlasSources}:null,
+      cleanup:{id:obligation.cleanup.id,owner:'ishan',status:'pending',verified:false,overdue:false},
+      policyScopeFollowUp:{id:obligation.policyScope.id,owner:'leah',due:'Thursday 12:00 in the fictional launch week',executionDeadline:null},
+      explanationMilestone:{id:obligation.customerExplanation.id,owner:'theo',status:obligation.customerExplanation.status,
+        dueRound:3,eventId:obligation.customerExplanation.lastEventId},
+      text:'R5 is an ownership and workflow checkpoint. Old-data cleanup remains pending, not overdue, and unverified. Path descriptions are not independent execution receipts.'}});
+  obligation.r5Checkpoint={eventId:event.eventId,status:'recorded'};
+  obligation.lastEventId=event.eventId;
+  obligation.status='active';
+  const customerUpdate=appendEvent(state,{type:'obligation',key:'OB-02-customer-status-r5',ruleId:'obligation:OB-02:customer-status',
+    actor:'narrator',audience:['player','theo'],evidenceStatus:'authored-status',
+    sourceEventIds:[obligation.customerExplanation.statusEventId],details:{obligationId:'OB-02',status:obligation.customerExplanation.status,
+      owner:'theo',dueRound:3,text:`R5 status of the customer-explanation milestone: ${obligation.customerExplanation.status}.`}});
+  obligation.customerExplanation.statusEventId=customerUpdate.eventId;
 }
 export function askQuestion(state, personId, questionId) {
   requirePlay(state);
@@ -262,6 +446,8 @@ export function decide(state, choiceId, writtenDecision='') {
     reactions:{...choice.reactions},heard:state.evidence.filter(evidence=>evidence.round===state.round).map(evidence=>evidence.id),
     metrics:{...next.metrics},followup:null,eventId:decision.eventId,bonusEffect:bonus});
   if (round.id==='promise') createReliabilityObligation(next,decision);
+  if (round.id==='consent') createRetentionObligation(next,decision);
+  if (round.id==='scope') recordWorkflowBundle(next,decision);
   if (round.id==='rumor' && choiceId!=='ignore') {
     const note=requireEvent(next,'story','story:planning-note',3);
     const rumor=requireEvent(next,'story','story:rumor-circulates',3);
@@ -280,6 +466,7 @@ export function advance(state) {
   for (let index=0; index<state.round; index++) predecessor(state,index);
   const next=copy(state);
   if (state.round===ROUNDS.length-1) {
+    recordRetentionCheckpoint(next,prior.decision);
     next.phase='complete';
     appendEvent(next,{type:'completion',key:'complete',ruleId:'completion:launch-room',audience:['player'],
       sourceEventIds:state.events.filter(event=>event.type==='decision').map(event=>event.eventId),
@@ -309,6 +496,8 @@ export function advance(state) {
         text:delayed.details.text}});
     obligation.status='active'; obligation.lastEventId=event.eventId;
   }
+  if(prior.round.id==='consent') recordExplanationMilestone(next,prior.decision,delayed);
+  if(next.round===1) acquireArtifact(next,'KB-05',delayed,'round-entry');
   next.arrival={text:rule.text,delta:actual,eventId:delayed.eventId};
   next.history[next.history.length-1].followup={...next.arrival};
   enterRound(next);
@@ -417,6 +606,130 @@ function completedTrace(state) {
     const authored=ROUNDS[question.round-1].conversations[question.actor]?.find(item=>item.id===question.details.questionId);
     if(!authored || question.details.title!==authored.title || question.details.text!==authored.evidence || !state.evidence.some(item=>item.id===question.details.questionId && item.person===question.actor && item.round===question.round-1)) throw invalidState('missing or contradictory conversation evidence');
   }
+  const artifactIds=state.artifacts.map(item=>item.artifactId);
+  if(new Set(artifactIds).size!==artifactIds.length) throw invalidState('duplicate dossier acquisition');
+  for(const id of artifactIds) requireArtifact(state,id);
+  const retentionFindingEvents=state.events.filter(event=>event.type==='finding'&&event.details.findingId===RETENTION_FINDING_ID);
+  let previousFinding=null;
+  for(const [index,event] of retentionFindingEvents.entries()) {
+    const detail=event.details, expectedRevision=index+1;
+    const acquisitions=detail.sourceAcquisitions||[], acquisitionIds=acquisitions.map(item=>item.eventId);
+    if(detail.revision!==expectedRevision || detail.recordedAtRound!==event.round ||
+        !['recorded','revised','recorded-again','cleared'].includes(detail.action) ||
+        event.ruleId!==`finding:${RETENTION_FINDING_ID}` ||
+        event.eventId!==eventId(state,event.round,'finding',`${RETENTION_FINDING_ID}-revision-${expectedRevision}`) ||
+        detail.supersedesEventId!==(previousFinding?.eventId||null) ||
+        JSON.stringify(detail.sourceEventIds)!==JSON.stringify(acquisitionIds) ||
+        JSON.stringify(event.sourceEventIds)!==JSON.stringify([...(previousFinding?[previousFinding.eventId]:[]),...acquisitionIds]))
+      throw invalidState('contradictory append-only retention finding');
+    if(previousFinding && previousFinding.details.sourceEventIds.some(id=>!acquisitionIds.includes(id)))
+      throw invalidState('retention finding revision dropped a previously recorded source');
+    for(const acquisition of acquisitions) {
+      const source=state.events.find(row=>row.eventId===acquisition.eventId), stored=state.artifacts.find(row=>row.artifactId===acquisition.artifactId);
+      if(!source || !stored || source.type!=='artifact' || source.details.artifactId!==acquisition.artifactId ||
+          acquisition.acquiredAtRound!==source.round || acquisition.sequence!==source.sequence ||
+          stored.acquiredAtRound!==source.round || stored.sequence!==source.sequence || source.sequence>=event.sequence ||
+          source.round>event.round || !['KB-05','KB-06','KB-07','KB-08','KB-08-R4'].includes(acquisition.artifactId))
+        throw invalidState('retention finding used a future or mismatched source acquisition');
+    }
+    if(detail.active!==(detail.action!=='cleared') || (detail.active&&!RETENTION_INTERPRETATIONS[detail.interpretationId]) ||
+        !Number.isInteger(detail.recordedAtRound) || detail.recordedAtRound<2 || detail.recordedAtRound>5)
+      throw invalidState('invalid retention finding interpretation state');
+    if((!previousFinding&&detail.action!=='recorded') ||
+        (previousFinding&&detail.action==='recorded') ||
+        (detail.action==='revised'&&!previousFinding.details.active) ||
+        (detail.action==='recorded-again'&&previousFinding.details.active) ||
+        (detail.action==='cleared'&&(!previousFinding?.details.active || detail.interpretationId!==previousFinding.details.interpretationId)))
+      throw invalidState('invalid retention finding lifecycle transition');
+    const projection=state.findingRecords?.[index];
+    if(!projection || projection.eventId!==event.eventId || projection.revision!==detail.revision ||
+        projection.recordedAtRound!==detail.recordedAtRound || projection.active!==detail.active ||
+        projection.action!==detail.action || projection.interpretationId!==detail.interpretationId ||
+        projection.supersedesEventId!==detail.supersedesEventId ||
+        JSON.stringify(projection.sourceAcquisitions)!==JSON.stringify(detail.sourceAcquisitions))
+      throw invalidState('retention finding projection disagrees with its event history');
+    previousFinding=event;
+  }
+  const activeRetentionFinding=Boolean(previousFinding?.details.active);
+  if(state.findings.includes(RETENTION_FINDING_ID)!==activeRetentionFinding ||
+      (state.findingRecords||[]).length!==retentionFindingEvents.length)
+    throw invalidState('retention finding active state disagrees with its append-only history');
+  const r2=predecessor(state,1), r3=predecessor(state,2), r4=predecessor(state,3), r5=predecessor(state,4);
+  const obRows=state.obligations.filter(item=>item.obligationId==='OB-02');
+  if(obRows.length!==1) throw invalidState('missing or duplicate OB-02');
+  const obligation=obRows[0], created=requireEvent(state,'obligation','obligation:OB-02:created',2);
+  if(created.eventId!==eventId(state,2,'obligation','OB-02-created') || created.details.owner!=='leah' ||
+      JSON.stringify(created.audience)!==JSON.stringify(['player','leah','ishan']) ||
+      created.details.status!=='active' || created.details.dueRound!==null || created.sourceEventIds.length!==1 ||
+      created.sourceEventIds[0]!==r2.decision.eventId || obligation.createdByDecision!==r2.decision.eventId)
+    throw invalidState('contradictory OB-02 creation record');
+  const customerCreated=requireEvent(state,'obligation','obligation:OB-02:customer-status',2);
+  if(customerCreated.eventId!==eventId(state,2,'obligation','OB-02-customer-status-created') ||
+      JSON.stringify(customerCreated.audience)!==JSON.stringify(['player','theo']) || customerCreated.sourceEventIds.length!==1 ||
+      customerCreated.sourceEventIds[0]!==created.eventId || customerCreated.details.status!=='due' ||
+      Object.keys(customerCreated.details).some(key=>!['obligationId','status','owner','dueRound','text'].includes(key)))
+    throw invalidState('contradictory OB-02 customer-only status update');
+  const milestoneName=r2.choice.id==='explicit'?'met':'missed';
+  const milestone=requireEvent(state,'obligation',`obligation:OB-02:explanation-${milestoneName}`,3);
+  const r2Delayed=requireEvent(state,'delayed',`delay:consent:${r2.choice.id}`,3);
+  if(milestone.eventId!==eventId(state,3,'obligation',`OB-02-explanation-${milestoneName}`) ||
+      milestone.audience.includes('theo') ||
+      milestone.details.status!==milestoneName || milestone.details.parentStatus!=='active' ||
+      JSON.stringify(milestone.audience)!==JSON.stringify(['player','leah','ishan']) ||
+      milestone.sourceEventIds.length!==3 || milestone.sourceEventIds[0]!==created.eventId ||
+      milestone.sourceEventIds[1]!==r2.decision.eventId || milestone.sourceEventIds[2]!==r2Delayed.eventId ||
+      obligation.customerExplanation.status!==milestoneName || obligation.customerExplanation.lastEventId!==milestone.eventId)
+    throw invalidState('contradictory OB-02 R3 explanation milestone');
+  const customerMilestone=requireEvent(state,'obligation','obligation:OB-02:customer-status',3);
+  if(customerMilestone.eventId!==eventId(state,3,'obligation',`OB-02-customer-status-${milestoneName}`) ||
+      JSON.stringify(customerMilestone.audience)!==JSON.stringify(['player','theo']) || customerMilestone.sourceEventIds.length!==1 ||
+      customerMilestone.sourceEventIds[0]!==milestone.eventId || customerMilestone.details.status!==milestoneName ||
+      Object.keys(customerMilestone.details).some(key=>!['obligationId','status','owner','dueRound','text'].includes(key)))
+    throw invalidState('contradictory OB-02 customer-only milestone status');
+  const bundleStatus=r4.choice.id==='core'?'scheduled':r4.choice.id==='custom'?'deferred':'blocked';
+  const bundle=requireEvent(state,'obligation',`obligation:OB-02:bundle-${bundleStatus}`,4);
+  if(bundle.eventId!==eventId(state,4,'obligation',`OB-02-workflow-bundle-${bundleStatus}`) ||
+      bundle.details.bundleId!=='OB-02-RETENTION-WORKFLOW-REVIEW' || bundle.details.bundleStatus!==bundleStatus ||
+      JSON.stringify(bundle.audience)!==JSON.stringify(['player','leah','ishan']) ||
+      bundle.details.parentStatus!=='active' || bundle.details.choiceId!==r4.choice.id ||
+      bundle.sourceEventIds.length!==2 || bundle.sourceEventIds[0]!==milestone.eventId || bundle.sourceEventIds[1]!==r4.decision.eventId ||
+      obligation.workflowBundle.status!==bundleStatus || obligation.workflowBundle.sourceEventId!==bundle.eventId ||
+      obligation.status!=='active') throw invalidState('contradictory OB-02 R4 workflow bundle');
+  const receipt=requireEvent(state,'obligation','obligation:OB-02:r5-checkpoint',5);
+  if(receipt.eventId!==eventId(state,5,'obligation','OB-02-r5-checkpoint') || receipt.details.checkpointId!=='OB-02-R5-CHECKPOINT' ||
+      JSON.stringify(receipt.audience)!==JSON.stringify(['player','leah','ishan']) ||
+      receipt.details.parentStatus!=='active' || receipt.details.cleanup?.owner!=='ishan' || receipt.details.cleanup.status!=='pending' ||
+      receipt.details.cleanup.verified!==false || receipt.details.cleanup.overdue!==false ||
+      receipt.details.workflowBundle?.status!==bundleStatus || receipt.details.explanationMilestone?.status!==milestoneName ||
+      receipt.details.selectedRetentionPath!==r2.choice.id || receipt.details.selectedCapacityPath!==r4.choice.id ||
+      receipt.sourceEventIds[0]!==bundle.eventId || !receipt.sourceEventIds.includes(r5.decision.eventId) ||
+      obligation.status!=='active' || obligation.lastEventId!==receipt.eventId || obligation.r5Checkpoint?.eventId!==receipt.eventId)
+    throw invalidState('contradictory OB-02 R5 checkpoint');
+  const expectedCheckIds=bundleStatus!=='scheduled'?[]:r2.choice.id==='explicit'?
+    ['participant-notice','new-data-default','deletion-request-workflow']:r2.choice.id==='quiet'?['new-data-default']:[];
+  if(JSON.stringify(receipt.details.checks.map(item=>item.checkId))!==JSON.stringify(expectedCheckIds) ||
+      receipt.details.checks.some(item=>item.status!=='described-by-selected-path'||item.sourceEventIds[0]!==r2.decision.eventId))
+    throw invalidState('contradictory OB-02 per-check selection');
+  const customerR5=requireEvent(state,'obligation','obligation:OB-02:customer-status',5);
+  if(customerR5.eventId!==eventId(state,5,'obligation','OB-02-customer-status-r5') ||
+      JSON.stringify(customerR5.audience)!==JSON.stringify(['player','theo']) || customerR5.sourceEventIds.length!==1 ||
+      customerR5.sourceEventIds[0]!==customerMilestone.eventId || customerR5.details.status!==milestoneName ||
+      Object.keys(customerR5.details).some(key=>!['obligationId','status','owner','dueRound','text'].includes(key)))
+    throw invalidState('contradictory OB-02 customer-only R5 status');
+  const atlasQuestion=questions.find(event=>event.round===2&&event.actor==='theo'&&event.details.questionId==='atlas-retention');
+  const kb08=state.artifacts.find(item=>item.artifactId==='KB-08');
+  if(r2.choice.id==='exception') {
+    if(receipt.details.checks.length || receipt.details.atlasException?.status!=='separate-request-retained' ||
+        receipt.details.atlasException.scope!=='Atlas only' || receipt.details.atlasException.scopeStatus!=='unresolved' ||
+        receipt.details.atlasException.verificationStatus!=='not verified' || receipt.details.atlasException.consentOrApproval!=='not established' ||
+        receipt.details.atlasException.duration!==(atlasQuestion&&kb08?'30 days':null) ||
+        JSON.stringify(receipt.details.atlasException.sourceEventIds)!==JSON.stringify([r2.decision.eventId,...(atlasQuestion?[atlasQuestion.eventId]:[]),...(atlasQuestion&&kb08?[kb08.eventId]:[])]))
+      throw invalidState('contradictory OB-02 Atlas exception boundary');
+  } else if(receipt.details.atlasException!==null) throw invalidState('unsupported OB-02 Atlas exception receipt');
+  const obEvents=state.events.filter(event=>event.type==='obligation'&&event.details.obligationId==='OB-02');
+  for(const event of obEvents) for(const group of ['metrics','relationships'])
+    if(Object.values(event.effects[group].requested).some(value=>value!==0)||Object.values(event.effects[group].actual).some(value=>value!==0))
+      throw invalidState('OB-02 event changed numeric signals');
   for(const decision of decisions) {
     const {choice,history,round}=predecessor(state,decision.round-1), config=choice.evidenceBonus;
     const question=config?questions.find(event=>event.details.questionId===config.id && event.round===decision.round):null;
@@ -434,17 +747,17 @@ function completedTrace(state) {
       if(delayed.sourceEventIds.length!==1 || delayed.sourceEventIds[0]!==decision.eventId || delayed.details.text!==rule.text || delayed.details.choiceId!==choice.id || METRICS.some(key=>delayed.effects.metrics.requested[key]!== (rule.delta[key]||0))) throw invalidState('contradictory delayed consequence');
     }
   }
-  return {decisions,completion,questions};
+  return {decisions,completion,questions,obligationCheckpoint:receipt,obligation};
 }
 function citationFor(event,visibleIds) {
   const person=PEOPLE.find(person=>person.id===event.actor);
-  const names={decision:'Decision',question:'Conversation',delayed:'Later consequence',completion:'Completed attempt',input:'Confirmed input',disclosure:'Disclosure',memory:'Stakeholder recollection',story:'Scenario record'};
-  const detail=event.type==='decision'?event.details.title:event.type==='question'?person.name+' — '+event.details.title:event.type==='input'?event.details.mode==='typed'?'Your wording':'Prepared approach':event.details.title||'';
+  const names={decision:'Decision',question:'Conversation',delayed:'Later consequence',completion:'Completed attempt',input:'Confirmed input',disclosure:'Disclosure',memory:'Stakeholder recollection',story:'Scenario record',artifact:'Case file',finding:'Recorded comparison',obligation:'Carried-work update'};
+  const detail=event.type==='decision'?event.details.title:event.type==='question'?person.name+' — '+event.details.title:event.type==='input'?event.details.mode==='typed'?'Your wording':'Prepared approach':event.details.title||event.details.milestoneId||event.details.bundleId||event.details.checkpointId||'';
   const text=event.type==='decision'?event.details.outcome:event.type==='completion'?'Five decisions completed. Final signals and authored motives are recorded here.':event.type==='input'?event.details.mode==='typed'?event.details.text:'A prepared approach was confirmed; no player wording was supplied.':event.details.text||event.details.title||'';
   return {eventId:event.eventId,label:'Round '+event.round+' · '+names[event.type]+(detail?': '+detail:''),round:event.round,type:event.type,status:event.evidenceStatus,text,effects:copy(event.effects),sourceEventIds:event.sourceEventIds.filter(id=>visibleIds.has(id))};
 }
 export function getDebrief(state) {
-  const {decisions,completion,questions}=completedTrace(state);
+  const {decisions,completion,questions,obligationCheckpoint,obligation}=completedTrace(state);
   const visible=getPlayerEvents(state), visibleIds=new Set(visible.map(event=>event.eventId));
   const citations=visible.map(event=>citationFor(event,visibleIds));
   const sources=ids=>{
@@ -453,7 +766,13 @@ export function getDebrief(state) {
     return unique;
   };
   const delayed=state.events.filter(event=>event.type==='delayed');
-  const outcome={...evaluateOutcome(state.metrics),sourceEventIds:sources([...decisions.map(event=>event.eventId),...delayed.map(event=>event.eventId),completion.eventId])};
+  const findings=state.events.filter(event=>event.type==='finding');
+  const retentionFindingHistory=findings.filter(event=>event.details.findingId===RETENTION_FINDING_ID).map(event=>({
+    eventId:event.eventId,action:event.details.action,revision:event.details.revision,recordedAtRound:event.details.recordedAtRound,
+    interpretation:event.details.interpretation,active:event.details.active,
+    sourceAcquisitions:copy(event.details.sourceAcquisitions),sourceEventIds:sources([event.eventId,...event.sourceEventIds])
+  }));
+  const outcome={...evaluateOutcome(state.metrics),sourceEventIds:sources([...decisions.map(event=>event.eventId),...delayed.map(event=>event.eventId),completion.eventId,...findings.map(event=>event.eventId)])};
   const reflections=[];
   const add=(id,title,fact,interpretation,prompt,ids)=>reflections.push({id,title,fact,text:fact,interpretation,prompt,sourceEventIds:sources(ids)});
   add('conversations','How you gathered evidence',
@@ -500,9 +819,15 @@ export function getDebrief(state) {
     relationship:completion.effects.relationships.after[person.id],sourceEventIds:sources([completion.eventId,...[...questions,...decisions].filter(event=>event.effects.relationships.requested[person.id]!==0).map(event=>event.eventId)])}));
   const counts={conversations:questions.length,stakeholders:new Set(questions.map(event=>event.actor)).size,positiveBonuses:positive.length,cappedBonuses:capped.length};
   const cited=new Set([outcome,...reflections,...decisionRecords,...agendas].flatMap(item=>item.sourceEventIds));
+  cited.add(obligationCheckpoint.eventId);
   // Follow only already-allowed ancestors. A visible account never reveals a private parent.
   for(const id of cited) for(const parent of citations.find(item=>item.eventId===id)?.sourceEventIds||[]) cited.add(parent);
-  return {title:outcome.title,description:outcome.description,outcome,counts,reflections,decisions:decisionRecords,agendas,citations:citations.filter(item=>cited.has(item.eventId))};
+  const obligations=[{obligationId:obligation.obligationId,title:obligation.title,owner:obligation.owner,status:obligation.status,
+    cleanup:copy(obligationCheckpoint.details.cleanup),policyScopeFollowUp:copy(obligationCheckpoint.details.policyScopeFollowUp),
+    explanationMilestone:copy(obligationCheckpoint.details.explanationMilestone),workflowBundle:copy(obligationCheckpoint.details.workflowBundle),
+    checks:copy(obligationCheckpoint.details.checks),atlasException:copy(obligationCheckpoint.details.atlasException),
+    sourceEventIds:sources([obligationCheckpoint.eventId])}];
+  return {title:outcome.title,description:outcome.description,outcome,counts,reflections,decisions:decisionRecords,agendas,obligations,retentionFindingHistory,citations:citations.filter(item=>cited.has(item.eventId))};
 }
 export function formatDecisionRecord(state) {
   const debrief=getDebrief(state);
@@ -514,6 +839,21 @@ export function formatDecisionRecord(state) {
     'Final signals: '+METRICS.map(key=>key+' '+debrief.outcome.metrics[key]+'/100').join(', '),refs(debrief.outcome.sourceEventIds),'',
     'This authored rubric describes game signals; it is not a personality or professional assessment.',''];
   for(const item of debrief.reflections) lines.push(item.title,'Observation: '+item.fact,'Interpretation: '+item.interpretation,'Reflection prompt: '+item.prompt,refs(item.sourceEventIds),'');
+  for(const item of debrief.obligations) {
+    lines.push('CARRIED WORK: '+item.obligationId+' — '+item.title,'Accountable owner: '+item.owner+'; status: '+item.status,
+      'Cleanup owner: '+item.cleanup.owner+'; cleanup: '+item.cleanup.status+'; overdue: '+item.cleanup.overdue+'; verified: '+item.cleanup.verified,
+      'Policy/scope follow-up: '+item.policyScopeFollowUp.owner+'; '+item.policyScopeFollowUp.due+'; execution deadline: not set',
+      'R3 explanation: '+item.explanationMilestone.status+'; workflow bundle: '+item.workflowBundle.status,
+      ...item.checks.map(check=>check.checkId+': described by the selected path; independent execution receipt not recorded.'),refs(item.sourceEventIds));
+    if(item.atlasException) lines.push('Atlas-only request: '+(item.atlasException.duration||'duration not established')+'; scope and verification unresolved; approval and deletion not established; no general default or authorization inferred.');
+    lines.push('');
+  }
+  if(debrief.retentionFindingHistory.length) {
+    lines.push('PLAYER INVESTIGATION · DEFAULT IS NOT CLEANUP');
+    for(const item of debrief.retentionFindingHistory) lines.push('Revision '+item.revision+' · R'+item.recordedAtRound+' · '+item.action+': '+item.interpretation,
+      'Active: '+item.active+'; acquired sources: '+item.sourceAcquisitions.map(source=>source.artifactId+' at R'+source.acquiredAtRound+' (sequence '+source.sequence+', event '+source.eventId+')').join(', '),refs(item.sourceEventIds));
+    lines.push('');
+  }
   for(const decision of debrief.decisions) {
     lines.push('ROUND '+decision.round,'Confirmed approach: '+decision.title);
     if(decision.inputMode==='typed') lines.push('Your wording:',decision.wording);
