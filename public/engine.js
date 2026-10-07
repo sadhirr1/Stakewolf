@@ -96,12 +96,14 @@ function enterRound(state) {
     details:{questionIds:currentRound(state).conversations[person].map(question=>question.id)}});
   if (state.round===2) {
     appendEvent(state,{type:'story',key:'planning-note',ruleId:'story:planning-note',audience:['ishan','leah'],playerVisible:false,
-      details:{origin:'earlier team planning, before the run',text:'What evidence would make a limited launch safe?',context:'The full note also mentions a review gate.'}});
-    appendEvent(state,{type:'story',key:'rumor-circulates',ruleId:'story:rumor-circulates',
+      details:{origin:'earlier team planning, before the run',authoredAt:'Monday · 08:15',text:'What evidence would make a limited launch safe?',context:'The full note also mentions a review gate.'}});
+    const rumor=appendEvent(state,{type:'story',key:'rumor-circulates',ruleId:'story:rumor-circulates',
       audience:['player',...PEOPLE_IDS,'engineering-channel'],evidenceStatus:'unverified-claim',
-      details:{text:'Product has lost confidence in Engineering',status:'uncorrected',source:'cropped earlier team-planning note; wider spread unattributed'}});
+      details:{text:'Product has lost confidence in Engineering',status:'uncorrected',source:'caption attached to a cropped earlier team-planning note',captionStatus:'interpretation, not source wording; author unconfirmed at R3 opening',knownRecipients:['mara','ishan','leah','theo','engineering-channel'],widerSpread:'unattributed'}});
     appendEvent(state,{type:'story',key:'crop-admission',ruleId:'story:crop-admission',actor:'mara',audience:['mara'],playerVisible:false,
       evidenceStatus:'attributed-account',details:{text:'Mara shared a crop with two leads to discuss launch planning and added her interpretation; wider spread is unknown.'}});
+    acquireArtifact(state,'KB-09',rumor,'round-entry');
+    acquireArtifact(state,'KB-09b',rumor,'round-entry');
   }
   for (const rule of MEMORY_RULES.filter(rule=>rule.round===state.round+1)) {
     const memory = memorySources(state,rule);
@@ -144,10 +146,11 @@ function acquireArtifact(state, artifactId, sourceEvent, accessMode) {
   const artifact=DOSSIER_ARTIFACTS.find(item=>item.id===artifactId);
   if (!artifact || state.artifacts.some(item=>item.artifactId===artifactId)) throw invalidState(`duplicate or unknown dossier artifact ${artifactId}`);
   const expectedMode=artifact.access==='start'?'case-entry':artifact.access==='round-entry'?'round-entry':'interview';
-  if(accessMode!==expectedMode || state.round+1!==artifact.availableRound || (expectedMode!=='case-entry'&&!sourceEvent))
+  const modeAllowed=accessMode===expectedMode || (accessMode==='decision-disclosure'&&artifact.decisionChoices?.length);
+  if(!modeAllowed || state.round+1!==artifact.availableRound || (accessMode!=='case-entry'&&!sourceEvent))
     throw invalidState(`invalid access route for ${artifactId}`);
   const event=appendEvent(state,{type:'artifact',key:artifactId,ruleId:`artifact:acquire:${artifactId}`,actor:'narrator',
-    audience:['player'],evidenceStatus:artifact.reliability,sourceEventIds:sourceEvent?[sourceEvent.eventId]:[],
+    audience:artifact.acquisitionAudience||['player'],evidenceStatus:artifact.reliability,sourceEventIds:sourceEvent?[sourceEvent.eventId]:[],
     details:{artifactId,title:artifact.title,source:artifact.source,time:artifact.time,reliability:artifact.reliability,text:artifact.scope,
       availableRound:artifact.availableRound,acquiredVia:accessMode==='round-entry'?'round-entry':sourceEvent?.ruleId||accessMode}});
   state.artifacts.push({artifactId,eventId:event.eventId,acquiredAtRound:event.round,sequence:event.sequence});
@@ -168,8 +171,9 @@ function requireArtifact(state, artifactId) {
   const rows=state.artifacts?.filter(item=>item.artifactId===artifactId)||[];
   if (!artifact || rows.length!==1) throw invalidState(`missing or duplicate dossier access for ${artifactId}`);
   const event=requireEvent(state,'artifact',`artifact:acquire:${artifactId}`,artifact.availableRound);
+  const expectedAudience=artifact.acquisitionAudience||['player'];
   if (event.eventId!==rows[0].eventId || event.actor!=='narrator' || !event.playerVisible ||
-      event.audience.length!==1 || event.audience[0]!=='player' || !state.knowledge.player?.includes(event.eventId) ||
+      JSON.stringify(event.audience)!==JSON.stringify(expectedAudience) || !state.knowledge.player?.includes(event.eventId) ||
       event.details.artifactId!==artifact.id || event.details.title!==artifact.title || event.details.source!==artifact.source ||
       event.details.time!==artifact.time || event.details.reliability!==artifact.reliability || event.details.text!==artifact.scope ||
       event.details.availableRound!==artifact.availableRound || rows[0].acquiredAtRound!==event.round || rows[0].sequence!==event.sequence)
@@ -177,15 +181,25 @@ function requireArtifact(state, artifactId) {
   if (artifact.access==='start') {
     if (event.details.acquiredVia!=='case-entry' || event.sourceEventIds.length) throw invalidState(`invalid entry access for ${artifactId}`);
   } else if(artifact.access==='round-entry') {
-    const delayed=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.type==='delayed'&&row.round===artifact.availableRound);
-    if(event.details.acquiredVia!=='round-entry'||event.sourceEventIds.length!==1||!delayed||delayed.ruleId!=='delay:promise:'+state.history[0]?.choiceId)
+    const source=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.round===artifact.availableRound);
+    const expectedRule=artifact.accessSourceRule||`delay:promise:${state.history[0]?.choiceId}`;
+    const expectedType=artifact.accessSourceRule?'story':'delayed';
+    if(event.details.acquiredVia!=='round-entry'||event.sourceEventIds.length!==1||!source||source.type!==expectedType||source.ruleId!==expectedRule)
       throw invalidState(`invalid round-entry access for ${artifactId}`);
   } else {
-    const allowed=Array.isArray(artifact.access)?artifact.access:[artifact.access];
-    const question=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.type==='question'&&row.round===artifact.availableRound&&allowed.includes(row.details.questionId));
-    if (!question || question.actor!==artifact.accessActor ||
-        event.details.acquiredVia!==question.ruleId || event.sourceEventIds.length!==1 || event.sourceEventIds[0]!==question.eventId)
-      throw invalidState(`invalid interview access for ${artifactId}`);
+    const source=state.events.find(row=>row.eventId===event.sourceEventIds[0]&&row.round===artifact.availableRound);
+    if(event.sourceEventIds.length!==1 || !source) throw invalidState(`invalid source event for ${artifactId}`);
+    if(source.type==='question') {
+      const allowed=Array.isArray(artifact.access)?artifact.access:[artifact.access];
+      if(!allowed.includes(source.details.questionId)||source.actor!==artifact.accessActor||event.details.acquiredVia!==source.ruleId)
+        throw invalidState(`invalid interview access for ${artifactId}`);
+    } else if(source.type==='disclosure'&&artifact.decisionChoices?.length) {
+      const decision=state.events.find(row=>row.eventId===source.sourceEventIds[0]&&row.type==='decision');
+      const choiceId=decision?.details.choiceId;
+      if(!decision || !artifact.decisionChoices.includes(choiceId) || source.ruleId!==`disclosure:rumor:${choiceId}` ||
+          source.round!==artifact.availableRound || event.details.acquiredVia!==source.ruleId)
+        throw invalidState(`invalid decision disclosure access for ${artifactId}`);
+    } else throw invalidState(`invalid access event for ${artifactId}`);
   }
   return event;
 }
@@ -452,10 +466,11 @@ export function decide(state, choiceId, writtenDecision='') {
     const note=requireEvent(next,'story','story:planning-note',3);
     const rumor=requireEvent(next,'story','story:rumor-circulates',3);
     const audience=choiceId==='open'?['player',...PEOPLE_IDS,'engineering-channel']:['player','mara','ishan'];
-    appendEvent(next,{type:'disclosure',key:choiceId,ruleId:`disclosure:rumor:${choiceId}`,actor:'player',audience,
-      sourceEventIds:[decision.eventId,rumor.eventId,note.eventId],details:{topic:'planning-note',
-        text:choiceId==='open'?'The full planning note and correction are shared publicly.':'The full planning note and private leadership agreement are shared with Mara and Ishan.'}});
+    const disclosure=appendEvent(next,{type:'disclosure',key:choiceId,ruleId:`disclosure:rumor:${choiceId}`,actor:'player',audience,
+      sourceEventIds:[decision.eventId,rumor.eventId,note.eventId],details:{topic:'planning-note',choiceId,
+        text:choiceId==='open'?'The earlier note, written Monday at 08:15, asks what evidence would make a limited launch safe and mentions a review gate. The screenshot caption is an interpretation, not wording from the source or from your decision. The wider spread remains unattributed.':'The earlier note is available to Mara, Ishan, and you. Mara and Ishan agree to a concise joint update; this private reset is not a full-room correction.'}});
     grant(next,audience,note.eventId);
+    if(!next.artifacts.some(item=>item.artifactId==='KB-09a')) acquireArtifact(next,'KB-09a',disclosure,'decision-disclosure');
   }
   next.phase='result'; return next;
 }
@@ -609,6 +624,40 @@ function completedTrace(state) {
   const artifactIds=state.artifacts.map(item=>item.artifactId);
   if(new Set(artifactIds).size!==artifactIds.length) throw invalidState('duplicate dossier acquisition');
   for(const id of artifactIds) requireArtifact(state,id);
+  const rumor=requireEvent(state,'story','story:rumor-circulates',3);
+  const planningNote=requireEvent(state,'story','story:planning-note',3);
+  if(planningNote.details.authoredAt!=='Monday · 08:15' || planningNote.round!==3 ||
+      JSON.stringify(planningNote.audience)!==JSON.stringify(['ishan','leah']) || planningNote.playerVisible ||
+      rumor.evidenceStatus!=='unverified-claim' || rumor.details.status!=='uncorrected' ||
+      rumor.details.captionStatus!=='interpretation, not source wording; author unconfirmed at R3 opening' ||
+      rumor.details.widerSpread!=='unattributed' || JSON.stringify(rumor.audience)!==JSON.stringify(['player',...PEOPLE_IDS,'engineering-channel']))
+    throw invalidState('contradictory R3 planning note or unverified crop circulation');
+  requireArtifact(state,'KB-09');
+  requireArtifact(state,'KB-09b');
+  const r3Choice=decisions[2].details.choiceId;
+  const fullThread=questions.find(event=>event.round===3&&event.actor==='ishan'&&event.details.questionId==='full-thread');
+  const screenshotSource=questions.find(event=>event.round===3&&event.actor==='mara'&&event.details.questionId==='screenshot-source');
+  const noteAcquired=Boolean(fullThread||['open','broker'].includes(r3Choice));
+  if(noteAcquired) requireArtifact(state,'KB-09a');
+  else if(artifactIds.includes('KB-09a')) throw invalidState('KB-09a was acquired without its R3 permission route');
+  if(screenshotSource) requireArtifact(state,'KB-09c');
+  else if(artifactIds.includes('KB-09c')) throw invalidState('KB-09c was acquired without Mara’s R3 source admission');
+  const rumorDisclosures=state.events.filter(event=>event.type==='disclosure'&&event.ruleId.startsWith('disclosure:rumor:'));
+  if(r3Choice==='ignore') {
+    if(rumorDisclosures.length) throw invalidState('ignored R3 rumor produced a disclosure');
+    const privateDefect=requireEvent(state,'delayed','delay:rumor:ignore',4);
+    if(JSON.stringify(privateDefect.audience)!==JSON.stringify(['ishan','player'])) throw invalidState('ignored R3 defect escaped its private boundary');
+  } else {
+    const audience=r3Choice==='open'?['player',...PEOPLE_IDS,'engineering-channel']:['player','mara','ishan'];
+    if(rumorDisclosures.length!==1) throw invalidState('missing or duplicate R3 rumor disclosure');
+    const disclosure=rumorDisclosures[0];
+    if(disclosure.eventId!==eventId(state,3,'disclosure',r3Choice) || disclosure.actor!=='player' ||
+        disclosure.ruleId!==`disclosure:rumor:${r3Choice}` || JSON.stringify(disclosure.audience)!==JSON.stringify(audience) ||
+        disclosure.details.choiceId!==r3Choice || JSON.stringify(disclosure.sourceEventIds)!==JSON.stringify([decisions[2].eventId,rumor.eventId,planningNote.eventId]) ||
+        !state.knowledge.player.includes(planningNote.eventId) ||
+        (r3Choice==='broker'&&state.knowledge.theo.includes(planningNote.eventId)))
+      throw invalidState('contradictory R3 disclosure audience or source trace');
+  }
   const retentionFindingEvents=state.events.filter(event=>event.type==='finding'&&event.details.findingId===RETENTION_FINDING_ID);
   let previousFinding=null;
   for(const [index,event] of retentionFindingEvents.entries()) {
