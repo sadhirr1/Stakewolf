@@ -143,6 +143,144 @@ export function getConversationMemory(state, personId) {
 export function getPlayerEvents(state) {
   return copy(state.events.filter(event=>event.playerVisible || state.knowledge.player.includes(event.eventId)));
 }
+function playerCanSee(state, event) {
+  return Boolean(event && (event.playerVisible || event.audience?.includes('player') || state.knowledge?.player?.includes(event.eventId)));
+}
+function caseDeskSources(state, ids) {
+  const visible=new Set(getPlayerEvents(state).map(event=>event.eventId));
+  return [...new Set(ids.filter(id=>id&&visible.has(id)))];
+}
+const CASE_DESK_OWNER_NAMES={ishan:'Ishan Chen',leah:'Leah Okafor',theo:'Theo Bell'};
+function caseDeskImpact(state, choice) {
+  const round=currentRound(state), choiceId=choice.id, sources=[];
+  const obligations=state.obligations||[];
+  if(round.id==='promise') {
+    const copyById={pilot:'Creates a promise to validate controlled access at the R5 launch review.',
+      launch:'Creates containment and validation work after broader exposure; Ishan owns the R5 review.',
+      delay:'Creates a promise to bring evidence from the pause to R5.'};
+    return {choiceId,title:choice.title,summary:copyById[choiceId]||choice.description,sourceEventIds:[]};
+  }
+  if(round.id==='consent') {
+    const copyById={explicit:'Adds a customer explanation by R3 entry, plus a notice/default/deletion-request workflow. Leah is accountable; Ishan owns cleanup and Theo owns the explanation. Old-data cleanup remains pending.',
+      quiet:'Changes the new-data default; the general customer explanation remains due at R3 entry. Leah is accountable; Ishan owns cleanup and Theo owns the explanation. Old-data cleanup remains pending.',
+      exception:'Retains an Atlas-specific agreement; the general customer explanation remains due at R3 entry. Leah is accountable; Ishan owns cleanup and Theo owns the explanation. Old-data cleanup remains pending.'};
+    return {choiceId,title:choice.title,summary:copyById[choiceId]||choice.description,sourceEventIds:caseDeskSources(state,obligations.map(item=>item.lastEventId))};
+  }
+  if(round.id==='rumor') {
+    const existing=obligations.map(item=>item.lastEventId);
+    return {choiceId,title:choice.title,summary:'This changes how the disputed note is handled. It does not complete reliability validation or old-data cleanup.',sourceEventIds:caseDeskSources(state,existing)};
+  }
+  if(round.id==='scope') {
+    const capacity=state.artifacts?.find(item=>item.artifactId==='KB-10a');
+    if(capacity) sources.push(capacity.eventId);
+    for(const item of obligations) sources.push(item.createdByDecision,item.lastEventId);
+    const copyById={core:'Schedule one shared bundle for R5; neither review has passed yet.',
+      custom:'Defer the shared bundle for Atlas; both carried obligations remain active.',
+      both:'The same two reviewers cannot complete both streams; shared validation becomes blocked.'};
+    return {choiceId,title:choice.title,summary:copyById[choiceId]||choice.description,
+      context:'Two reviewers share one review window. Reliability validation and the selected retention workflow compete with the Atlas branch.',
+      sourceEventIds:caseDeskSources(state,sources)};
+  }
+  if(round.id==='accountability') {
+    const copyById={evidence:'Present a bounded recommendation, name risks and the next gate. Unfinished work remains open.',
+      momentum:'Ask for broader expansion. Unfinished reliability and retention work remains open.',
+      shared:'Ask for a joint checkpoint and name owners. Existing work still needs follow-through.'};
+    return {choiceId,title:choice.title,summary:copyById[choiceId]||choice.description,
+      sourceEventIds:caseDeskSources(state,obligations.map(item=>item.lastEventId))};
+  }
+  return {choiceId,title:choice.title,summary:choice.description,sourceEventIds:[]};
+}
+/** Pure player-facing read model for the current case desk. It never advances game state. */
+export function getCaseDesk(state, choiceId) {
+  const events=Array.isArray(state?.events)?state.events:[];
+  const visibleEvents=getPlayerEvents(state||{events:[],knowledge:{player:[]}});
+  const visible=new Set(visibleEvents.map(event=>event.eventId));
+  const eventById=id=>events.find(event=>event.eventId===id&&visible.has(id));
+  const originFor=id=>{
+    const event=eventById(id);
+    if(!event) return null;
+    const round=ROUNDS[event.round-1];
+    return {round:event.round,label:`R${event.round} · ${round?.label||'Recorded decision'}`,title:event.details?.title||event.details?.text||'Confirmed commitment'};
+  };
+  const obligations=(state?.obligations||[]).filter(item=>eventById(item.createdByDecision)||eventById(item.lastEventId));
+  const statusItems=obligations.map(item=>{
+    const origin=originFor(item.createdByDecision), current=eventById(item.lastEventId);
+    const created=events.find(event=>event.type==='obligation'&&event.details?.obligationId===item.obligationId&&
+      event.ruleId===`obligation:${item.obligationId}:created`&&event.sourceEventIds?.includes(item.createdByDecision)&&visible.has(event.eventId));
+    const isOB01=item.obligationId==='OB-01';
+    const status=isOB01?(item.status==='open'?'open':'active'):'active';
+    let nextAction=isOB01?'Bring reliability-boundary evidence to the R5 launch review.':'Complete the recorded customer, policy-scope, and cleanup follow-up.';
+    if(isOB01&&item.reliabilityReview?.status==='scheduled') nextAction='Complete the scoped reliability checks at R5; scheduled work is not verification.';
+    if(isOB01&&item.reliabilityReview?.status==='deferred') nextAction='Reliability review is deferred; keep the R5 milestone visible and unresolved.';
+    if(isOB01&&item.reliabilityReview?.status==='blocked') nextAction='Resolve the shared-review bottleneck; reliability remains unresolved for R5.';
+    if(!isOB01&&item.customerExplanation?.status==='due') nextAction='Explain the retention path to customers by entry to R3; old-data cleanup remains pending.';
+    if(!isOB01&&item.customerExplanation?.status==='met') nextAction='Keep the explanation record; define policy and scope before any old-data cleanup.';
+    if(!isOB01&&item.customerExplanation?.status==='missed') nextAction='The R3 explanation milestone was missed; keep it recorded and define policy/scope follow-up.';
+    if(!isOB01&&item.workflowBundle?.status==='deferred') nextAction='Retention-workflow review is deferred for Atlas; old-data cleanup stays pending.';
+    if(!isOB01&&item.workflowBundle?.status==='blocked') nextAction='Retention-workflow review is blocked by shared capacity; old-data cleanup stays pending.';
+    const related=obligations.map(row=>row.obligationId);
+    const sources=caseDeskSources(state,[item.createdByDecision,created?.eventId,item.lastEventId,item.customerExplanation?.lastEventId,
+      item.workflowBundle?.sourceEventId,item.reliabilityReview?.eventId,item.validationBundle?.eventId]);
+    return {id:item.obligationId,title:item.title,owner:CASE_DESK_OWNER_NAMES[item.owner]||item.owner,
+      origin,status,statusLabel:status==='open'?'Open':'Active',commitment:created?.details?.text||'',
+      due:item.dueRound?`R${item.dueRound} · launch review`:null,nextAction,
+      milestones:isOB01?[{id:'OB-01-R5',label:'R5 reliability review',owner:'Ishan Chen',due:'R5 launch review',nextAction, status:item.reliabilityReview?.status||item.validationBundle?.status||'pending',sourceEventIds:caseDeskSources(state,[item.reliabilityReview?.eventId,item.validationBundle?.eventId])}]:[
+        {id:'OB-02-R3',label:'Customer explanation · R3',owner:'Theo Bell',due:'By entry to R3',nextAction:item.customerExplanation?.status==='missed'?'The R3 explanation milestone was missed; keep it recorded.':item.customerExplanation?.status==='met'?'Explanation recorded at R3 entry.':'Provide the customer explanation by entry to R3.',status:item.customerExplanation?.status||'due',sourceEventIds:caseDeskSources(state,[item.customerExplanation?.lastEventId,item.customerExplanation?.statusEventId])},
+        {id:'OB-02-R4',label:'Shared workflow review · R4',owner:'Leah Okafor',due:'R4 shared review window',nextAction:item.workflowBundle?.status==='deferred'?'Workflow review deferred for Atlas; both obligations remain active.':item.workflowBundle?.status==='blocked'?'Workflow review blocked by shared capacity; both obligations remain active.':item.workflowBundle?.status==='scheduled'?'Shared bundle scheduled for R5; neither review has passed.':'Select the retention workflow scope for the shared review window.',status:item.workflowBundle?.status||'unselected',sourceEventIds:caseDeskSources(state,[item.workflowBundle?.sourceEventId,item.validationBundle?.eventId])},
+        {id:'OB-02-policy-scope',label:'Policy and scope follow-up',owner:'Leah Okafor',due:'Thursday 12:00 · fictional launch week; execution deadline unset',nextAction:'Define policy and scope before any old-data cleanup.',status:'pending',sourceEventIds:caseDeskSources(state,[item.createdByDecision,item.lastEventId])},
+        {id:'OB-02-cleanup',label:'Earlier transcript cleanup',owner:'Ishan Chen',due:'Execution deadline unset',nextAction:'Cleanup remains pending and is not overdue; confirm object-level scope and authorization before acting.',status:item.cleanup?.status||'pending',statusLabel:'Pending · not overdue',sourceEventIds:caseDeskSources(state,[item.lastEventId])}],
+      sourceEventIds:sources,originEventId:eventById(item.createdByDecision)?.eventId||null,commitmentEventId:created?.eventId||null,currentEventId:current?.eventId||null};
+  });
+  let impacts=[];
+  if(state?.phase==='play') {
+    const choices=currentRound(state)?.choices||[];
+    impacts=choiceId===undefined?choices.map(choice=>caseDeskImpact(state,choice)):
+      choices.filter(choice=>choice.id===choiceId).map(choice=>caseDeskImpact(state,choice));
+  }
+  let sharedReview=null;
+  if(ROUNDS[state?.round]?.id==='scope') {
+    const capacity=state.artifacts?.find(item=>item.artifactId==='KB-10a');
+    const capacityEvent=eventById(capacity?.eventId);
+    const selected=events.find(event=>event.type==='obligation'&&event.ruleId==='obligation:shared-review-bundle:selected'&&visible.has(event.eventId));
+    if(capacityEvent) sharedReview={reviewerCount:2,status:selected?.details?.status||'pending',
+      summary:selected?.details?.text||'Two reviewers share one review window. Reliability validation and the selected retention workflow compete with the Atlas branch.',
+      sourceEventIds:caseDeskSources(state,[capacityEvent.eventId,selected?.eventId])};
+  }
+  let launchReview=null;
+  if(state?.round===4&&state?.history?.length>=4) {
+    const ob1=obligations.find(item=>item.obligationId==='OB-01'), ob2=obligations.find(item=>item.obligationId==='OB-02');
+    if(ob1&&ob2) {
+      const consent=ROUNDS[1].choices.find(choice=>choice.id===eventById(ob2.createdByDecision)?.details?.choiceId)?.id;
+      const shared=eventById(ob1.reliabilityReview?.eventId||ob1.validationBundle?.eventId);
+      const capacity=state.artifacts?.find(item=>item.artifactId==='KB-10a');
+      const capacityEvent=eventById(capacity?.eventId);
+      const atlasAsked=events.some(event=>event.type==='question'&&event.details?.questionId==='atlas-retention'&&visible.has(event.eventId));
+      const atlasQuestion=events.find(event=>event.type==='question'&&event.details?.questionId==='atlas-retention'&&visible.has(event.eventId));
+      const atlasArtifact=state.artifacts?.find(item=>item.artifactId==='KB-08'&&visible.has(item.eventId));
+      const atlasFile=Boolean(atlasArtifact);
+      const duration=atlasAsked&&atlasFile?'30-day Atlas request is recorded; approval and scope remain unestablished.':'Atlas-specific request details have not been established in the player-visible record.';
+      let selectedScope='';
+      const sharedEvent=eventById(ob1.validationBundle?.eventId);
+      const scopeDecision=sharedEvent&&eventById(sharedEvent.sourceEventIds?.[2]);
+      selectedScope=scopeDecision?.details?.choiceId||null;
+      const checks=selectedScope==='core'&&consent==='explicit'?'Selected scope: notice, new-data default, deletion-request workflow; no independent execution receipt.':
+        selectedScope==='core'&&consent==='quiet'?'Selected scope: new-data default only; the missed explanation remains recorded.':
+        consent==='exception'?duration:
+        selectedScope==='custom'?'Atlas branch selected; shared workflow review is deferred, not passed.':
+        selectedScope==='both'?'Competing streams selected; shared validation is blocked, not passed.':'The selected workflow review remains pending.';
+      const r5Decision=state.history.find(row=>row.round===4);
+      launchReview={label:'R5 launch-review brief · not a receipt',
+        sharedReview:{status:ob1.reliabilityReview?.status||ob1.validationBundle?.status||'pending',summary:checks},
+        customerExplanation:{status:ob2.customerExplanation?.status||'due',summary:`R3 explanation: ${ob2.customerExplanation?.status||'due'}.`},
+        cleanup:{status:'pending',summary:'Old-data cleanup is pending, not verified, and not overdue.'},
+        followUp:{summary:'Leah’s policy/scope follow-up: Thursday 12:00 in the fictional launch week; execution deadline unset.'},
+        sourceEventIds:caseDeskSources(state,[ob1.createdByDecision,ob2.createdByDecision,ob2.customerExplanation?.lastEventId,
+          ob1.reliabilityReview?.eventId,ob1.validationBundle?.eventId,ob2.workflowBundle?.sourceEventId,capacityEvent?.eventId,
+          atlasAsked?atlasQuestion?.eventId:null,atlasAsked&&atlasFile?atlasArtifact?.eventId:null,r5Decision?.eventId])};
+    }
+  }
+  return copy({roundId:ROUNDS[state?.round]?.id||null,statusItems,impacts,sharedReview,launchReview});
+}
 export function beginGame(state) {
   if (state.phase!=='briefing') throw new Error('This attempt has already started.');
   const next = copy(state); next.phase='play'; enterRound(next);
@@ -985,7 +1123,8 @@ export function getDebrief(state) {
     cleanup:copy(obligationCheckpoint.details.cleanup),policyScopeFollowUp:copy(obligationCheckpoint.details.policyScopeFollowUp),
     explanationMilestone:copy(obligationCheckpoint.details.explanationMilestone),workflowBundle:copy(obligationCheckpoint.details.workflowBundle),
     checks:copy(obligationCheckpoint.details.checks),atlasException:copy(obligationCheckpoint.details.atlasException),
-    sourceEventIds:sources([obligationCheckpoint.eventId])}];
+    validationBundle:copy(obligationCheckpoint.details.sharedReviewBundle),
+    sourceEventIds:sources([obligationCheckpoint.eventId,obligationCheckpoint.details.sharedReviewBundle.eventId])}];
   const reliabilityBundleSummary={obligationId:reliability.obligationId,title:reliability.title,owner:reliability.owner,status:reliability.status,
     dueRound:reliability.dueRound,bundleId:reliability.validationBundle.id,bundleStatus:reliability.validationBundle.status,
     sharedBundleId:reliability.validationBundle.id,sharedBundleStatus:reliability.validationBundle.status,
