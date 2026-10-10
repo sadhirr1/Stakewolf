@@ -5,6 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
 const assets = new Map([
+  ['/wild/', ['wild/index.html', 'text/html; charset=utf-8']],
+  ['/wild/index.html', ['wild/index.html', 'text/html; charset=utf-8']],
+  ['/wild/style.css', ['wild/style.css', 'text/css; charset=utf-8']],
+  ['/wild/app.js', ['wild/app.js', 'text/javascript; charset=utf-8']],
+  ['/wild/state.js', ['wild/state.js', 'text/javascript; charset=utf-8']],
+  ['/wild/scene.js', ['wild/scene.js', 'text/javascript; charset=utf-8']],
   ['/cover/the-room.webp', ['cover/the-room.webp', 'image/webp']],
   ['/cover/the-pressure.webp', ['cover/the-pressure.webp', 'image/webp']],
   ['/cover/the-aftermath.webp', ['cover/the-aftermath.webp', 'image/webp']],
