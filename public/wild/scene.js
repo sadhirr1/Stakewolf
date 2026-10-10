@@ -1,7 +1,7 @@
-/** SCRUM-32 — original, asset-free wilderness scene. Native WebGL 1. */
+/** SCRUM-33 — original, asset-free wilderness scene. Native WebGL 1. */
 export function createForestScene(canvas, options = {}) {
   const noop = () => {};
-  const inert = { travelTo: noop, setPaused: noop, setReducedMotion: noop, setOutcome: noop, dispose: noop };
+  const inert = { travelTo: noop, focusPerson: noop, setDawn: noop, setPaused: noop, setReducedMotion: noop, setOutcome: noop, dispose: noop };
   let gl;
   try {
     gl = canvas.getContext('webgl', { alpha: false, antialias: true, powerPreference: 'low-power', preserveDrawingBuffer: false });
@@ -13,7 +13,7 @@ export function createForestScene(canvas, options = {}) {
 
   let disposed = false, failed = false, paused = false, reducedMotion = Boolean(options.reducedMotion);
   let frame = 0, lastTime = 0, elapsed = 0, ready = false, outcome = 0, selectedOutcome = null;
-  let width = 1, height = 1, location = 'overlook';
+  let width = 1, height = 1, cssWidth = 1, cssHeight = 1, location = 'overlook', focusedPerson = null, orbitPerson = null, dawn = false;
   const resources = { programs: [], buffers: [] };
   let resizeObserver;
   const seed = { value: 32771 };
@@ -33,6 +33,12 @@ export function createForestScene(canvas, options = {}) {
     const rolling = Math.sin(x * 0.19 + z * 0.13) * 0.12 + Math.cos(z * 0.23) * 0.13;
     return rolling + Math.max(0, -z - 14) * 0.019 - Math.max(0, 1 - bank) * 0.5;
   };
+  const people = {
+    orin: { x: -5.25, z: -0.40, scale: 1.03, color: [0.40,0.22,0.13], fur: [0.48,0.43,0.34], trim: [0.67,0.49,0.25], index: 0 },
+    sera: { x: -1.22, z: -1.52, scale: 0.98, color: [0.16,0.31,0.25], fur: [0.56,0.59,0.54], trim: [0.43,0.55,0.39], index: 1 },
+    vela: { x: -2.3, z: 2.25, scale: 1.05, color: [0.23,0.23,0.38], fur: [0.27,0.31,0.33], trim: [0.69,0.64,0.46], index: 2 }
+  };
+  const anchorPosition = [riverX(-5.2) + 2.4, 0.83, -4.27];
 
   function failure(message) {
     if (failed || disposed) return;
@@ -92,6 +98,10 @@ export function createForestScene(canvas, options = {}) {
       if (aKind > 0.5 && aKind < 1.5) {
         p.x += sin(p.z * 0.31 + uTime * 0.32 + p.y) * 0.035 * min(p.y, 5.0);
       }
+      // Each character encodes its own phase and height-weighted breath in kind.
+      if (aKind >= 4.0 && aKind < 7.0) {
+        p.y += sin(uTime * 1.4 + floor(aKind) * 1.8) * 0.018 * min(fract(aKind) * 3.0, 1.0);
+      }
       vWorld = p; vNormal = aNormal; vColor = aColor; vKind = aKind;
       gl_Position = uViewProjection * vec4(p, 1.0);
     }
@@ -101,6 +111,7 @@ export function createForestScene(canvas, options = {}) {
     uniform vec3 uEye;
     uniform mediump float uTime;
     uniform float uOutcome;
+    uniform float uDawn;
     varying mediump vec3 vWorld;
     varying mediump vec3 vNormal;
     varying mediump vec3 vColor;
@@ -109,20 +120,26 @@ export function createForestScene(canvas, options = {}) {
     void main() {
       vec3 n = normalize(vNormal);
       if (!gl_FrontFacing) n = -n;
-      vec3 moon = normalize(vec3(-0.5, 0.8, -0.38));
+      vec3 moon = normalize(mix(vec3(-0.5, 0.8, -0.38), vec3(0.74, 0.36, -0.58), uDawn));
       float diffuse = max(0.0, dot(n, moon));
       float sky = n.y * 0.5 + 0.5;
-      vec3 lighting = vec3(0.23, 0.37, 0.40) + vec3(0.66, 0.86, 0.88) * diffuse;
+      vec3 lighting = mix(vec3(0.23, 0.37, 0.40), vec3(0.43, 0.43, 0.36), uDawn);
+      lighting += mix(vec3(0.66, 0.86, 0.88), vec3(1.15, 0.79, 0.41), uDawn) * diffuse;
       lighting += vec3(0.1, 0.15, 0.12) * sky;
       vec3 fireDelta = vec3(-3.0, 0.85, 0.0) - vWorld;
       float fireDistance = length(fireDelta);
       float flicker = 0.95 + sin(uTime * 4.3) * 0.04 + sin(uTime * 7.1) * 0.03;
       float fire = (6.5 + uOutcome * 0.35) / (1.0 + fireDistance * fireDistance * 0.14);
-      fire *= max(0.23, dot(n, normalize(fireDelta))) * flicker;
+      fire *= max(0.23, dot(n, normalize(fireDelta))) * flicker * mix(1.0, 0.21, uDawn);
       lighting += vec3(1.0, 0.39, 0.10) * fire;
       vec3 tentDelta = vec3(-7.7, 1.0, -4.0) - vWorld;
       lighting += vec3(0.62, 0.24, 0.07) / (1.0 + dot(tentDelta, tentDelta) * 0.3);
       vec3 col = vColor * lighting;
+      // Soft fabric texture and brighter sky fill keep faces legible at close range.
+      if (vKind >= 4.0 && vKind < 7.0) {
+        col += vColor * vec3(0.15, 0.19, 0.19);
+        col *= 0.975 + 0.025 * sin(vWorld.y * 82.0) * sin(vWorld.x * 71.0 + vWorld.z * 67.0);
+      }
       float rim = pow(1.0 - max(0.0, dot(n, normalize(uEye - vWorld))), 3.0) * diffuse;
       col += vec3(0.04, 0.085, 0.09) * rim;
       float dist = length(uEye - vWorld);
@@ -132,14 +149,14 @@ export function createForestScene(canvas, options = {}) {
         ripple += sin(vWorld.z * 15.0 - vWorld.x * 3.0 + uTime * 0.7) * 0.25;
         vec3 eyeDirection = normalize(uEye - vWorld);
         float fresnel = pow(1.0 - max(0.0, eyeDirection.y), 3.0);
-        col = mix(vec3(0.019, 0.083, 0.088), vec3(0.17, 0.30, 0.30), fresnel);
+        col = mix(mix(vec3(0.019, 0.083, 0.088),vec3(0.07,0.13,0.12),uDawn), mix(vec3(0.17, 0.30, 0.30),vec3(0.52,0.40,0.25),uDawn), fresnel);
         float glimmer = pow(max(0.0, ripple * 0.78), 14.0);
         float reflection = exp(-pow((vWorld.x - 8.2 - vWorld.z * 0.08) * 0.6, 2.0));
         col += vec3(0.32, 0.44, 0.40) * glimmer * reflection * 0.4;
       }
       float fog = 1.0 - exp(-dist * 0.018);
       fog += max(0.0, 1.7 - vWorld.y) * 0.016 * min(dist * 0.025, 1.0);
-      vec3 fogColor = vec3(0.095, 0.176, 0.185);
+      vec3 fogColor = mix(vec3(0.095, 0.176, 0.185), vec3(0.37, 0.34, 0.25), uDawn);
       col = mix(col, fogColor, clamp(fog, 0.0, 0.94));
       col += (hash(mod(gl_FragCoord.xy, vec2(64.0))) - 0.5) / 255.0;
       gl_FragColor = vec4(col, 1.0);
@@ -158,20 +175,26 @@ export function createForestScene(canvas, options = {}) {
     uniform vec3 uUp;
     uniform float uAspect;
     uniform float uFov;
+    uniform float uDawn;
     float hash(vec3 p) { return fract(sin(dot(p, vec3(17.7, 157.3, 113.5))) * 4375.58); }
     void main() {
       vec3 ray = normalize(uForward + uRight * vUv.x * uAspect * uFov + uUp * vUv.y * uFov);
       float altitude = smoothstep(-0.08, 0.62, ray.y);
       vec3 color = mix(vec3(0.12, 0.22, 0.23), vec3(0.016, 0.042, 0.065), altitude);
+      vec3 morning = mix(vec3(0.69, 0.47, 0.28), vec3(0.16, 0.28, 0.33), altitude);
+      color = mix(color, morning, uDawn);
       vec3 moonDirection = normalize(vec3(-0.80, 0.25, -1.0));
       float moonDistance = length(ray - moonDirection);
-      color += vec3(0.31, 0.39, 0.36) * exp(-moonDistance * 15.0) * 0.36;
-      float disk = 1.0 - smoothstep(0.040, 0.044, moonDistance);
+      color += vec3(0.31, 0.39, 0.36) * exp(-moonDistance * 15.0) * 0.36 * (1.0 - uDawn);
+      float disk = (1.0 - smoothstep(0.040, 0.044, moonDistance)) * (1.0 - uDawn);
       float craters = sin(ray.x * 640.0) * sin(ray.y * 460.0) * 0.035;
       color = mix(color, vec3(0.76, 0.84, 0.73) + craters, disk);
       vec3 stars = floor(ray * 260.0);
       float star = step(0.9988, hash(stars)) * pow(max(0.0, 1.0 - length(fract(ray * 260.0) - 0.5) * 2.0), 5.0);
-      color += vec3(0.5, 0.66, 0.66) * star * smoothstep(0.08, 0.35, ray.y);
+      color += vec3(0.5, 0.66, 0.66) * star * smoothstep(0.08, 0.35, ray.y) * (1.0 - uDawn);
+      float sunDistance = length(ray - normalize(vec3(0.74, 0.22, -0.58)));
+      color += vec3(0.64, 0.32, 0.09) * exp(-sunDistance * 6.0) * uDawn;
+      color = mix(color, vec3(1.0,0.79,0.44), (1.0-smoothstep(0.031,0.039,sunDistance))*uDawn);
       color *= 1.0 - 0.12 * dot(vUv, vUv);
       gl_FragColor = vec4(color, 1.0);
     }
@@ -188,6 +211,7 @@ export function createForestScene(canvas, options = {}) {
     uniform mediump float uTime;
     uniform float uScale;
     uniform float uMaxSize;
+    uniform float uDawn;
     varying mediump vec4 vColor;
     varying mediump float vKind;
     varying mediump float vPhase;
@@ -213,10 +237,14 @@ export function createForestScene(canvas, options = {}) {
         p.y += cos(uTime * 0.3 + aPhase * 8.0) * 0.12;
         opacity = 0.45 + 0.55 * pow(sin(uTime * 0.4 + aPhase * 25.0), 2.0);
       }
+      if (aKind > 1.5 && aKind < 4.5) opacity *= mix(1.0, 0.20, uDawn);
+      if (aKind > 0.5 && aKind < 1.5) opacity *= mix(1.0, 0.35, uDawn);
+      if (aKind > 5.5) opacity *= 1.0 - uDawn;
       vec4 clip = uViewProjection * vec4(p, 1.0);
       gl_Position = clip;
       gl_PointSize = clamp(aSize * uScale / max(0.1, clip.w), 1.0, uMaxSize);
-      vColor = vec4(aColor.rgb, aColor.a * opacity);
+      vec3 tint = aKind < 0.5 || (aKind > 4.5 && aKind < 5.5) ? mix(aColor.rgb, vec3(0.76,0.61,0.38),uDawn) : aColor.rgb;
+      vColor = vec4(tint, aColor.a * opacity);
       vKind = aKind; vPhase = aPhase;
     }
   `;
@@ -430,32 +458,80 @@ export function createForestScene(canvas, options = {}) {
     const post=p(0.16,2.66,1.91);
     triangle(post,add(post,[0.72*scale,-0.14,0.08]),add(post,[0.06,-0.48,0]),[0.53,0.24,0.11],1);
   }
-  function figure(x,z,color,scale=1) {
+  function figure(id) {
+    const {x,z,color,fur,trim,scale,index}=people[id];
     const y=ground(x,z), angle=Math.atan2(-3-x,-z), cos=Math.cos(angle),sin=Math.sin(angle);
-    const p=(a,b,c)=>[x+(a*cos+c*sin)*scale,y+b*scale,z+(c*cos-a*sin)*scale];
+    ellipsoid([x,y+0.012,z],[0.65,0.014,0.56],[0.075,0.11,0.095],12,0,0);
+    // Build in local space, then rotate the complete face, equipment and normals together.
+    const start=vertices.length,p=(a,b,c)=>[a,b,c];
+    const pale=mul(fur,1.28), leather=[0.21,0.14,0.085];
     const cloak=[];
     for(let j=0;j<5;j++) {
-      const height=[0.1,0.43,0.95,1.43,1.62][j],radius=[0.55,0.48,0.35,0.47,0.22][j];
+      const height=[0.13,0.43,0.95,1.43,1.62][j],radius=[0.53,0.48,0.35,0.46,0.22][j];
       cloak.push(Array.from({length:14},(_,i)=>{
         const a=i/14*Math.PI*2,fold=1+Math.sin(i*3.2)*0.085;
         return p(Math.cos(a)*radius*fold,height+(j===0?Math.sin(i*2.1)*0.05:0),Math.sin(a)*radius*fold);
       }));
     }
     for(let j=0;j<4;j++) for(let i=0;i<14;i++) quad(cloak[j][i],cloak[j][(i+1)%14],cloak[j+1][(i+1)%14],cloak[j+1][i],mul(color,i%2?0.93:1.08));
+    // Hem stitching is actual geometry and catches the firelight even in council view.
+    tube([...cloak[0],cloak[0][0]],Array(15).fill(0.014),trim,4,0,0);
     for(const side of [-1,1]) {
-      ellipsoid(p(side*0.22,0.1,0.13),[0.17*scale,0.12*scale,0.28*scale],[0.09,0.10,0.085],6);
-      tube([p(side*0.39,1.42,0),p(side*0.5,1.08,0.03),p(side*0.33,0.88,0.23)],[0.16*scale,0.13*scale,0.09*scale],mul(color,0.85),6);
-      ellipsoid(p(side*0.33,0.91,0.24),[0.08*scale,0.10*scale,0.08*scale],[0.39,0.34,0.25],5);
+      ellipsoid(p(side*0.22,0.1,0.13),[0.17,0.12,0.28],[0.09,0.10,0.085],6);
+      tube([p(side*0.39,1.42,0),p(side*0.5,1.08,0.03),p(side*0.33,0.88,0.23)],[0.16,0.13,0.09],mul(color,0.85),6);
+      ellipsoid(p(side*0.33,0.91,0.24),[0.09,0.11,0.09],fur,6);
+      ellipsoid(p(side*0.34,1.47,0),[0.25,0.17,0.27],mul(fur,0.78),7);
     }
-    ellipsoid(p(0,1.89,0),[0.35*scale,0.4*scale,0.32*scale],mul(color,0.9),10,0,0.04);
-    ellipsoid(p(0,1.87,0.25),[0.23*scale,0.25*scale,0.12*scale],[0.06,0.075,0.072],8,0,0);
-    ellipsoid(p(0,1.80,0.35),[0.15*scale,0.11*scale,0.16*scale],[0.17,0.19,0.17],6,0,0);
+    ellipsoid(p(0,1.78,-0.09),[0.37,0.31,0.28],color,10,0,0.04);
+    ellipsoid(p(0,1.96,0.06),[0.295,0.32,0.28],fur,12,0,0.035);
+    // Swept cheek fur, long muzzle, black nose and upright ears give a wolf silhouette.
     for(const side of [-1,1]) {
-      const ear=[p(side*0.20,2.12,-0.02),p(side*0.29,2.44,-0.035),p(side*0.04,2.15,0.045)];
-      triangle(...ear,mul(color,0.8)); triangle(ear[2],ear[1],p(side*0.25,2.09,-0.13),mul(color,0.65));
-      ellipsoid(p(side*0.11,1.94,0.349),[0.026*scale,0.015*scale,0.015*scale],[0.68,0.57,0.30],4,2,0);
+      triangle(p(side*0.19,1.99,0.22),p(side*0.41,1.75,0.02),p(side*0.11,1.69,0.26),pale);
+      triangle(p(side*0.31,1.95,-0.01),p(side*0.43,1.72,-0.08),p(side*0.16,1.64,0.08),fur);
+      const ear=[p(side*0.31,2.12,0.09),p(side*0.265,2.58,-0.075),p(side*0.095,2.16,0.14)];
+      triangle(...ear,fur);triangle(ear[2],ear[1],p(side*0.25,2.09,-0.15),mul(fur,0.70));
+      triangle(p(side*0.273,2.17,0.098),p(side*0.258,2.47,-0.035),p(side*0.14,2.20,0.139),[0.27,0.21,0.18]);
+      ellipsoid(p(side*0.15,2.045,0.279),[0.081,0.057,0.037],[0.07,0.085,0.075],7,0,0);
+      ellipsoid(p(side*0.153,2.045,0.312),[0.037,0.024,0.022],id==='sera'?[0.66,0.75,0.48]:[0.85,0.58,0.21],6,0,0);
+      ellipsoid(p(side*0.153,2.046,0.332),[0.009,0.019,0.006],[0.035,0.045,0.038],5,0,0);
+      beam(p(side*0.07,2.11,0.292),p(side*0.23,2.09,0.263),0.025,mul(fur,0.69),5);
     }
-    ellipsoid(p(0,1.5,0.39),[0.065*scale,0.072*scale,0.03*scale],[0.62,0.46,0.18],5);
+    ellipsoid(p(0,1.86,0.35),[0.15,0.105,0.30],pale,10,0,0.02);
+    ellipsoid(p(0,1.79,0.35),[0.13,0.048,0.23],mul(fur,0.80),9,0,0);
+    ellipsoid(p(0,1.89,0.60),[0.092,0.062,0.072],[0.045,0.059,0.053],8,0,0);
+    beam(p(-0.09,1.808,0.51),p(0.09,1.808,0.51),0.009,[0.075,0.087,0.076],4);
+    ellipsoid(p(0,1.48,0.39),[0.065,0.072,0.03],trim,7);
+    if(id==='orin') {
+      // Builder: russet leather apron, broad belt, iron-headed work hammer.
+      quad(p(-0.26,1.34,0.38),p(-0.29,0.36,0.46),p(0.29,0.36,0.46),p(0.26,1.34,0.38),leather);
+      box(p(0,0.91,0.405),[0.65,0.10,0.075],mul(leather,0.7));
+      box(p(0.07,0.91,0.454),[0.12,0.095,0.02],trim);
+      beam(p(-0.44,0.42,0.21),p(-0.43,1.05,0.23),0.035,[0.44,0.28,0.14]);
+      box(p(-0.43,1.08,0.23),[0.30,0.13,0.13],[0.31,0.36,0.35]);
+      for(const side of [-1,1]) beam(p(side*0.21,1.40,0.32),p(side*0.20,1.05,0.39),0.027,trim,4);
+    } else if(id==='sera') {
+      // Scout: green cowl, diagonal strap, travel satchel and tall walking staff.
+      quad(p(-0.37,1.42,0.25),p(-0.18,0.87,0.40),p(0.25,1.18,0.36),p(0.41,1.45,0.17),trim);
+      beam(p(0.34,1.43,0.24),p(-0.30,0.73,0.36),0.04,leather,5);
+      box(p(-0.38,0.65,0.18),[0.28,0.34,0.22],leather);
+      box(p(-0.38,0.75,0.302),[0.26,0.12,0.027],mul(leather,1.5));
+      tube([p(0.57,0.05,0.14),p(0.58,1.10,0.22),p(0.54,2.06,0.16),p(0.61,2.33,0.15)],[0.038,0.033,0.03,0.018],[0.35,0.28,0.17],6);
+      for(let i=0;i<4;i++) beam(p(0.55,1.03+i*0.055,0.22),p(0.61,1.03+i*0.055,0.22),0.016,trim,4);
+    } else {
+      // Keeper: indigo mantle, pale ceremonial stole, and a clasped field ledger.
+      for(const side of [-1,1]) quad(p(side*0.12,1.48,0.36),p(side*0.16,0.37,0.48),p(side*0.28,0.40,0.44),p(side*0.28,1.48,0.30),trim);
+      tube([p(-0.27,1.48,0.31),p(-0.15,1.33,0.42),p(0,1.28,0.45),p(0.15,1.33,0.42),p(0.27,1.48,0.31)],Array(5).fill(0.018),[0.77,0.61,0.31],5);
+      ellipsoid(p(0,1.22,0.455),[0.055,0.081,0.026],[0.64,0.69,0.56],7);
+      box(p(0.27,0.85,0.36),[0.30,0.39,0.10],[0.14,0.12,0.14],-0.18);
+      box(p(0.27,0.85,0.42),[0.24,0.33,0.02],[0.55,0.50,0.34],-0.18);
+      box(p(0.27,0.85,0.445),[0.05,0.39,0.025],leather,-0.18);
+    }
+    for(let i=start;i<vertices.length;i+=10) {
+      const [a,b,c,nx,ny,nz]=vertices.slice(i,i+6);
+      vertices[i]=x+(a*cos+c*sin)*scale;vertices[i+1]=y+b*scale;vertices[i+2]=z+(c*cos-a*sin)*scale;
+      vertices[i+3]=nx*cos+nz*sin;vertices[i+4]=ny;vertices[i+5]=nz*cos-nx*sin;
+      vertices[i+9]=4+index+Math.min(0.35,Math.max(0,b)*0.12);
+    }
   }
   function camp() {
     const y=ground(-3,0);
@@ -472,9 +548,7 @@ export function createForestScene(canvas, options = {}) {
     for(let i=0;i<9;i++) particle(lights,[-3+between(-0.25,0.25),y+0.5+between(0,0.28),between(-0.22,0.22)],between(1.1,1.65),[1,0.5,0.06,0.74],2,between(0,8));
     for(let i=0;i<48;i++) particle(lights,[-3+between(-0.25,0.25),y+0.25,between(-0.23,0.23)],between(0.02,0.05),[1,0.43,0.12,0.85],3);
     for(let i=0;i<13;i++) particle(mist,[-3,1.1,0],between(1.1,2),[0.22,0.28,0.27,0.06],4);
-    figure(-5.25,-0.40,[0.22,0.29,0.27],1.03);
-    figure(-1.22,-1.52,[0.35,0.30,0.23],0.98);
-    figure(-2.3,2.25,[0.20,0.22,0.245],1.05);
+    Object.keys(people).forEach(figure);
     tent(-8.4,-4.5,0.33,1.05);
     tent(-2.7,-8.3,-0.25,0.86);
     tent(-10.4,1.3,0.85,0.8);
@@ -501,6 +575,10 @@ export function createForestScene(canvas, options = {}) {
       const rope=Array.from({length:13},(_,i)=>[x-2.4+i*0.4,1.19-Math.sin(i/12*Math.PI)*0.30,z+side*0.93]);
       tube(rope,rope.map(()=>0.027),[0.37,0.33,0.22],4);
     }
+    // The downstream eastern fastening has slipped; the hanging loop is inspectable.
+    const [ax,ay,az]=anchorPosition;
+    for(let i=0;i<3;i++) tube([[ax-0.085,ay+i*0.05,az-0.085],[ax+0.09,ay+i*0.05,az-0.085],[ax+0.10,ay+i*0.05,az+0.085],[ax-0.085,ay+i*0.05,az+0.085]],Array(4).fill(0.022),[0.58,0.46,0.27],5);
+    tube([[ax+0.10,ay+0.10,az+0.085],[ax+0.31,ay-0.10,az+0.14],[ax+0.27,ay-0.43,az+0.20],[ax+0.09,ay-0.28,az+0.16]],[0.026,0.024,0.022,0.014],[0.57,0.43,0.25],5);
     const base=ground(x-3.1,z+1.1);
     beam([x-3.1,base,z+1.1],[x-3.1,base+2.1,z+1.1],0.065,[0.23,0.20,0.13],6);
     beam([x-3.1,base+2.05,z+1.1],[x-2.55,base+2.05,z+1.1],0.04,[0.23,0.20,0.13],5);
@@ -616,13 +694,46 @@ export function createForestScene(canvas, options = {}) {
   const eye=[...cameraStops.overlook.eye],target=[...cameraStops.overlook.target];
   const destinationEye=[...eye],destinationTarget=[...target];
   function retarget(instant=false) {
-    const stop=cameraStops[location],narrow=width/height<0.9;
-    const offset=narrow && location==='overlook' ? [-7,-0.5,-1.4] : [0,0,0];
+    const person=focusedPerson?people[focusedPerson]:null,narrow=width/height<0.9;
+    let stop=cameraStops[location];
+    if(person) {
+      const {x,z,scale}=person,angle=Math.atan2(-3-x,-z),distance=narrow?3.9:3.25;
+      // A small shoulder offset keeps the council fire out of the face close-up.
+      stop={eye:[x+Math.sin(angle)*distance+Math.cos(angle)*1.1,ground(x,z)+2.05*scale,z+Math.cos(angle)*distance-Math.sin(angle)*1.1],target:[x,ground(x,z)+1.38*scale,z]};
+    }
+    const overlook=narrow&&!person&&location==='overlook';
+    const offset=overlook ? [-7,-0.5,-1.4] : [0,0,0];
     for(let i=0;i<3;i++) {
       destinationEye[i]=stop.eye[i]+offset[i];
-      destinationTarget[i]=narrow&&location==='overlook'?[-4.2,1.7,-5.6][i]:stop.target[i];
+      destinationTarget[i]=overlook?[-4.2,1.7,-5.6][i]:stop.target[i];
       if(instant) {eye[i]=destinationEye[i];target[i]=destinationTarget[i];}
     }
+  }
+  function settleCamera() {
+    const eyeDistance=Math.hypot(eye[0]-destinationEye[0],eye[1]-destinationEye[1],eye[2]-destinationEye[2]);
+    const targetDistance=Math.hypot(target[0]-destinationTarget[0],target[1]-destinationTarget[1],target[2]-destinationTarget[2]);
+    if(Math.max(eyeDistance,targetDistance)>0.025)return false;
+    // End easing at an exact destination before exposing stable pointer targets.
+    for(let i=0;i<3;i++){eye[i]=destinationEye[i];target[i]=destinationTarget[i];}
+    if(!focusedPerson)orbitPerson=null;
+    return true;
+  }
+  function moveCamera(easing) {
+    if(orbitPerson) {
+      const person=people[orbitPerson];
+      const dx=eye[0]-person.x,dz=eye[2]-person.z;
+      const toX=destinationEye[0]-person.x,toZ=destinationEye[2]-person.z;
+      const angle=Math.atan2(dx,dz),toAngle=Math.atan2(toX,toZ);
+      const turn=Math.atan2(Math.sin(toAngle-angle),Math.cos(toAngle-angle));
+      // Keep the same safe arc on departure until the wider camera has settled.
+      const radius=Math.max(2.9,mix(Math.hypot(dx,dz),Math.hypot(toX,toZ),easing));
+      eye[0]=person.x+Math.sin(angle+turn*easing)*radius;
+      eye[2]=person.z+Math.cos(angle+turn*easing)*radius;
+      eye[1]=mix(eye[1],destinationEye[1],easing);
+    } else {
+      for(let i=0;i<3;i++)eye[i]=mix(eye[i],destinationEye[i],easing);
+    }
+    for(let i=0;i<3;i++)target[i]=mix(target[i],destinationTarget[i],easing);
   }
   function matrix(eyePosition,targetPosition,aspect) {
     const forward=unit(sub(targetPosition,eyePosition)),right=unit(cross(forward,[0,1,0])),up=cross(right,forward);
@@ -662,11 +773,30 @@ export function createForestScene(canvas, options = {}) {
     gl.uniform1f(uniform(particleProgram,'uTime'),elapsed);
     gl.uniform1f(uniform(particleProgram,'uScale'),height/(2*view.fov));
     gl.uniform1f(uniform(particleProgram,'uMaxSize'),maxPointSize);
+    gl.uniform1f(uniform(particleProgram,'uDawn'),dawn?1:0);
     gl.blendFunc(gl.SRC_ALPHA,additive?gl.ONE:gl.ONE_MINUS_SRC_ALPHA);
     gl.drawArrays(gl.POINTS,0,count);
   }
+  function projectAnchors(view,cameraSettled) {
+    if(typeof options.onProject!=='function')return;
+    const project=(id,position)=>{
+      const m=view.combined,[x,y,z]=position;
+      const w=m[3]*x+m[7]*y+m[11]*z+m[15];
+      const clipX=m[0]*x+m[4]*y+m[8]*z+m[12],clipY=m[1]*x+m[5]*y+m[9]*z+m[13],clipZ=m[2]*x+m[6]*y+m[10]*z+m[14];
+      const finite=Number.isFinite(w)&&Math.abs(w)>0.00001;
+      return {id,x:finite?(clipX/w+1)*cssWidth/2:-9999,y:finite?(1-clipY/w)*cssHeight/2:-9999,
+        visible:cameraSettled&&finite&&cssWidth>0&&cssHeight>0&&w>0&&Math.abs(clipX)<=w&&Math.abs(clipY)<=w&&Math.abs(clipZ)<=w};
+    };
+    const projected=Object.entries(people).map(([id,p])=>{
+      const breath=Math.sin(elapsed*1.4+(4+p.index)*1.8)*0.018*Math.min(2.58*0.12*3,1);
+      return project(id,[p.x,ground(p.x,p.z)+2.70*p.scale+breath,p.z]);
+    });
+    projected.push(project('anchor',anchorPosition));
+    options.onProject(projected);
+  }
   function render() {
     if(disposed||failed||document.hidden)return;
+    const cameraSettled=settleCamera();
     const view=matrix(eye,target,width/height);
     gl.viewport(0,0,width,height);gl.clearColor(0.05,0.1,0.11,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);gl.depthMask(false);
@@ -674,6 +804,7 @@ export function createForestScene(canvas, options = {}) {
     attribute(skyProgram,'aPosition',2,8,0);
     gl.uniform3fv(uniform(skyProgram,'uForward'),view.forward);gl.uniform3fv(uniform(skyProgram,'uRight'),view.right);gl.uniform3fv(uniform(skyProgram,'uUp'),view.up);
     gl.uniform1f(uniform(skyProgram,'uAspect'),width/height);gl.uniform1f(uniform(skyProgram,'uFov'),view.fov);
+    gl.uniform1f(uniform(skyProgram,'uDawn'),dawn?1:0);
     gl.drawArrays(gl.TRIANGLES,0,6);
     gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
     bindProgram(opaqueProgram,meshBuffer);
@@ -681,6 +812,7 @@ export function createForestScene(canvas, options = {}) {
     attribute(opaqueProgram,'aColor',3,40,24);attribute(opaqueProgram,'aKind',1,40,36);
     gl.uniformMatrix4fv(uniform(opaqueProgram,'uViewProjection'),false,view.combined);
     gl.uniform3fv(uniform(opaqueProgram,'uEye'),eye);gl.uniform1f(uniform(opaqueProgram,'uTime'),elapsed);gl.uniform1f(uniform(opaqueProgram,'uOutcome'),outcome);
+    gl.uniform1f(uniform(opaqueProgram,'uDawn'),dawn?1:0);
     gl.drawArrays(gl.TRIANGLES,0,meshCount);
     if(selectedOutcome) {
       const chosen=outcomeMeshes[selectedOutcome];gl.bindBuffer(gl.ARRAY_BUFFER,chosen.buffer);
@@ -693,15 +825,18 @@ export function createForestScene(canvas, options = {}) {
     particles(lightBuffer,lightCount,view,true);
     if(selectedOutcome)particles(outcomeLights[selectedOutcome].buffer,outcomeLights[selectedOutcome].count,view,true);
     gl.depthMask(true);gl.disable(gl.BLEND);
+    projectAnchors(view,cameraSettled);
     if(!ready){ready=true;options.onReady?.();}
   }
   function tick(time) {
     frame=0;
     if(disposed||failed||paused||reducedMotion||document.hidden){lastTime=0;return;}
-    const delta=lastTime?Math.min((time-lastTime)/1000,0.05):0;
+    const interval=lastTime?Math.max(0,(time-lastTime)/1000):0;
+    const delta=Math.min(interval,0.05),cameraDelta=Math.min(interval,1);
     lastTime=time;elapsed+=delta;
-    const easing=1-Math.exp(-delta*1.85);
-    for(let i=0;i<3;i++){eye[i]=mix(eye[i],destinationEye[i],easing);target[i]=mix(target[i],destinationTarget[i],easing);}
+    // Camera travel follows wall time even when the atmosphere renders slowly.
+    const easing=1-Math.exp(-cameraDelta*2.7);
+    moveCamera(easing);
     render();schedule();
   }
   function schedule() {
@@ -710,6 +845,7 @@ export function createForestScene(canvas, options = {}) {
   function resize() {
     if(disposed||failed)return;
     const bounds=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,1.5);
+    cssWidth=bounds.width;cssHeight=bounds.height;
     const oldAspect=width/height;
     // Bound total fill-rate as well as DPR on large external displays.
     const factor=Math.min(dpr,Math.sqrt(2200000/Math.max(1,bounds.width*bounds.height)));
@@ -731,13 +867,22 @@ export function createForestScene(canvas, options = {}) {
   resize();
   return {
     travelTo(next) {
-      if(disposed||failed||!Object.hasOwn(cameraStops,next))return;
-      location=next;retarget(reducedMotion||paused);render();schedule();
+      if(disposed||failed||typeof next!=='string'||!Object.hasOwn(cameraStops,next))return;
+      location=next;focusedPerson=null;retarget(reducedMotion||paused);render();schedule();
     },
+    focusPerson(id) {
+      if(disposed||failed||(id!==null&&(typeof id!=='string'||!Object.hasOwn(people,id))))return;
+      focusedPerson=id;
+      if(id!==null)orbitPerson=id;
+      retarget(reducedMotion||paused);
+      if(orbitPerson)moveCamera(0);
+      render();schedule();
+    },
+    setDawn(value) {if(disposed||failed)return;dawn=Boolean(value);render();},
     setPaused(value) {
       if(disposed||failed)return;
       paused=Boolean(value);lastTime=0;
-      if(paused){cancelAnimationFrame(frame);frame=0;}else schedule();
+      if(paused){cancelAnimationFrame(frame);frame=0;retarget(true);render();}else schedule();
     },
     setReducedMotion(value) {
       if(disposed||failed)return;

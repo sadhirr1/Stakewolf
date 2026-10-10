@@ -1,10 +1,12 @@
-# Stakewolf playable preview — SCRUM-32
+# Stakewolf playable preview — SCRUM-33
 
-## Latest: The Hollow forest prototype
+## Latest: The Hollow — encounters and first light
 
-Run `node server.mjs 4174` from the repository and open **http://127.0.0.1:4174/wild/**. Keep that terminal running. If the server is already running with older code, restart it to load the new explicit routes. Enter the Hollow, hear the council's accounts, inspect the crossing, and bring a commitment back to the fire. Refresh starts a new run. Sound is optional; motion can be paused.
+Run `node server.mjs 4174` from the repository and open **http://127.0.0.1:4174/wild/**. Keep that terminal running. If the server predates SCRUM-32, restart it to load the explicit routes; an existing SCRUM-32 server only needs a page refresh for this increment. Enter the Hollow, hear the council's accounts, inspect the crossing, and bring a commitment back to the fire. Choose **Stay until first light** to see the next morning. Refresh starts a new run. Sound is optional; motion can be paused.
 
-This is the owner-requested wilderness and 3D skeleton, using native WebGL with no new dependencies or plugins. It contains a short authored interaction and simple procedural art. Hidden roles, deeper deduction, the full narrative and finished cinematic art remain pending. See `docs/HANDOFF.md`, `docs/evidence/scrum32-forest.md` and `docs/evidence/scrum32-review.md` for current scope and verification. Review branch: `codex/SCRUM-32-forest-prototype`, stacked on PR17.
+On wider screens, hide the reading panel to approach visible character markers directly. They appear after the camera settles and stay clear of controls. Each encounter moves closer to its character. At the crossing, the anchor marker inspects the same evidence as **Examine the anchor**. Narrow screens retain the reading-panel buttons. Dawn changes the light and shows what each character reports and what work remains. **Try another night** clears the decision, observations and daylight.
+
+This is the owner-requested wilderness and 3D skeleton, using native WebGL with no new dependencies or plugins. It contains one authored night and two dawn branches, with simple procedural art. Hidden roles, deeper deduction, a playable next chapter, the full narrative and finished cinematic art remain pending. See `docs/HANDOFF.md`, `docs/evidence/scrum33-forest.md` and `docs/evidence/scrum33-review.md` for current scope and verification. Review branch: `codex/SCRUM-33-hollow-dawn`, stacked on PR18.
 
 ## Preserved earlier Relay prototype — SCRUM-31 (historical checkpoint)
 

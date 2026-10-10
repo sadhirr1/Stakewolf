@@ -9,3 +9,27 @@
 
 
 .view-scene{background:#0b1e15aa;border:1px solid var(--line);padding:12px 16px;font-size:10px;min-height:44px;color:#cad8c1}.utilities #guide-open{width:44px;min-height:44px}
+
+/* The night is navigable in the scene; the reading panel remains an alternative. */
+.world-targets{position:fixed;inset:0;pointer-events:none;z-index:3}
+.world-pin{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;min-height:52px;min-width:150px;padding:10px 13px;background:#10231ae8;border:1px solid #b5c19c80;box-shadow:0 8px 32px #0007;pointer-events:auto;text-align:left;backdrop-filter:blur(6px);font:19px var(--serif)}
+.world-pin small{display:block;font:7px var(--sans);letter-spacing:.15em;color:#bac5af;margin-top:4px}.world-pin b{margin-left:auto;font:15px var(--sans);color:var(--gold)}
+.pin-dot{width:7px;height:7px;border-radius:50%;background:#e3c18b;box-shadow:0 0 0 5px #d6b77415,0 0 15px #edb86477}
+.world-pin:hover,.world-pin:focus-visible{border-color:#f2d49a;background:#213a2bec}
+.night-progress{list-style:none;display:flex;gap:0;margin:25px 0 0;padding:0;max-width:330px;color:#879b8c}
+.night-progress li{flex:1;border-top:1px solid #6d887455;padding:10px 12px 0 0;position:relative;font-size:8px;letter-spacing:.05em}
+.night-progress li::before{content:'';position:absolute;top:-3px;left:0;width:5px;height:5px;background:#30483b;border-radius:50%}
+.night-progress li.complete{color:#d7c496;border-top-color:#b7a16f}.night-progress li.complete::before{background:#ddc18b;box-shadow:0 0 8px #dbc59166}
+body[data-encounter="true"] .place,body[data-encounter="true"] .context,body[data-encounter="true"] .wayfinder{visibility:hidden}
+dialog.encounter{position:fixed;margin:auto 4.2vw auto auto;max-width:420px;width:36vw;max-height:calc(100svh - 140px);background:linear-gradient(145deg,#172b23f5,#081711f2);box-shadow:0 20px 100px #0006}
+dialog.encounter::backdrop{background:linear-gradient(90deg,transparent 35%,#020c0855);backdrop-filter:none}
+dialog.encounter .sheet-inner{padding:42px 32px 30px}.encounter .sheet-inner h2{font-size:62px}.encounter .sheet-inner .quote{font-size:25px;color:#decfae}
+.morning-voices{margin:24px 0}.morning-voices blockquote{margin:0;padding:15px 0;border-top:1px solid var(--line)}
+.morning-voices blockquote span{font-size:8px;letter-spacing:.1em;color:#d3bd8c;text-transform:uppercase}.morning-voices blockquote p{font:italic 18px/1.5 var(--serif);color:#dde2cf;margin:9px 0 0}
+.open-threads>div{border-left:2px solid #bca774;padding:4px 0 4px 15px;margin:17px 0}.open-threads span{font-size:8px;letter-spacing:.08em;color:#d5bd89;text-transform:uppercase;display:block;margin-bottom:6px}.open-threads strong{font:21px var(--serif);font-weight:400}.open-threads p{font-size:11px;margin:7px 0 0}
+body[data-daylight="true"] .context{background:linear-gradient(140deg,#263e32ed,#16291fee);border-color:#d7c39966}
+body[data-daylight="true"] .atmosphere{background:linear-gradient(90deg,#152318a8,transparent 57%),linear-gradient(0deg,#14241ba8,transparent 50%)!important}
+body[data-daylight="true"] .vignette{box-shadow:inset 0 0 120px 10px #09140d44}
+body[data-daylight="true"] .place .eyebrow,body[data-daylight="true"] .live-dot{color:#f0d3a0}
+@media(max-width:1000px) and (min-width:761px){dialog.encounter{width:43vw;max-width:400px}.encounter .sheet-inner{padding:36px 26px 26px}.encounter .sheet-inner h2{font-size:49px}.encounter .sheet-inner .quote{font-size:22px}}
+@media(max-width:760px){.world-targets{display:none}.night-progress{margin-top:18px;max-width:300px}.night-progress li{font-size:8px}dialog.encounter{width:calc(100vw - 28px);max-width:none;margin:auto 14px 15px;max-height:50svh}.encounter .sheet-inner{padding:34px 24px 25px}.encounter .sheet-inner h2{font-size:38px;margin-bottom:12px}.encounter .sheet-inner .quote{font-size:22px}.encounter .sheet-inner .eyebrow{font-size:8px;margin-bottom:12px}.encounter::backdrop{background:linear-gradient(transparent,#05120b66)!important}.morning-voices blockquote p{font-size:19px}}
