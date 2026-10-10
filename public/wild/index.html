@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stakewolf — The Hollow</title>
+  <meta name="theme-color" content="#071412">
+  <meta name="description" content="Enter the Hollow. A forest council, a broken promise, and a crossing that may not hold. An interactive Stakewolf visual prototype.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23c6d5ba' d='M3 3l10 6h6l10-6-4 20-9 7-9-7z'/%3E%3Cpath fill='%23071412' d='M8 14l6 3-3 3zm16 0l-6 3 3 3z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css"><script type="module" src="./app.js"></script>
+</head>
+<body data-phase="opening">
+  <a class="skip" href="#main">Skip to controls</a>
+  <div class="world" aria-hidden="true"><canvas id="forest"></canvas><div class="atmosphere"></div><div class="vignette"></div></div>
+  <header class="masthead">
+    <a class="wordmark" href="./" aria-label="Stakewolf — restart preview"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M3 3l12 7h10l12-7-5 27-12 11L8 30z M10 17l8 4-4 6 M30 17l-8 4 4 6 M17 31l3 4 3-4"/></svg>STAKEWOLF</a>
+    <span class="chapter">TALES FROM THE HOLLOW <i></i> CHAPTER 01</span>
+    <div class="utilities"><button id="sound" aria-pressed="false" title="Enable forest ambience">Sound off</button><button id="motion" aria-pressed="false" title="Pause scene motion">Pause motion</button><button id="guide-open" aria-label="Open field guide">?</button></div>
+  </header>
+  <p id="render-notice" role="status" hidden></p>
+  <main id="main" tabindex="-1">
+    <section id="opening" class="opening" aria-labelledby="opening-title">
+      <p class="eyebrow"><span class="small-star">✦</span> TRUST IS A WILDERNESS</p>
+      <h1 id="opening-title">The forest<br>keeps its<br><em>secrets.</em></h1>
+      <p class="opening-copy">A promise at the fire.<br>A different story in the dark.<br>Decide who—and what—to believe.</p>
+      <button class="primary" id="enter">Enter the Hollow <span aria-hidden="true">↗</span></button>
+      <p class="session-note">A short playable scene. Progress resets when you leave.</p>
+    </section>
+    <section id="experience" class="experience" hidden aria-label="Explore the Hollow">
+      <div class="place"><p class="eyebrow" id="place-kicker">THE FIRST NIGHT</p><h1 id="place-title" tabindex="-1">The council fire</h1><p id="place-description"></p><button class="view-scene" id="view-scene" aria-expanded="true" aria-controls="context">Hide reading panel ↗</button></div>
+      <div id="context" class="context"></div>
+      <nav class="wayfinder" aria-label="Explore the forest">
+        <button data-travel="council"><span class="way-icon" aria-hidden="true">♧</span><span><small>01</small>Council fire</span><b aria-hidden="true">↗</b></button>
+        <button data-travel="trail"><span class="way-icon" aria-hidden="true">⌁</span><span><small>02</small>River trail</span><b aria-hidden="true">↗</b></button>
+        <button data-travel="crossing"><span class="way-icon" aria-hidden="true">≋</span><span><small>03</small>The crossing</span><b aria-hidden="true">↗</b></button>
+      </nav>
+    </section>
+  </main>
+  <footer class="frame-footer"><span><i class="live-dot"></i> <span id="world-time">NIGHTFALL · THE HOLLOW</span></span><span class="footer-center">A GAME OF INSTINCT, TRUST & CONSEQUENCE</span><button id="journal-open" hidden>Field notes <span id="note-count">0</span></button><span id="prototype-tag">VISUAL PROTOTYPE / 01</span></footer>
+  <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-inner"><button class="close" id="sheet-close" aria-label="Close panel">×</button><div id="sheet-content"></div></div></dialog>
+  <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <noscript><div class="no-script"><h2>The Hollow needs JavaScript to open.</h2><p>Enable JavaScript and reload to explore. This scene runs locally; no account or plugin is required.</p><a href="../">Return to the earlier prototype</a></div></noscript>
+</body></html>
