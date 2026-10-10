@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const publicRoot = fileURLToPath(new URL('./public/', import.meta.url));
 const assets = new Map([
+  ['/cover/the-room.webp', ['cover/the-room.webp', 'image/webp']],
+  ['/cover/the-pressure.webp', ['cover/the-pressure.webp', 'image/webp']],
+  ['/cover/the-aftermath.webp', ['cover/the-aftermath.webp', 'image/webp']],
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/bootstrap.js', ['bootstrap.js', 'text/javascript; charset=utf-8']],

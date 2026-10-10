@@ -1,7 +1,44 @@
 import { PEOPLE, ROUNDS, DOSSIER_ARTIFACTS } from './scenario.js';
 import { createGame, beginGame, currentRound, askQuestion, decide, advance, interpretDecision, recordReadinessFinding, recordRetentionFinding, clearRetentionFinding, relationshipLabel, getDebrief, formatDecisionRecord, getConversationMemory, getCaseDesk, getPlayerEvents, METRICS } from './engine.js';
 const app = document.querySelector('#app');
-app.innerHTML = `<main id="main" tabindex="-1" class="intro"><div class="intro-heading"><span class="case-number">CASE 001</span><span class="eyebrow">THE LAUNCH ROOM</span></div><div class="intro-grid"><section><h1>Everyone has<br>an agenda.<br><em>Including you.</em></h1><p class="intro-lead">Inspect conflicting evidence, track promises as they return, and decide what fits inside one shared review window. Then make the call the room will remember.</p><div class="intro-actions"><button class="primary" id="start-game" aria-describedby="session-policy">Enter the launch room</button><span class="small-meta">10–15 minutes<br>Single-player simulation</span></div><p id="session-policy" class="fine-print">Progress is not saved. Refreshing or reopening this page starts a new attempt.</p></section><aside class="dossier"><div class="dossier-heading"><span class="eyebrow lime">YOUR ASSIGNMENT</span><span class="stamp">INTERNAL / RELAY</span></div><h2>48 hours to launch.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><div class="brief-facts"><div><span class="eyebrow">YOUR ROLE</span><strong>Product Manager</strong></div><div><span class="eyebrow">YOUR OBJECTIVE</span><strong>Earn the launch.</strong></div></div><div class="cast-preview"><div class="cast-line"><span class="avatar" style="color:var(--orange)">MV</span><span class="cast-name"><strong>Mara Voss</strong><small>Growth lead</small></span><span class="cast-motto">“Momentum matters.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--blue)">IC</span><span class="cast-name"><strong>Ishan Chen</strong><small>Engineering lead</small></span><span class="cast-motto">“Show me the failure.”</span></div><div class="cast-line"><span class="avatar" style="color:var(--pink)">LO</span><span class="cast-name"><strong>Leah Okafor</strong><small>Trust & legal</small></span><span class="cast-motto">“Who carries the risk?”</span></div><div class="cast-line"><span class="avatar" style="color:var(--lime)">TB</span><span class="cast-name"><strong>Theo Bell</strong><small>Customer advocate</small></span><span class="cast-motto">“Someone has to listen.”</span></div></div></aside></div><footer class="intro-foot"><span>Decisions leave a trace. People remember.</span><span>Authored scenario · No account or API key needed</span></footer></main>`;
+app.innerHTML = `<main id="main" tabindex="-1" class="cover">
+  <section class="cover-opening" aria-labelledby="cover-title">
+    <div class="cover-masthead">
+      <div><p class="cover-kicker">A GAME OF PEOPLE, PRESSURE & CONSEQUENCES</p><h1 id="cover-title">Everyone has <br>an <span>agenda.</span></h1></div>
+      <p class="cover-intro">The deadline is clear.<br>The story isn’t.<br><a href="#case-brief">Meet your assignment <span aria-hidden="true">↘</span></a></p>
+    </div>
+    <div class="cover-stage" role="group" aria-label="Explore the three themes of this case" data-cover-navigation>
+      <div class="cover-floor" aria-hidden="true"></div>
+      <button class="cover-card" data-cover="0" data-cover-card data-position="center" aria-pressed="true" aria-label="Explore theme 1: Read the room">
+        <img src="./cover/the-room.webp" width="1440" height="804" fetchpriority="high" alt="A composed wolf in a business suit and glasses, representing hidden intentions.">
+        <span class="cover-card-top"><span>01 / THE PEOPLE</span><span class="cover-card-symbol" aria-hidden="true">↗</span></span>
+        <span class="cover-card-bottom"><span class="cover-card-title">Read the room.</span><span>Every version serves someone.</span></span>
+      </button>
+      <button class="cover-card" data-cover="1" data-cover-card data-position="right" aria-pressed="false" tabindex="-1" aria-label="Explore theme 2: Follow the pressure">
+        <img src="./cover/the-pressure.webp" width="1440" height="804" decoding="async" alt="A suited wolf surrounded by enormous gears in a dark, misty space.">
+        <span class="cover-card-top"><span>02 / THE PRESSURE</span><span class="cover-card-symbol" aria-hidden="true">↗</span></span>
+        <span class="cover-card-bottom"><span class="cover-card-title">Follow the pressure.</span><span>Promises don’t disappear.</span></span>
+      </button>
+      <button class="cover-card" data-cover="2" data-cover-card data-position="left" aria-pressed="false" tabindex="-1" aria-label="Explore theme 3: Own the aftermath">
+        <img src="./cover/the-aftermath.webp" width="1440" height="804" decoding="async" alt="A teal and gold cosmic sky reflected in a dark obsidian floor.">
+        <span class="cover-card-top"><span>03 / THE CONSEQUENCES</span><span class="cover-card-symbol" aria-hidden="true">↗</span></span>
+        <span class="cover-card-bottom"><span class="cover-card-title">Own the aftermath.</span><span>Every decision leaves a trace.</span></span>
+      </button>
+    </div>
+    <div class="cover-controls" data-cover-navigation>
+      <div class="cover-pagination" role="group" aria-label="Choose a case theme"><button data-cover="0" data-cover-dot aria-pressed="true" aria-label="Read the room">01</button><button data-cover="1" data-cover-dot aria-pressed="false" aria-label="Follow the pressure">02</button><button data-cover="2" data-cover-dot aria-pressed="false" aria-label="Own the aftermath">03</button></div>
+      <p id="cover-description" aria-live="polite">Four stakeholders. Competing priorities. Find the gap between the update and the evidence.</p>
+      <div class="cover-arrows"><span id="cover-count" aria-hidden="true">01 / 03</span><button data-cover-step="-1" aria-label="Previous theme">←</button><button data-cover-step="1" aria-label="Next theme">→</button></div>
+    </div>
+    <div class="cover-entry"><div><span class="cover-kicker">CASE 001 / THE RELAY LAUNCH</span><p>Step into the room.<br>Make a call you can stand behind.</p></div><div class="cover-entry-action"><button class="cover-start" id="start-game" aria-describedby="session-policy">Enter the launch room <span aria-hidden="true">↗</span></button><p id="session-policy">Progress is not saved. Refreshing or reopening starts a new attempt.</p></div></div>
+  </section>
+  <section class="cover-brief" id="case-brief" aria-labelledby="brief-title">
+    <div class="cover-brief-heading"><p class="cover-kicker">YOUR ASSIGNMENT / PRODUCT MANAGER</p><h2 id="brief-title">48 hours.<br>One launch.<br>Four perspectives.</h2><p>Relay’s AI meeting assistant is about to go live. Growth has promised the date. Engineering has concerns. A customer has noticed something you haven’t.</p><a href="#start-game" class="cover-return">Take your seat <span aria-hidden="true">↗</span></a></div>
+    <div class="cover-cast" aria-label="The stakeholders"><article><span>01 / GROWTH</span><h3>Mara Voss</h3><p>“Momentum matters.”</p></article><article><span>02 / ENGINEERING</span><h3>Ishan Chen</h3><p>“Show me the failure.”</p></article><article><span>03 / TRUST & LEGAL</span><h3>Leah Okafor</h3><p>“Who carries the risk?”</p></article><article><span>04 / CUSTOMER ADVOCACY</span><h3>Theo Bell</h3><p>“Someone has to listen.”</p></article></div>
+  </section>
+  <footer class="cover-footer"><span>STAKEWOLF / THE LAUNCH ROOM</span><span>One authored case · Five decisions · Single player</span><a href="#cover-title">Back to the opening ↑</a></footer>
+</main>
+`;
 const introHTML = app.innerHTML;
 let state = createGame();
 let selected = null;
@@ -211,7 +248,8 @@ function debriefHTML() {
 }
 function render(focus=false) {
   if(focus) screenVersion++;
-  if(state.phase==='briefing') app.innerHTML=introHTML;
+  document.body.classList.toggle('cover-mode',state.phase==='briefing');
+  if(state.phase==='briefing') {app.innerHTML=introHTML;coverIndex=0;}
   else if(state.phase==='complete') app.innerHTML=debriefHTML();
   else app.innerHTML=`<div class="game">${roomHTML()}<main id="main" tabindex="-1" class="main"><div class="chapter-top"><span class="eyebrow">CASE 001 / ROUND ${String(state.round+1).padStart(2,'0')} OF 05</span><div class="chapter-steps" aria-hidden="true">${ROUNDS.map((r,i)=>`<span class="chapter-step ${i<state.round?'done':i===state.round?'current':''}"></span>`).join('')}</div></div>${state.phase==='play'?sceneHTML():resultHTML()}${metricsHTML()}<footer class="game-footer"><span>RELAY / INTERNAL DECISIONS</span><button class="text-button" data-action="restart">Restart attempt</button></footer></main></div>`;
   if(focus) {document.querySelector('#scene-title, #start-game')?.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}
@@ -300,6 +338,8 @@ document.addEventListener('click',event=>{
       dialog.close();return;
     }
     if(button.id==='start-game'){start();return;}
+    if(button.dataset.cover!==undefined){selectCover(Number(button.dataset.cover));return;}
+    if(button.dataset.coverStep){selectCover(coverIndex+Number(button.dataset.coverStep));return;}
     if(button.dataset.person){openConversation(button.dataset.person);return;}
     if(button.dataset.question){state=askQuestion(state,button.dataset.askPerson,button.dataset.question);render();openConversation(button.dataset.askPerson,button.dataset.question);announce('Evidence added. '+state.talksLeft+' conversations remaining.');return;}
     if(button.dataset.choice){selected=button.dataset.choice;render();app.querySelector('[data-choice="'+selected+'"]').focus({preventScroll:true});return;}
@@ -396,3 +436,32 @@ if(registry?.registerTool){
   }
   window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
 }
+
+// Cover navigation changes presentation only, never the current attempt.
+let coverIndex = 0;
+const coverDescriptions = [
+  'Four stakeholders. Competing priorities. Find the gap between the update and the evidence.',
+  'One shared review window. Earlier promises return when you can least afford them.',
+  'Make the call, then trace the outcome back to the decisions that shaped it.'
+];
+document.body.classList.add('cover-mode');
+function selectCover(next) {
+  if(state.phase!=='briefing' || !Number.isInteger(next)) return;
+  coverIndex = (next%3+3)%3;
+  document.querySelectorAll('[data-cover-card]').forEach((card,index)=>{
+    const offset=(index-coverIndex+3)%3;
+    card.dataset.position=offset===0?'center':offset===1?'right':'left';
+    card.setAttribute('aria-pressed',String(offset===0));
+    card.tabIndex=offset===0?0:-1;
+  });
+  document.querySelectorAll('[data-cover-dot]').forEach((dot,index)=>dot.setAttribute('aria-pressed',String(index===coverIndex)));
+  document.querySelector('#cover-description').textContent=coverDescriptions[coverIndex];
+  document.querySelector('#cover-count').textContent=String(coverIndex+1).padStart(2,'0')+' / 03';
+}
+document.addEventListener('keydown',event=>{
+  if(state.phase!=='briefing' || !event.target.closest('[data-cover-navigation]')) return;
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+  event.preventDefault();
+  selectCover(event.key==='Home'?0:event.key==='End'?2:coverIndex+(event.key==='ArrowRight'?1:-1));
+  if(event.target.hasAttribute('data-cover-card')) document.querySelector('[data-cover-card][data-position="center"]').focus({preventScroll:true});
+});
