@@ -23,10 +23,10 @@
       <h1 id="opening-title">The forest<br>keeps its<br><em>secrets.</em></h1>
       <p class="opening-copy">A promise at the fire.<br>A different story in the dark.<br>Decide who—and what—to believe.</p>
       <button class="primary" id="enter">Enter the Hollow <span aria-hidden="true">↗</span></button>
-      <p class="session-note">A short playable scene. Progress resets when you leave.</p>
+      <p class="session-note">One night. Three accounts. A promise to carry into the morning.<br>Progress resets when you leave.</p>
     </section>
     <section id="experience" class="experience" hidden aria-label="Explore the Hollow">
-      <div class="place"><p class="eyebrow" id="place-kicker">THE FIRST NIGHT</p><h1 id="place-title" tabindex="-1">The council fire</h1><p id="place-description"></p><button class="view-scene" id="view-scene" aria-expanded="true" aria-controls="context">Hide reading panel ↗</button></div>
+      <div class="place"><p class="eyebrow" id="place-kicker">THE FIRST NIGHT</p><h1 id="place-title" tabindex="-1">The council fire</h1><p id="place-description"></p><button class="view-scene" id="view-scene" aria-expanded="true" aria-controls="context">Hide reading panel ↗</button><ol class="night-progress" aria-label="Your night"><li id="step-listen">Listen</li><li id="step-inspect">Investigate</li><li id="step-decide">Commit</li><li id="step-dawn">Dawn</li></ol></div>
       <div id="context" class="context"></div>
       <nav class="wayfinder" aria-label="Explore the forest">
         <button data-travel="council"><span class="way-icon" aria-hidden="true">♧</span><span><small>01</small>Council fire</span><b aria-hidden="true">↗</b></button>
@@ -35,7 +35,13 @@
       </nav>
     </section>
   </main>
-  <footer class="frame-footer"><span><i class="live-dot"></i> <span id="world-time">NIGHTFALL · THE HOLLOW</span></span><span class="footer-center">A GAME OF INSTINCT, TRUST & CONSEQUENCE</span><button id="journal-open" hidden>Field notes <span id="note-count">0</span></button><span id="prototype-tag">VISUAL PROTOTYPE / 01</span></footer>
+  <div id="world-targets" class="world-targets" aria-label="In the clearing" hidden>
+    <button class="world-pin" id="pin-orin" data-person="orin" aria-label="Approach Orin in the clearing" hidden><span class="pin-dot" aria-hidden="true"></span><span>Orin<small>THE BUILDER</small></span><b aria-hidden="true">↗</b></button>
+    <button class="world-pin" id="pin-sera" data-person="sera" aria-label="Approach Sera in the clearing" hidden><span class="pin-dot" aria-hidden="true"></span><span>Sera<small>THE SCOUT</small></span><b aria-hidden="true">↗</b></button>
+    <button class="world-pin" id="pin-vela" data-person="vela" aria-label="Approach Vela in the clearing" hidden><span class="pin-dot" aria-hidden="true"></span><span>Vela<small>THE KEEPER</small></span><b aria-hidden="true">↗</b></button>
+    <button class="world-pin" id="pin-anchor" data-inspect aria-label="Inspect the downstream anchor in the scene" hidden><span class="pin-dot" aria-hidden="true"></span><span>The fastening<small>LOOK CLOSER</small></span><b aria-hidden="true">↗</b></button>
+  </div>
+  <footer class="frame-footer"><span><i class="live-dot"></i> <span id="world-time">NIGHTFALL · THE HOLLOW</span></span><span class="footer-center">A GAME OF INSTINCT, TRUST & CONSEQUENCE</span><button id="journal-open" hidden>Field notes <span id="note-count">0</span></button><span id="prototype-tag">THE FIRST NIGHT / 02</span></footer>
   <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-inner"><button class="close" id="sheet-close" aria-label="Close panel">×</button><div id="sheet-content"></div></div></dialog>
   <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <noscript><div class="no-script"><h2>The Hollow needs JavaScript to open.</h2><p>Enable JavaScript and reload to explore. This scene runs locally; no account or plugin is required.</p><a href="../">Return to the earlier prototype</a></div></noscript>
