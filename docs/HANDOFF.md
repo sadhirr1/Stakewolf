@@ -1,6 +1,6 @@
 # Stakewolf — start here
 
-Last checkpoint: October 10, 2026, SCRUM-33.
+Last checkpoint: October 11, 2026, SCRUM-34.
 
 ## Current direction
 
@@ -8,25 +8,29 @@ The owner rejected the office framing and asked for a real 3D cinematic skeleton
 
 ## Working result
 
-- `/wild/` is **The Hollow**, a separate native WebGL forest prototype. SCRUM-33 adds distinct wolf characters, close-up encounters, accessible world markers, and a first-light continuation after the repair-versus-delay commitment. Dawn changes the lighting and presents three reactions and three unfinished obligations. The original council, trail, crossing, observable anchor defect, field notes, replay, optional sound, motion controls and readable fallback remain.
-- Decision-time evidence is preserved. Inspecting after a commitment cannot retroactively justify it. The repair report describes a bounded dawn inspection; the delay report leaves the crossing closed. Neither invents a culprit. The next chapter and its accumulating-work simulation are still pending.
+- `/wild/` is **The Hollow**, a separate native WebGL forest prototype. SCRUM-34 adds a playable morning after SCRUM-33's encounters and dawn report. Begin the morning, visit the crossing or trail, preview the cost and assign Sera once. A work ledger preserves obligation identity, owner, origin and changed status.
+- Repair + crossing guides a small first party across; hold + crossing only establishes the slipping fastening and leaves repair pending. Either trail assignment discovers undated tracks and defers the crossing work. The unselected task and waiting families remain visible. A rested crew is not invented after overnight repair.
+- World variants show an arriving party, a flagged defective anchor, or trail inspection markers. Repair at dawn now uses a secured fastening mesh. Viewing the scene compacts the heading so it does not cover the action.
+- Night evidence, commitment-time evidence and first-light reports remain historical. Morning inspection is a separate finding. Replay clears the assignment and world variant. This is one night plus one constrained morning assignment, not the full campaign or a general backlog simulator.
 - `/` retains the earlier Relay game and its owner-art opening. Existing mechanics may be reused selectively; the earlier workplace narrative is not the accepted direction for the new world.
 - Run `node server.mjs 4174`, then open `http://127.0.0.1:4174/wild/`. The coordinator left this preview server running for the owner at the end of this session. Restart it if the process has ended.
-- Delivery branch: `codex/SCRUM-33-hollow-dawn`, based on PR18 (`codex/SCRUM-32-forest-prototype`, `14aa3b61fdde8c1ff5d005f0f00ad0f12a94411c`). The earlier PR chain remains unmerged. Only named runtime, test and handoff files belong to this checkpoint; unrelated root changes are excluded.
-- Jira: [SCRUM-33](https://sadhirr1.atlassian.net/browse/SCRUM-33); coordination handoff: [SCRUM-18](https://sadhirr1.atlassian.net/browse/SCRUM-18). GitHub/Jira record the eventual integration SHA and PR URL.
+- Delivery branch: `codex/SCRUM-34-morning-promises`, based on PR19 (`codex/SCRUM-33-hollow-dawn`, `d15c094ad88d63df212d85839f94d3164ae92f90`). The earlier PR chain remains unmerged. Only named runtime, test and handoff files belong to this checkpoint; unrelated root changes are excluded.
+- Jira: [SCRUM-34](https://sadhirr1.atlassian.net/browse/SCRUM-34); coordination handoff: [SCRUM-18](https://sadhirr1.atlassian.net/browse/SCRUM-18). GitHub/Jira record the eventual integration SHA and PR URL.
 
 ## Evidence and ownership
 
-Scene/visual author: `hollow_scene`. State/game-rules author: `hollow_rules`. Interaction, UI/UX, styling and integration: coordinator. Independent source/test reviewer: `hollow_qa`. Coordinator independently reviewed the rules and QA's eleven new tests and ran browser checks. These are agent roles, not separate employee identities.
+Scene/visual author: `hollow_scene`. State/game-rules author: `hollow_rules`. Interaction, UI/UX, styling and integration: coordinator. Independent source/test reviewer: `hollow_qa`. Coordinator independently reviewed the rules and QA's fourteen new tests and ran browser checks. These are agent roles, not separate employee identities.
 
-See `docs/evidence/scrum33-review.md` (208 passing regression checks, syntax checks, resolved findings, source hashes) and `docs/evidence/scrum33-forest.md` (actual browser observations and limits). Moving markers initially selected the wrong character; markers now wait for the camera to settle. Entry/exit camera paths avoid the focused character, and camera travel follows elapsed time even at low frame rates. Browser retest selected the correct character with normal motion. No full release, production deployment, FPS result or owner acceptance of this increment is claimed.
+See `docs/evidence/scrum34-review.md` for final checks and source hashes, and `docs/evidence/scrum34-morning.md` for actual browser observations and limits. No full release, production deployment, FPS result or owner acceptance of this increment is claimed.
 
 ## Next session
 
-1. Read the owner's reaction to close-up characters, world interaction and first light at `/wild/`.
+1. Read the owner's reaction to the playable morning, its work ledger and world changes at `/wild/`.
 2. Improve character animation, environmental detail and cinematic composition; measure performance on target devices. Current art is procedural and simple. Narrow screens use the reading panel as the reliable interaction route.
-3. Build the next chapter around the actual carried obligations: crew rest and an unobserved watch gap after repair, or waiting families and a closed crossing after delay. Hidden motives, replay variation and an accumulating backlog require explicit mechanics; the current dawn report is not that system.
+3. Extend consequences beyond this first morning with credible competing accounts and controlled hidden information. The current ledger updates existing obligations after one assignment; multi-round accumulation, rumors, hidden motives and broader replay variation remain pending.
 4. Reassess scope against the November 6 candidate and November 13 release-decision targets with the owner. Do not silently extend or claim the earlier release scope is finished.
 5. Before editing, reconcile live Jira, open PRs, active agents/chats and this dirty local checkout. Preserve unrelated files. Prefer a clean checkout of the reviewed branch for further integration; do not stage the whole root.
 
 Work and scrum schedules remain off. No hours or project-specific usage percentage are inferred from session duration or account-wide usage.
+
+The owner's latest wolf JPG is a character reference, not a supplied rigged 3D model. Await an actual mesh/rig before claiming its integration. No model purchase or conversion service was used.
