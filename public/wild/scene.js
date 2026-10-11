@@ -1,7 +1,7 @@
-/** SCRUM-33 — original, asset-free wilderness scene. Native WebGL 1. */
+/** SCRUM-34 — original, asset-free wilderness scene. Native WebGL 1. */
 export function createForestScene(canvas, options = {}) {
   const noop = () => {};
-  const inert = { travelTo: noop, focusPerson: noop, setDawn: noop, setPaused: noop, setReducedMotion: noop, setOutcome: noop, dispose: noop };
+  const inert = { travelTo: noop, focusPerson: noop, setDawn: noop, setMorning: noop, setPaused: noop, setReducedMotion: noop, setOutcome: noop, dispose: noop };
   let gl;
   try {
     gl = canvas.getContext('webgl', { alpha: false, antialias: true, powerPreference: 'low-power', preserveDrawingBuffer: false });
@@ -12,7 +12,7 @@ export function createForestScene(canvas, options = {}) {
   }
 
   let disposed = false, failed = false, paused = false, reducedMotion = Boolean(options.reducedMotion);
-  let frame = 0, lastTime = 0, elapsed = 0, ready = false, outcome = 0, selectedOutcome = null;
+  let frame = 0, lastTime = 0, elapsed = 0, ready = false, outcome = 0, selectedOutcome = null, selectedMorning = null;
   let width = 1, height = 1, cssWidth = 1, cssHeight = 1, location = 'overlook', focusedPerson = null, orbitPerson = null, dawn = false;
   const resources = { programs: [], buffers: [] };
   let resizeObserver;
@@ -39,6 +39,7 @@ export function createForestScene(canvas, options = {}) {
     vela: { x: -2.3, z: 2.25, scale: 1.05, color: [0.23,0.23,0.38], fur: [0.27,0.31,0.33], trim: [0.69,0.64,0.46], index: 2 }
   };
   const anchorPosition = [riverX(-5.2) + 2.4, 0.83, -4.27];
+  const inspectionLamp = [0.55, ground(0.55,-15.4)+1.0, -15.4];
 
   function failure(message) {
     if (failed || disposed) return;
@@ -112,6 +113,8 @@ export function createForestScene(canvas, options = {}) {
     uniform mediump float uTime;
     uniform float uOutcome;
     uniform float uDawn;
+    uniform float uTrailInspection;
+    uniform vec3 uInspectionLamp;
     varying mediump vec3 vWorld;
     varying mediump vec3 vNormal;
     varying mediump vec3 vColor;
@@ -134,6 +137,11 @@ export function createForestScene(canvas, options = {}) {
       lighting += vec3(1.0, 0.39, 0.10) * fire;
       vec3 tentDelta = vec3(-7.7, 1.0, -4.0) - vWorld;
       lighting += vec3(0.62, 0.24, 0.07) / (1.0 + dot(tentDelta, tentDelta) * 0.3);
+      if (uTrailInspection > 0.5) {
+        vec3 inspectionDelta = uInspectionLamp - vWorld;
+        float inspectionLight = 2.8 / (1.0 + dot(inspectionDelta,inspectionDelta) * 1.2);
+        lighting += vec3(0.88,0.51,0.19) * inspectionLight * max(0.2,dot(n,inspectionDelta/max(0.01,length(inspectionDelta))));
+      }
       vec3 col = vColor * lighting;
       // Soft fabric texture and brighter sky fill keep faces legible at close range.
       if (vKind >= 4.0 && vKind < 7.0) {
@@ -575,10 +583,6 @@ export function createForestScene(canvas, options = {}) {
       const rope=Array.from({length:13},(_,i)=>[x-2.4+i*0.4,1.19-Math.sin(i/12*Math.PI)*0.30,z+side*0.93]);
       tube(rope,rope.map(()=>0.027),[0.37,0.33,0.22],4);
     }
-    // The downstream eastern fastening has slipped; the hanging loop is inspectable.
-    const [ax,ay,az]=anchorPosition;
-    for(let i=0;i<3;i++) tube([[ax-0.085,ay+i*0.05,az-0.085],[ax+0.09,ay+i*0.05,az-0.085],[ax+0.10,ay+i*0.05,az+0.085],[ax-0.085,ay+i*0.05,az+0.085]],Array(4).fill(0.022),[0.58,0.46,0.27],5);
-    tube([[ax+0.10,ay+0.10,az+0.085],[ax+0.31,ay-0.10,az+0.14],[ax+0.27,ay-0.43,az+0.20],[ax+0.09,ay-0.28,az+0.16]],[0.026,0.024,0.022,0.014],[0.57,0.43,0.25],5);
     const base=ground(x-3.1,z+1.1);
     beam([x-3.1,base,z+1.1],[x-3.1,base+2.1,z+1.1],0.065,[0.23,0.20,0.13],6);
     beam([x-3.1,base+2.05,z+1.1],[x-2.55,base+2.05,z+1.1],0.04,[0.23,0.20,0.13],5);
@@ -591,7 +595,79 @@ export function createForestScene(canvas, options = {}) {
     }
   }
 
-  const outcomeMeshes={},outcomeLights={};
+  const outcomeMeshes={},outcomeLights={},anchorMeshes={},morningMeshes={},morningLights={};
+  function fastening(repaired) {
+    const [x,y,z]=anchorPosition,rope=repaired?[0.69,0.56,0.35]:[0.58,0.46,0.27];
+    for(let i=0;i<3;i++) {
+      const ring=[[x-0.085,y+i*0.05,z-0.085],[x+0.09,y+i*0.05,z-0.085],[x+0.10,y+i*0.05,z+0.085],[x-0.085,y+i*0.05,z+0.085],[x-0.085,y+i*0.05,z-0.085]];
+      tube(ring,Array(5).fill(repaired?0.029:0.022),rope,5);
+    }
+    if(repaired) {
+      // A secured binding replaces the slip loop after the bounded dawn repair check.
+      beam([x-0.11,y-0.02,z+0.10],[x+0.12,y+0.15,z+0.10],0.028,rope,5);
+      beam([x+0.11,y-0.02,z+0.10],[x-0.12,y+0.15,z+0.10],0.028,rope,5);
+      beam([x+0.11,y+0.06,z+0.08],[x+0.11,y-0.12,z+0.09],0.025,rope,5);
+      box([x,y-0.06,z+0.11],[0.20,0.04,0.05],[0.34,0.39,0.36]);
+    } else {
+      tube([[x+0.10,y+0.10,z+0.085],[x+0.31,y-0.10,z+0.14],[x+0.27,y-0.43,z+0.20],[x+0.09,y-0.28,z+0.16]],[0.026,0.024,0.022,0.014],[0.57,0.43,0.25],5);
+    }
+  }
+  function fieldPennant(x,z,color,height=1.1,direction=1) {
+    const y=ground(x,z);
+    beam([x,y,z],[x,y+height,z],0.027,[0.42,0.32,0.19],5);
+    // Cloth folds face the existing approach cameras without adding texture assets.
+    quad([x,y+height-0.07,z],[x+0.44*direction,y+height-0.10,z+0.04],[x+0.35*direction,y+height-0.48,z+0.11],[x,y+height-0.40,z],color);
+    triangle([x+0.44*direction,y+height-0.10,z+0.04],[x+0.58*direction,y+height-0.17,z+0.16],[x+0.35*direction,y+height-0.48,z+0.11],mul(color,0.8));
+  }
+  function traveler(x,z,color,scale=1) {
+    const y=ground(x,z),p=(a,b,c)=>[x+c*scale,y+b*scale,z-a*scale];
+    // Small anonymous travelers face toward the council-side bank.
+    tube([p(0,0.13,0),p(0,1.03,0),p(0,1.26,0)],[0.32*scale,0.25*scale,0.13*scale],color,8,0,0.04);
+    ellipsoid(p(0,1.49,0),[0.19*scale,0.22*scale,0.19*scale],[0.45,0.47,0.40],8,0,0.025);
+    ellipsoid(p(0,1.43,-0.20),[0.19*scale,0.07*scale,0.10*scale],[0.62,0.61,0.49],6,0,0);
+    for(const side of [-1,1]) {
+      triangle(p(side*0.19,1.60,0),p(side*0.16,1.86,0.015),p(side*0.05,1.64,-0.04),[0.39,0.41,0.34]);
+      ellipsoid(p(side*0.12,0.08,-0.08),[0.18*scale,0.09*scale,0.10*scale],[0.11,0.13,0.105],5);
+    }
+    box(p(0,0.97,0.27),[0.20*scale,0.43*scale,0.36*scale],[0.40,0.31,0.18]);
+    beam(p(0.34,0.05,-0.16),p(0.34,1.16,-0.19),0.022*scale,[0.40,0.29,0.15],5);
+  }
+  function morningConsequence(value) {
+    const z=-5.2,x=riverX(z);
+    if(value==='crossing-guided') {
+      // One small party has reached the council bank; this is not a general opening.
+      traveler(x-3.45,z+0.33,[0.48,0.34,0.22],1.04);
+      traveler(x-4.06,z+0.82,[0.31,0.40,0.34],0.73);
+      traveler(x-2.84,z-0.12,[0.29,0.34,0.45],0.96);
+      for(const [px,pz] of [[x-4.75,z+0.35],[x-2.84,z+1.35]]) {
+        const y=ground(px,pz);
+        beam([px,y,pz],[px,y+0.86,pz],0.04,[0.38,0.29,0.17],5);
+        lantern(px,y+1.02,pz,0.68);
+      }
+      fieldPennant(x-4.35,z-0.9,[0.57,0.61,0.42],0.94);
+    } else if(value==='anchor-found') {
+      // Mark the observed fastening for follow-up; the hold barrier remains separate.
+      const [ax,ay,az]=anchorPosition;
+      fieldPennant(ax+0.20,az+0.32,[0.78,0.40,0.13],1.62,-1);
+      beam([ax+0.03,ay+0.11,az+0.12],[ax-0.31,ay+0.02,az+0.35],0.014,[0.75,0.58,0.27],4);
+      quad([ax-0.40,ay+0.07,az+0.35],[ax-0.18,ay+0.07,az+0.35],[ax-0.20,ay-0.24,az+0.36],[ax-0.41,ay-0.24,az+0.36],[0.80,0.65,0.36]);
+      beam([ax-0.40,ay+0.01,az+0.365],[ax-0.21,ay-0.18,az+0.365],0.018,[0.29,0.22,0.12],4);
+      beam([ax-0.20,ay+0.01,az+0.365],[ax-0.40,ay-0.18,az+0.365],0.018,[0.29,0.22,0.12],4);
+    } else if(value==='trail-checked') {
+      fieldPennant(-0.88,-14.7,[0.83,0.73,0.48],1.28);
+      fieldPennant(-1.40,-19.8,[0.83,0.73,0.48],1.12);
+      // Undated impressions accompany inspection markers; they identify no intruder.
+      for(let i=0;i<7;i++) {
+        const px=-0.42+(i%2?0.16:-0.16),pz=-15.5-i*0.48,y=ground(px,pz);
+        ellipsoid([px,y+0.027,pz],[0.105,0.022,0.20],[0.065,0.09,0.07],6,0,0.02);
+      }
+      const [lx,ly,lz]=inspectionLamp;
+      beam([lx,ground(lx,lz),lz],[lx,ly-0.13,lz],0.038,[0.43,0.33,0.19],5);
+      lantern(lx,ly,lz,0.86);
+      box([-0.86,ground(-0.86,-14.9)+0.055,-14.9],[0.30,0.07,0.24],[0.40,0.32,0.19],0.16);
+      box([-0.86,ground(-0.86,-14.9)+0.095,-14.9],[0.25,0.015,0.20],[0.70,0.62,0.39],0.16);
+    }
+  }
   function consequence(choice) {
     const z=-5.2,x=riverX(z),wood=[0.38,0.29,0.17];
     if(choice==='repair') {
@@ -675,6 +751,18 @@ export function createForestScene(canvas, options = {}) {
       consequence(choice);
       outcomeMeshes[choice]={buffer:buffer(vertices),count:vertices.length/10};
       outcomeLights[choice]={buffer:buffer(lights),count:lights.length/10};
+      vertices.length=0;lights.length=0;
+    }
+    for(const repaired of [false,true]) {
+      fastening(repaired);
+      anchorMeshes[repaired?'repaired':'loose']={buffer:buffer(vertices),count:vertices.length/10};
+      vertices.length=0;
+    }
+    // Small variants are uploaded once; changing a morning assignment never rebuilds the forest.
+    for(const value of ['crossing-guided','anchor-found','trail-checked']) {
+      morningConsequence(value);
+      morningMeshes[value]={buffer:buffer(vertices),count:vertices.length/10};
+      morningLights[value]=lights.length?{buffer:buffer(lights),count:lights.length/10}:null;
       vertices.length=0;lights.length=0;
     }
   } catch (error) {
@@ -763,6 +851,12 @@ export function createForestScene(canvas, options = {}) {
     enabledAttributes.forEach(index=>gl.disableVertexAttribArray(index));enabledAttributes.clear();
     gl.useProgram(p);gl.bindBuffer(gl.ARRAY_BUFFER,data);
   }
+  function drawOpaqueMesh(mesh) {
+    gl.bindBuffer(gl.ARRAY_BUFFER,mesh.buffer);
+    attribute(opaqueProgram,'aPosition',3,40,0);attribute(opaqueProgram,'aNormal',3,40,12);
+    attribute(opaqueProgram,'aColor',3,40,24);attribute(opaqueProgram,'aKind',1,40,36);
+    gl.drawArrays(gl.TRIANGLES,0,mesh.count);
+  }
   const maxPointSize=gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)[1];
   function particles(data,count,view,additive=false) {
     bindProgram(particleProgram,data);
@@ -813,17 +907,18 @@ export function createForestScene(canvas, options = {}) {
     gl.uniformMatrix4fv(uniform(opaqueProgram,'uViewProjection'),false,view.combined);
     gl.uniform3fv(uniform(opaqueProgram,'uEye'),eye);gl.uniform1f(uniform(opaqueProgram,'uTime'),elapsed);gl.uniform1f(uniform(opaqueProgram,'uOutcome'),outcome);
     gl.uniform1f(uniform(opaqueProgram,'uDawn'),dawn?1:0);
+    gl.uniform1f(uniform(opaqueProgram,'uTrailInspection'),selectedMorning==='trail-checked'?1:0);
+    gl.uniform3fv(uniform(opaqueProgram,'uInspectionLamp'),inspectionLamp);
     gl.drawArrays(gl.TRIANGLES,0,meshCount);
-    if(selectedOutcome) {
-      const chosen=outcomeMeshes[selectedOutcome];gl.bindBuffer(gl.ARRAY_BUFFER,chosen.buffer);
-      attribute(opaqueProgram,'aPosition',3,40,0);attribute(opaqueProgram,'aNormal',3,40,12);
-      attribute(opaqueProgram,'aColor',3,40,24);attribute(opaqueProgram,'aKind',1,40,36);
-      gl.drawArrays(gl.TRIANGLES,0,chosen.count);
-    }
+    drawOpaqueMesh(anchorMeshes[dawn&&selectedOutcome==='repair'?'repaired':'loose']);
+    if(selectedOutcome)drawOpaqueMesh(outcomeMeshes[selectedOutcome]);
+    if(selectedMorning)drawOpaqueMesh(morningMeshes[selectedMorning]);
     gl.depthMask(false);gl.enable(gl.BLEND);
     particles(mistBuffer,mistCount,view);
     particles(lightBuffer,lightCount,view,true);
     if(selectedOutcome)particles(outcomeLights[selectedOutcome].buffer,outcomeLights[selectedOutcome].count,view,true);
+    const morningLight=selectedMorning?morningLights[selectedMorning]:null;
+    if(morningLight)particles(morningLight.buffer,morningLight.count,view,true);
     gl.depthMask(true);gl.disable(gl.BLEND);
     projectAnchors(view,cameraSettled);
     if(!ready){ready=true;options.onReady?.();}
@@ -879,6 +974,10 @@ export function createForestScene(canvas, options = {}) {
       render();schedule();
     },
     setDawn(value) {if(disposed||failed)return;dawn=Boolean(value);render();},
+    setMorning(value) {
+      if(disposed||failed||(value!==null&&(typeof value!=='string'||!Object.hasOwn(morningMeshes,value))))return;
+      selectedMorning=value;render();
+    },
     setPaused(value) {
       if(disposed||failed)return;
       paused=Boolean(value);lastTime=0;

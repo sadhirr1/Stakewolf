@@ -18,7 +18,7 @@ function freezeState(state) {
 
 test('SCRUM-32 state: the opening blocks exploration, accounts, evidence, and decisions until entry', () => {
   const state = freezeState(createWildState());
-  assert.deepEqual(state, { started: false, location: 'overlook', heard: [], evidence: false, decision: null, decisionEvidence: null, dawn: false });
+  assert.deepEqual(state, { started: false, location: 'overlook', heard: [], evidence: false, decision: null, decisionEvidence: null, dawn: false, morningStarted: false, morningChoice: null });
   for (const [type, value] of [
     ['travel', 'council'], ['travel', 'trail'], ['travel', 'crossing'],
     ['hear', 'orin'], ['hear', 'sera'], ['hear', 'vela'],

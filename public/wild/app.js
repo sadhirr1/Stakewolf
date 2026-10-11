@@ -1,10 +1,11 @@
-import { PEOPLE, createWildState, act, outcome, dawnReport } from './state.js';
+import { PEOPLE, createWildState, act, outcome, dawnReport, morningOptions, morningReport, morningWork } from './state.js';
 
 const $ = selector => document.querySelector(selector);
 let state = createWildState();
 let scene;
 let returnTarget = '#enter';
 let pendingChoice = null;
+let pendingMorning = null;
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 let reduced = motionQuery.matches;
 let paused = reduced;
@@ -44,6 +45,7 @@ function refreshPinExclusions() {
 addEventListener('resize', refreshPinExclusions);
 addEventListener('scroll', refreshPinExclusions, { passive: true });
 function showReadingPanel(show) {
+  document.body.dataset.reading = String(show);
   $('#context').hidden = !show;
   $('#view-scene').setAttribute('aria-expanded', String(show));
   $('#view-scene').textContent = show ? 'Hide reading panel ↗' : 'Show reading panel ↙';
@@ -52,22 +54,48 @@ function showReadingPanel(show) {
 function personRows() {
   return `<div class="people">${Object.entries(PEOPLE).map(([id,p]) => `<button class="person" data-person="${id}"><span class="portrait" aria-hidden="true">${p.mark}</span><span class="person-text">${p.name}<small>${p.role}</small></span><span>${state.heard.includes(id) ? '<span class="sr-only">Account heard</span>✓' : '<span class="sr-only">Hear account</span>↗'}</span></button>`).join('')}</div>`;
 }
+function workRows() {
+  return `<div class="work-ledger">${morningWork(state).map(t => `<article><span class="work-status">${t.status}</span><h3>${t.label}</h3><p class="work-owner">${t.owner} <span>· ${t.origin}</span></p><p>${t.detail}</p></article>`).join('')}</div>`;
+}
+function renderMorning() {
+  const report = morningReport(state);
+  if (report) return `<p class="eyebrow">LATE MORNING / YOUR CALL, ITS COST</p><h2>${report.title}</h2><p>${report.text}</p><div class="evidence-mark"><strong>What changed</strong><p>${report.consequence}</p></div><p class="subtle">${report.uncertainty}</p><button class="primary" id="work-open">Review the open promises <span aria-hidden="true">↗</span></button><div class="morning-voices">${report.voices.map(v => `<blockquote><span>${PEOPLE[v.id].name} · ${PEOPLE[v.id].role}</span><p>${v.line}</p></blockquote>`).join('')}</div><p class="scene-ending">The end of this journey. The work you deferred is still waiting.</p><button class="text-action" id="replay">Try a different path ↗</button>`;
+  const options = morningOptions(state);
+  const here = options.find(o => o.location === state.location);
+  return `<p class="eyebrow">ONE SCOUT / ONE MORNING</p><h2>${here ? here.title : 'Where does Sera go first?'}</h2><p>${here ? here.detail : '“I can walk the northern path, or give the crossing my morning. I cannot promise you both.”'}</p><div class="capacity-strip"><span class="capacity-token" aria-hidden="true">S</span><div><strong>Sera is available</strong><span>One assignment before midday</span></div></div>${here ? `<p class="assignment-cost"><strong>What waits:</strong> ${here.cost}</p><button class="primary" data-morning="${here.id}">Assign Sera here <span aria-hidden="true">↗</span></button>` : `<p>The night has already spent part of your options. Visit either route before committing.</p>`}<div class="morning-routes">${options.filter(o => o !== here).map(o => `<button class="route-card" data-travel="${o.location}"><small>${o.location === 'crossing' ? 'EASTERN BANK' : 'NORTHERN PATH'}</small><strong>${o.title}</strong><span>Visit the route ↗</span></button>`).join('')}</div><button class="text-action" id="work-open">Read the promises carried from last night</button><p class="subtle">Travelling costs no assignment. Confirming a task uses Sera’s morning.</p>`;
+}
+function openWork() {
+  const report = morningReport(state);
+  showSheet(`<p class="eyebrow">PROMISES HAVE OWNERS</p><h2 id="sheet-title">What is still owed</h2><p>${report ? 'One morning spent. The remaining work has not disappeared.' : 'Last night shaped this list. Completing one task does not complete the others.'}</p>${workRows()}<button class="primary" data-close>Return to the forest <span aria-hidden="true">↗</span></button>`, '#work-open');
+}
+function confirmMorning(id) {
+  if (!state.morningStarted || state.morningChoice) return;
+  const option = morningOptions(state).find(o => o.id === id && o.location === state.location);
+  if (!option) return;
+  pendingMorning = id;
+  showSheet(`<p class="eyebrow">GIVE SERA HER MORNING</p><h2 id="sheet-title">${option.title}</h2><p>${option.detail}</p><div class="evidence-mark"><strong>The task you defer</strong><p>${option.cost}</p></div><p>This uses Sera’s one assignment before midday. You can still visit either place afterwards, but cannot send her twice.</p><button class="primary" id="confirm-morning">Commit Sera’s morning <span aria-hidden="true">↗</span></button><button class="text-action" data-close>Keep considering</button>`, '[data-morning]');
+}
 function render(focus = false) {
   $('#opening').hidden = state.started;
   $('#experience').hidden = !state.started;
   $('#journal-open').hidden = !state.started;
   document.body.dataset.phase = state.started ? 'play' : 'opening';
   document.body.dataset.daylight = String(state.dawn);
-  $('#world-time').textContent = state.dawn ? 'FIRST LIGHT · THE HOLLOW' : state.decision ? 'DEEP NIGHT · THE HOLLOW' : 'NIGHTFALL · THE HOLLOW';
+  document.body.dataset.morning = String(state.morningStarted);
+  $('#world-time').textContent = state.morningChoice ? 'LATE MORNING · THE HOLLOW' : state.morningStarted ? 'MORNING · THE HOLLOW' : state.dawn ? 'FIRST LIGHT · THE HOLLOW' : state.decision ? 'DEEP NIGHT · THE HOLLOW' : 'NIGHTFALL · THE HOLLOW';
   [['listen', state.heard.length > 0], ['inspect', state.evidence], ['decide', !!state.decision], ['dawn', state.dawn]].forEach(([id, done]) => {
     $(`#step-${id}`).classList.toggle('complete', done);
     const labels = {listen:'Listen', inspect:'Investigate', decide:'Commit', dawn:'Dawn'};
     $(`#step-${id}`).textContent = `${done ? '✓ ' : ''}${labels[id]}`;
     $(`#step-${id}`).setAttribute('aria-label', `${labels[id]}: ${done ? 'complete' : 'not completed'}`);
   });
-  $('#note-count').textContent = state.heard.length + Number(state.evidence);
+  $('#step-morning').hidden = !state.dawn;
+  $('#step-morning').textContent = `${state.morningChoice ? '✓ ' : ''}Morning`;
+  $('#step-morning').classList.toggle('complete', !!state.morningChoice);
+  $('#step-morning').setAttribute('aria-label', `Morning: ${state.morningChoice ? 'complete' : 'not completed'}`);
+  $('#note-count').textContent = state.heard.length + Number(state.evidence) + Number(!!state.morningChoice);
   if (!state.started) { updatePins(); return; }
-  const place = state.dawn ? ['THE MORNING AFTER', state.location === 'council' ? 'What the night leaves behind' : state.location === 'trail' ? 'The path at first light' : 'The river remembers', 'The light has changed. The promises are still here.'] : places[state.location];
+  const place = state.morningStarted ? ['THE MORNING / A PROMISE CARRIED', state.location === 'council' ? 'Somebody is still waiting.' : state.location === 'trail' ? 'Beyond the watchfires.' : 'The other side of a promise.', state.morningChoice ? 'One task chosen. Another left waiting.' : 'One scout. Two places that need her.'] : state.dawn ? ['THE MORNING AFTER', state.location === 'council' ? 'What the night leaves behind' : state.location === 'trail' ? 'The path at first light' : 'The river remembers', 'The light has changed. The promises are still here.'] : places[state.location];
   $('#place-kicker').textContent = place[0];
   $('#place-title').textContent = place[1];
   $('#place-description').textContent = place[2];
@@ -77,8 +105,10 @@ function render(focus = false) {
   });
   const result = outcome(state);
   const morning = dawnReport(state);
-  if (morning) {
-    $('#context').innerHTML = `<p class="eyebrow">DAWN / WHAT FOLLOWED</p><h2>${morning.title}</h2><p>${morning.text}</p><div class="morning-voices">${morning.voices.map(v => `<blockquote><span>${PEOPLE[v.id].name} · ${PEOPLE[v.id].role}</span><p>${v.line}</p></blockquote>`).join('')}</div><h3 class="field-label">Work carried into the morning</h3><div class="open-threads">${morning.threads.map(t => `<div><span>${t.status}</span><strong>${t.label}</strong><p>${t.detail}</p></div>`).join('')}</div><p class="subtle">${morning.uncertainty}</p><p class="scene-ending">The end of your first night. These open threads belong to the next chapter.</p><button class="text-action" id="replay">Try another night ↗</button>`;
+  if (state.morningStarted) {
+    $('#context').innerHTML = renderMorning();
+  } else if (morning) {
+    $('#context').innerHTML = `<p class="eyebrow">DAWN / WHAT FOLLOWED</p><h2>${morning.title}</h2><p>${morning.text}</p><button class="primary" id="begin-morning">Begin the morning <span aria-hidden="true">↗</span></button><p class="subtle">One scout is available. The unfinished promises are yours to prioritise.</p><div class="morning-voices">${morning.voices.map(v => `<blockquote><span>${PEOPLE[v.id].name} · ${PEOPLE[v.id].role}</span><p>${v.line}</p></blockquote>`).join('')}</div><h3 class="field-label">Work carried into the morning</h3><div class="open-threads">${morning.threads.map(t => `<div><span>${t.status}</span><strong>${t.label}</strong><p>${t.detail}</p></div>`).join('')}</div><p class="subtle">${morning.uncertainty}</p><button class="text-action" id="replay">Try another night ↗</button>`;
   } else if (result && state.location === 'council') {
     $('#context').innerHTML = `<span class="outcome-label">YOUR DECISION IS IN MOTION</span><h2>${result.title}</h2><p>${result.text}</p><div class="evidence-mark"><strong>The cost of the call</strong><p>${result.consequence}</p></div><p class="subtle">${result.uncertainty}</p><button class="primary" id="advance-dawn">Stay until first light <span aria-hidden="true">↗</span></button><p class="subtle">Let the night unfold, then hear what your decision changed.</p><button class="text-action" id="replay">Return to the beginning ↗</button>`;
   } else if (state.location === 'council') {
@@ -98,7 +128,7 @@ function travel(location) {
   state = act(state, 'travel', location);
   scene?.travelTo(state.location);
   render(true);
-  announce(`At ${$('#place-title').textContent}.`);
+  announce(`At ${$('#place-title').textContent}`);
 }
 function showSheet(html, target, person = null) {
   returnTarget = target;
@@ -117,6 +147,7 @@ function closeSheet() {
 }
 $('#sheet').addEventListener('close', () => {
   pendingChoice = null;
+  pendingMorning = null;
   encounter = null;
   document.body.dataset.encounter = 'false';
   scene?.focusPerson(null);
@@ -141,10 +172,16 @@ function confirmChoice(choice) {
 }
 function openJournal() {
   const morning = dawnReport(state);
-  showSheet(`<p class="eyebrow">WHAT YOU KNOW SO FAR</p><h2 id="sheet-title">Field notes</h2>${state.heard.length ? state.heard.map(id => `<div class="notes-item"><span class="field-label">NIGHT ACCOUNT · ${PEOPLE[id].role}</span><p><strong>${PEOPLE[id].name}</strong></p><p>${PEOPLE[id].line} ${PEOPLE[id].note}</p></div>`).join('') : '<p>No night accounts recorded.</p>'}${state.evidence ? '<div class="notes-item"><span class="field-label">OBSERVED AT NIGHT · EASTERN BANK</span><p><strong>The loose anchor</strong></p><p>The downstream fastening slipped under load. Its cause was unknown.</p></div>' : '<p>No night inspection of the downstream anchor recorded.</p>'}${state.decision ? `<div class="notes-item"><span class="field-label">YOUR NIGHT COMMITMENT</span><p>${outcome(state).consequence}</p><p>${state.decisionEvidence ? 'You had inspected the anchor before committing.' : 'You committed before inspecting the anchor.'}</p></div>` : ''}${morning ? `<div class="notes-item"><span class="field-label">DAWN REPORT</span><p><strong>${morning.title}</strong></p><p>${morning.consequence}</p></div>` : ''}`, '#journal-open');
+  const later = morningReport(state);
+  const nightAccounts = state.heard.length ? state.heard.map(id => `<div class="notes-item"><span class="field-label">NIGHT ACCOUNT · ${PEOPLE[id].role}</span><p><strong>${PEOPLE[id].name}</strong></p><p>${PEOPLE[id].line} ${PEOPLE[id].note}</p></div>`).join('') : '<p>No night accounts recorded.</p>';
+  const observation = state.evidence ? '<div class="notes-item"><span class="field-label">OBSERVED AT NIGHT · EASTERN BANK</span><p><strong>The loose anchor</strong></p><p>The downstream fastening slipped under load. Its cause was unknown.</p></div>' : '<p>No night inspection of the downstream anchor recorded.</p>';
+  const commitment = state.decision ? `<div class="notes-item"><span class="field-label">YOUR NIGHT COMMITMENT</span><p>${outcome(state).consequence}</p><p>${state.decisionEvidence ? 'You had inspected the anchor before committing.' : 'You committed before inspecting the anchor.'}</p></div>` : '';
+  const dawn = morning ? `<div class="notes-item"><span class="field-label">AT FIRST LIGHT · BEFORE YOUR MORNING ASSIGNMENT</span><p><strong>${morning.title}</strong></p><p>${morning.consequence}</p></div>` : '';
+  const assignment = later ? `<div class="notes-item"><span class="field-label">LATE MORNING · SERA’S ASSIGNMENT</span><p><strong>${later.title}</strong></p><p>${later.text}</p><p>${later.uncertainty}</p></div>` : '';
+  showSheet(`<p class="eyebrow">WHAT YOU KNOW SO FAR</p><h2 id="sheet-title">Field notes</h2>${nightAccounts}${observation}${commitment}${dawn}${assignment}`, '#journal-open');
 }
 function openGuide() {
-  showSheet('<p class="eyebrow">FIELD GUIDE</p><h2 id="sheet-title">Enter. Listen. Investigate.</h2><p>You lead tonight’s council. A river crossing has been promised for dawn, but the accounts do not agree.</p><ul><li>Use the three location buttons to move through the forest.</li><li>Select a name in the clearing or reading panel to approach a character.</li><li>Inspect the crossing using its marker or the reading panel. Hide the panel for a clear view.</li><li>Make one commitment, then stay until first light to see what follows.</li></ul><p>Every action works with Tab and Enter. Escape closes a panel. Sound is optional. Pause motion freezes the atmosphere and makes travel immediate.</p><p>This is one short authored night. The wider story is still to come. Refresh starts over.</p><a href="../">Open the earlier Relay prototype ↗</a>', '#guide-open');
+  showSheet('<p class="eyebrow">FIELD GUIDE</p><h2 id="sheet-title">Enter. Listen. Investigate.</h2><p>You lead tonight’s council. A river crossing has been promised for dawn, but the accounts do not agree.</p><ul><li>Use the three location buttons to move through the forest.</li><li>Select a name in the clearing or reading panel to approach a character.</li><li>Inspect the crossing using its marker or the reading panel. Hide the panel for a clear view.</li><li>Make one commitment, then stay until first light to see what follows.</li><li>Begin the morning and visit either route. Sera can complete one assignment before midday. Review what changed and which promises remain open.</li></ul><p>Every action works with Tab and Enter. Escape closes a panel. Sound is optional. Pause motion freezes the atmosphere and makes travel immediate.</p><p>This journey covers one night and one morning assignment. The wider story is still to come. Refresh starts over.</p><a href="../">Open the earlier Relay prototype ↗</a>', '#guide-open');
 }
 function syncMotion() {
   $('#motion').setAttribute('aria-pressed', String(paused));
@@ -187,6 +224,22 @@ document.addEventListener('click', e => {
   if (button.id === 'view-scene') { showReadingPanel($('#context').hidden); return; }
   if (button.dataset.travel) { travel(button.dataset.travel); return; }
   if (button.dataset.person) { openPerson(button.dataset.person, button); return; }
+  if (button.id === 'begin-morning') {
+    const next = act(state, 'begin-morning');
+    if (next === state) return;
+    state = next; scene?.travelTo(state.location); render(true); showReadingPanel(true);
+    announce('Morning begins. Sera has one assignment. Visit the crossing or the northern path.'); return;
+  }
+  if (button.id === 'work-open') { openWork(); return; }
+  if (button.dataset.morning) { confirmMorning(button.dataset.morning); return; }
+  if (button.id === 'confirm-morning' && pendingMorning) {
+    const next = act(state, 'assign-morning', pendingMorning);
+    if (next === state) return;
+    state = next;
+    const report = morningReport(state);
+    scene?.setMorning(report.scene); render(true); showReadingPanel(true);
+    returnTarget = '#place-title'; closeSheet(); announce(report.consequence); return;
+  }
   if (button.id === 'inspect' || button.hasAttribute('data-inspect')) {
     const next = act(state,'inspect');
     if (next === state) return;
@@ -206,9 +259,9 @@ document.addEventListener('click', e => {
     announce(`First light. ${dawnReport(state).consequence}`); return;
   }
   if (button.id === 'replay') {
-    showSheet('<p class="eyebrow">A FRESH NIGHT</p><h2 id="sheet-title">Begin again?</h2><p>Your accounts, field note, and decision will be cleared.</p><button class="primary" id="restart-confirm">Begin again <span aria-hidden="true">↗</span></button><button class="text-action" data-close>Keep exploring</button>', '#replay'); return;
+    showSheet('<p class="eyebrow">A FRESH NIGHT</p><h2 id="sheet-title">Begin again?</h2><p>Your accounts, field notes, night decision and morning assignment will be cleared.</p><button class="primary" id="restart-confirm">Begin again <span aria-hidden="true">↗</span></button><button class="text-action" data-close>Keep exploring</button>', '#replay'); return;
   }
-  if (button.id === 'restart-confirm') { state = act(state,'restart'); scene?.setOutcome(null); scene?.setDawn(false); scene?.travelTo('overlook'); showReadingPanel(true); render(); returnTarget = '#enter'; closeSheet(); window.scrollTo({top:0,behavior:'instant'}); announce('A fresh night. All field notes cleared.'); return; }
+  if (button.id === 'restart-confirm') { state = act(state,'restart'); scene?.setMorning(null); scene?.setOutcome(null); scene?.setDawn(false); scene?.travelTo('overlook'); showReadingPanel(true); render(); returnTarget = '#enter'; closeSheet(); window.scrollTo({top:0,behavior:'instant'}); announce('A fresh night. All field notes and morning assignments cleared.'); return; }
   if (button.id === 'journal-open') { openJournal(); return; }
   if (button.id === 'guide-open') { openGuide(); return; }
   if (button.id === 'sheet-close' || button.hasAttribute('data-close')) { closeSheet(); return; }
@@ -223,6 +276,7 @@ import('./scene.js').then(({createForestScene}) => {
   scene?.travelTo(state.location);
   scene?.setOutcome(state.decision);
   scene?.setDawn(state.dawn);
+  scene?.setMorning(morningReport(state)?.scene ?? null);
   scene?.focusPerson(encounter);
 }).catch(sceneUnavailable);
 window.addEventListener('pagehide', event => {
