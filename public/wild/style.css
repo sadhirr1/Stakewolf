@@ -38,3 +38,48 @@ body[data-daylight="true"] .vignette{box-shadow:inset 0 0 120px 10px #09140d44}
 body[data-daylight="true"] .place .eyebrow,body[data-daylight="true"] .live-dot{color:#f0d3a0}
 @media(max-width:1000px) and (min-width:761px){dialog.encounter{width:43vw;max-width:400px}.encounter .sheet-inner{padding:36px 26px 26px}.encounter .sheet-inner h2{font-size:49px}.encounter .sheet-inner .quote{font-size:22px}}
 @media(max-width:760px){.world-targets{display:none}.night-progress{margin-top:18px;max-width:300px}.night-progress li{font-size:8px}dialog.encounter{width:calc(100vw - 28px);max-width:none;margin:auto 14px 15px;max-height:50svh}.encounter .sheet-inner{padding:34px 24px 25px}.encounter .sheet-inner h2{font-size:38px;margin-bottom:12px}.encounter .sheet-inner .quote{font-size:22px}.encounter .sheet-inner .eyebrow{font-size:8px;margin-bottom:12px}.encounter::backdrop{background:linear-gradient(transparent,#05120b66)!important}.morning-voices blockquote p{font-size:19px}}
+
+/* SCRUM-35: leave room for the cast, and let an account unfold beside them. */
+.vignette{box-shadow:inset 0 0 120px #02080744}
+body[data-phase="play"] .atmosphere{background:linear-gradient(90deg,#04100e28,transparent 55%),linear-gradient(0deg,#020b0c85,transparent 45%,#040f1315)}
+body[data-council="true"] .place h1{font-size:clamp(34px,3.2vw,48px);max-width:350px}
+body[data-council="true"] #place-description{max-width:260px;font-size:12px}
+body[data-council="true"] .context{border-color:#bec4a929;background:linear-gradient(135deg,#10211bee,#091912dd);box-shadow:0 16px 50px #0003}
+body[data-council="true"] .portrait{width:28px;height:36px;border:0;background:none!important;border-radius:0;color:#d2be93;font-size:17px}
+body[data-council="true"] .person{padding:11px 0}
+body[data-council="true"] .person-text{font-size:23px}
+body[data-encounter="true"]{overflow:hidden}
+body[data-encounter="true"] .atmosphere{background:linear-gradient(90deg,transparent 35%,#05120b55),linear-gradient(0deg,#0208079c,transparent 24%,transparent 82%,#02080755)}
+body[data-encounter="true"] .frame-footer .footer-center,body[data-encounter="true"] #journal-open,body[data-encounter="true"] #prototype-tag{visibility:hidden}
+dialog.encounter{margin:auto 5vw auto auto;width:34vw;max-width:430px;max-height:calc(100svh - 145px);background:linear-gradient(120deg,#0b1b14c9,#0a1813ee);border:1px solid #d9c69736;box-shadow:0 20px 80px #0003;backdrop-filter:blur(8px)}
+dialog.encounter::backdrop{background:linear-gradient(90deg,transparent 42%,#030b0860);backdrop-filter:none}
+dialog.encounter .sheet-inner{padding:46px 32px 24px}
+.encounter .sheet-inner h2{font-size:clamp(50px,5vw,76px);margin-bottom:25px;color:#efe9d7}
+.encounter .sheet-inner .eyebrow{font-size:8px;letter-spacing:.16em;color:#c2c6ad;display:flex;align-items:center;gap:12px;line-height:1.6}
+.encounter-number{display:inline-grid;place-items:center;border:1px solid #cdb99266;min-width:28px;height:28px;color:#e5c38a;font-size:10px}
+.encounter .sheet-inner .quote{font:italic clamp(25px,2.2vw,34px)/1.35 var(--serif);color:#eee1c0;margin:0 0 27px;letter-spacing:-.015em}
+.account-context{border-block:1px solid #c0c9a733;padding:0}
+.account-context summary{cursor:pointer;padding:17px 0;font-size:11px;letter-spacing:.03em;color:#d5d9c6;min-height:48px;list-style-position:inside}
+.account-context summary::marker{color:#cfb779}
+.account-context summary:focus-visible{outline:2px solid #f1cf8e;outline-offset:4px}
+.account-context p{margin:0 0 18px}
+.account-context .account-caution{font-size:11px;padding-left:12px;border-left:1px solid #bca577;color:#bdc6b6}
+.encounter-actions{padding-top:8px}
+.encounter-actions .primary{margin-top:15px;background:#d9d8bc}
+.encounter-motion{width:100%;text-align:center;color:#b8c7b8;text-decoration:none;font-size:10px;margin-top:8px;padding:12px;min-height:44px}
+body[data-scene="unavailable"] dialog.encounter{margin:auto;width:min(560px,calc(100vw - 32px));max-width:560px;background:#0d1e18}
+@media(min-width:761px) and (prefers-reduced-motion:no-preference){dialog.encounter[open]{animation:account-arrives .55s ease-out both}body[data-motion="paused"] dialog.encounter{animation:none}}
+@keyframes account-arrives{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px) and (min-width:761px){dialog.encounter{width:39vw;margin-right:3vw}.encounter .sheet-inner{padding:42px 24px 18px}.encounter .sheet-inner .quote{font-size:26px}}
+@media(max-width:760px){
+  body[data-council="true"] .place h1{font-size:38px}
+  dialog.encounter{width:calc(100vw - 24px);max-width:none;margin:auto 12px 12px;max-height:52svh;background:linear-gradient(120deg,#10231af5,#07150ff5)}
+  dialog.encounter .sheet-inner{padding:35px 23px 17px}
+  .encounter .sheet-inner .eyebrow{font-size:7px;margin-bottom:12px}
+  .encounter-number{min-width:24px;height:24px}
+  .encounter .sheet-inner h2{font-size:40px;margin-bottom:15px}
+  .encounter .sheet-inner .quote{font-size:25px;margin-bottom:20px}
+  .encounter-actions .primary{max-width:none;width:100%;min-height:48px}
+  body[data-encounter="true"] .atmosphere{background:linear-gradient(0deg,#020b0caa,transparent 60%)}
+  body[data-scene="unavailable"] dialog.encounter{max-height:calc(100svh - 30px)}
+}

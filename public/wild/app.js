@@ -80,6 +80,7 @@ function render(focus = false) {
   $('#experience').hidden = !state.started;
   $('#journal-open').hidden = !state.started;
   document.body.dataset.phase = state.started ? 'play' : 'opening';
+  document.body.dataset.council = String(state.started && state.location === 'council' && !state.decision && !state.dawn);
   document.body.dataset.daylight = String(state.dawn);
   document.body.dataset.morning = String(state.morningStarted);
   $('#world-time').textContent = state.morningChoice ? 'LATE MORNING · THE HOLLOW' : state.morningStarted ? 'MORNING · THE HOLLOW' : state.dawn ? 'FIRST LIGHT · THE HOLLOW' : state.decision ? 'DEEP NIGHT · THE HOLLOW' : 'NIGHTFALL · THE HOLLOW';
@@ -160,7 +161,8 @@ function openPerson(id, source) {
   const p = PEOPLE[id];
   state = act(state, 'hear', id);
   render();
-  showSheet(`<p class="eyebrow">AT THE FIRE · ${p.role.toUpperCase()}</p><h2 id="sheet-title">${p.name}</h2><p class="quote">${p.line}</p><p>${p.detail}</p><div class="rule"></div><p class="field-label">An account, not a verdict</p><p>${p.note}</p><button class="primary" data-close>Back to the fire <span aria-hidden="true">↗</span></button>`, source?.id ? `#${source.id}` : `#context [data-person="${id}"]`, id);
+  const number = String(Object.keys(PEOPLE).indexOf(id) + 1).padStart(2, '0');
+  showSheet(`<p class="eyebrow"><span class="encounter-number">${number}</span> ${p.role.toUpperCase()} · AT THE FIRE</p><h2 id="sheet-title">${p.name}</h2><p class="quote">${p.line}</p><details class="account-context"><summary>Read the full account</summary><p>${p.detail}</p><p class="account-caution">${p.note} This is an account, not an established verdict.</p></details><div class="encounter-actions"><button class="primary" data-close>Back to the fire <span aria-hidden="true">↗</span></button><button class="text-action encounter-motion" data-encounter-motion aria-pressed="${paused || reduced}" ${reduced ? 'disabled' : ''}>${reduced ? 'Reduced motion on' : paused ? 'Resume scene motion' : 'Pause scene motion'}</button></div>`, source?.id ? `#${source.id}` : `#context [data-person="${id}"]`, id);
 }
 function openDecision() {
   showSheet(`<p class="eyebrow">THE COUNCIL IS WAITING</p><h2 id="sheet-title">Where does the crew go?</h2><p>Two skilled people. A crossing to repair. A northern path to watch. Choose what happens tonight.</p><button class="choice" data-choice="repair" ${state.evidence ? '' : 'disabled'}><strong>Move the watch to the river</strong><span>Repair the anchor, then inspect it. The northern path goes unwatched until dawn.${state.evidence ? '' : ' Inspect the anchor first to support this action.'}</span></button><button class="choice" data-choice="hold"><strong>Hold the crossing until daylight</strong><span>Keep the watch in place. Postpone the promise to the eastern families.</span></button><p class="subtle">${state.evidence ? 'Your field note supports a repair. It does not identify who caused the fault.' : 'You have not inspected the crossing. You can still choose to postpone it.'}</p>`, '#decision-open');
@@ -184,10 +186,17 @@ function openGuide() {
   showSheet('<p class="eyebrow">FIELD GUIDE</p><h2 id="sheet-title">Enter. Listen. Investigate.</h2><p>You lead tonight’s council. A river crossing has been promised for dawn, but the accounts do not agree.</p><ul><li>Use the three location buttons to move through the forest.</li><li>Select a name in the clearing or reading panel to approach a character.</li><li>Inspect the crossing using its marker or the reading panel. Hide the panel for a clear view.</li><li>Make one commitment, then stay until first light to see what follows.</li><li>Begin the morning and visit either route. Sera can complete one assignment before midday. Review what changed and which promises remain open.</li></ul><p>Every action works with Tab and Enter. Escape closes a panel. Sound is optional. Pause motion freezes the atmosphere and makes travel immediate.</p><p>This journey covers one night and one morning assignment. The wider story is still to come. Refresh starts over.</p><a href="../">Open the earlier Relay prototype ↗</a>', '#guide-open');
 }
 function syncMotion() {
+  document.body.dataset.motion = paused || reduced ? 'paused' : 'full';
   $('#motion').setAttribute('aria-pressed', String(paused));
   $('#motion').textContent = paused ? 'Motion paused' : 'Pause motion';
   scene?.setReducedMotion(reduced || paused);
   scene?.setPaused(paused);
+  const encounterMotion = $('[data-encounter-motion]');
+  if (encounterMotion) {
+    encounterMotion.disabled = reduced;
+    encounterMotion.setAttribute('aria-pressed', String(paused || reduced));
+    encounterMotion.textContent = reduced ? 'Reduced motion on' : paused ? 'Resume scene motion' : 'Pause scene motion';
+  }
 }
 motionQuery.addEventListener('change', e => { reduced = e.matches; paused = reduced; syncMotion(); });
 async function setSound(enabled) {
@@ -265,13 +274,13 @@ document.addEventListener('click', e => {
   if (button.id === 'journal-open') { openJournal(); return; }
   if (button.id === 'guide-open') { openGuide(); return; }
   if (button.id === 'sheet-close' || button.hasAttribute('data-close')) { closeSheet(); return; }
-  if (button.id === 'motion') { paused = !paused; syncMotion(); return; }
+  if (button.id === 'motion' || button.hasAttribute('data-encounter-motion')) { paused = !paused; syncMotion(); return; }
   if (button.id === 'sound') setSound(!soundOn);
 });
 syncMotion();
-function sceneUnavailable(reason) { sceneReady = false; updatePins(); showReadingPanel(true); console.warn('Forest renderer:', String(reason)); $('#render-notice').hidden = false; $('#render-notice').textContent = 'The 3D scene is unavailable on this browser. All exploration and decision controls still work.'; }
+function sceneUnavailable(reason) { sceneReady = false; document.body.dataset.scene = 'unavailable'; updatePins(); showReadingPanel(true); console.warn('Forest renderer:', String(reason)); $('#render-notice').hidden = false; $('#render-notice').textContent = 'The 3D scene is unavailable on this browser. All exploration and decision controls still work.'; }
 import('./scene.js').then(({createForestScene}) => {
-  scene = createForestScene($('#forest'), { reducedMotion: reduced || paused, onReady() { sceneReady = true; $('#forest').dataset.ready = 'true'; refreshPinExclusions(); }, onProject: updatePins, onFailure: sceneUnavailable });
+  scene = createForestScene($('#forest'), { reducedMotion: reduced || paused, onReady() { sceneReady = true; document.body.dataset.scene = 'ready'; $('#forest').dataset.ready = 'true'; refreshPinExclusions(); }, onProject: updatePins, onFailure: sceneUnavailable });
   syncMotion();
   scene?.travelTo(state.location);
   scene?.setOutcome(state.decision);
