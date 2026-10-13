@@ -54,12 +54,12 @@ body[data-council="true"] .person-text{font-size:23px}
 body[data-encounter="true"]{overflow:hidden}
 body[data-encounter="true"] .atmosphere{background:linear-gradient(90deg,transparent 35%,#05120b55),linear-gradient(0deg,#0208079c,transparent 24%,transparent 82%,#02080755)}
 body[data-encounter="true"] .frame-footer .footer-center,body[data-encounter="true"] #journal-open,body[data-encounter="true"] #prototype-tag{visibility:hidden}
-dialog.encounter{margin:auto 5vw auto auto;width:34vw;max-width:430px;max-height:calc(100svh - 145px);background:linear-gradient(120deg,#0b1b14c9,#0a1813ee);border:1px solid #d9c69736;box-shadow:0 20px 80px #0003;backdrop-filter:blur(8px)}
-dialog.encounter::backdrop{background:linear-gradient(90deg,transparent 42%,#030b0860);backdrop-filter:none}
-dialog.encounter .sheet-inner{padding:46px 32px 24px}
-.encounter .sheet-inner h2{font-size:clamp(50px,5vw,76px);margin-bottom:25px;color:#efe9d7}
+dialog.encounter{margin:auto 5vw auto auto;width:34vw;max-width:430px;max-height:calc(100svh - 145px);background:transparent;border:0;box-shadow:none;backdrop-filter:none}
+dialog.encounter::backdrop{background:linear-gradient(90deg,transparent 30%,#03090845 49%,#030908ef 73%,#030908f5);backdrop-filter:none}
+dialog.encounter .sheet-inner{padding:46px 22px 24px}
+.encounter .sheet-inner h2{font-size:clamp(54px,6vw,88px);margin-bottom:25px;color:#efe9d7}
 .encounter .sheet-inner .eyebrow{font-size:8px;letter-spacing:.16em;color:#c2c6ad;display:flex;align-items:center;gap:12px;line-height:1.6}
-.encounter-number{display:inline-grid;place-items:center;border:1px solid #cdb99266;min-width:28px;height:28px;color:#e5c38a;font-size:10px}
+.encounter-number{display:inline-grid;place-items:center;border-bottom:1px solid #cdb99288;min-width:28px;height:28px;color:#e5c38a;font-size:10px}
 .encounter .sheet-inner .quote{font:italic clamp(25px,2.2vw,34px)/1.35 var(--serif);color:#eee1c0;margin:0 0 27px;letter-spacing:-.015em}
 .account-context{border-block:1px solid #c0c9a733;padding:0}
 .account-context summary{cursor:pointer;padding:17px 0;font-size:11px;letter-spacing:.03em;color:#d5d9c6;min-height:48px;list-style-position:inside}
@@ -68,7 +68,8 @@ dialog.encounter .sheet-inner{padding:46px 32px 24px}
 .account-context p{margin:0 0 18px}
 .account-context .account-caution{font-size:11px;padding-left:12px;border-left:1px solid #bca577;color:#bdc6b6}
 .encounter-actions{padding-top:8px}
-.encounter-actions .primary{margin-top:15px;background:#d9d8bc}
+.encounter-actions .primary{margin-top:15px;background:transparent;color:#eee5cf;border-bottom:1px solid #c9b88c88;padding-inline:0;box-shadow:none}
+.encounter-actions .primary:hover{background:#c9b88c14}
 .encounter-motion{width:100%;text-align:center;color:#b8c7b8;text-decoration:none;font-size:10px;margin-top:8px;padding:12px;min-height:44px}
 body[data-scene="unavailable"] dialog.encounter{margin:auto;width:min(560px,calc(100vw - 32px));max-width:560px;background:#0d1e18}
 @media(min-width:761px) and (prefers-reduced-motion:no-preference){dialog.encounter[open]{animation:account-arrives .55s ease-out both}body[data-motion="paused"] dialog.encounter{animation:none}}
@@ -76,7 +77,8 @@ body[data-scene="unavailable"] dialog.encounter{margin:auto;width:min(560px,calc
 @media(max-width:1050px) and (min-width:761px){dialog.encounter{width:39vw;margin-right:3vw}.encounter .sheet-inner{padding:42px 24px 18px}.encounter .sheet-inner .quote{font-size:26px}}
 @media(max-width:760px){
   body[data-council="true"] .place h1{font-size:38px}
-  dialog.encounter{width:calc(100vw - 24px);max-width:none;margin:auto 12px 12px;max-height:52svh;background:linear-gradient(120deg,#10231af5,#07150ff5)}
+  dialog.encounter{width:calc(100vw - 24px);max-width:none;margin:auto 12px 12px;max-height:52svh;background:linear-gradient(120deg,#10231af5,#07150ff5);border-top:1px solid #c9b88c66}
+  dialog.encounter::backdrop{background:linear-gradient(0deg,#020807cc,transparent 58%)}
   dialog.encounter .sheet-inner{padding:35px 23px 17px}
   .encounter .sheet-inner .eyebrow{font-size:7px;margin-bottom:12px}
   .encounter-number{min-width:24px;height:24px}

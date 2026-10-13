@@ -10,7 +10,17 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 forest rendering benchmark
+## SCRUM-36 encounter continuation — latest
+
+PR22 now also carries a closer desktop portrait camera, broad neutral-warm face light and a transparent desktop dialogue layout backed by a dark gradient. Narrow screens retain the opaque bottom panel. Renderer author `hollow_scene`, UI/build/browser coordinator, independent QA `hollow_cast`. A light-table cleanup-order defect was found by QA and fixed by the author before the frozen **238-test passing** run. Actual desktop and 390 × 844 browser checks, screenshots, source identities and limits: [encounter evidence](evidence/scrum36-encounter.md) and [independent review](evidence/scrum36-encounter-review.md).
+
+The new bundle is **912,621 bytes** (+249,805); assets remain 10,767,112 bytes. The previous transfer target remains unmet. This is staging/UI work only: the same static provisional quadruped remains. No rigged replacement, new animation, deeper story or dynamic-input system was delivered. The character is still the main visual blocker.
+
+`cinema_assets` found a CC0 Warg candidate through the creator's official Fantasy Creatures page and source repository. Its AI/code-generated, top-down-game origin is disclosed; quality is unaccepted. The official FBX download stalled and yielded no usable archive. No conversion or playback was verified. Bounded research details are in the evidence record; do not report its advertised rig/clip counts as integrated assets. Next work should validate a portrait-suitable character and real animations, not repeat cosmetic revisions or broad asset hunts. November 6/13 delivery risk remains unresolved.
+
+Latest continuation updates the existing `codex/SCRUM-36-forest-materials` branch / [PR22](https://github.com/sadhirr1/Stakewolf/pull/22), from parent `dcc8c96f97d5ef729e8f0f1e4f28865d4166c0e0`. Only named renderer, bundle, CSS and evidence/handoff files belong to it. GitHub and Jira contain the final commit/CI result. The dirty root and earlier unmerged draft stack remain preserved. Preview stays at `http://127.0.0.1:4174/wild/`; schedules remain off.
+
+## SCRUM-36 forest rendering benchmark — preceding checkpoint
 
 The active `/wild/` now loads a local Three.js bundle, scanned ground/bark materials, fern and rock models, four detailed pine trees and provisional textured wolf meshes. Loading is explicit, required-asset failures retain the readable game, and desktop rendering can lower its drawing resolution after measuring slow frame intervals. All files are served locally; players install no plugin. The previous renderer remains preserved but is no longer loaded by the game.
 

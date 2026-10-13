@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+
+// Three shares the area-light tables. Each renderer must release its GPU copy
+// before teardown; surviving renderers can upload the retained table data again.
+let areaLightUsers = 0;
+const AREA_LIGHT_TABLES = ['LTC_FLOAT_1', 'LTC_FLOAT_2', 'LTC_HALF_1', 'LTC_HALF_2'];
 
 // SCRUM-36. Real, locally hosted meshes and PBR surfaces; story state stays in state.js.
 const ASSETS = {
@@ -87,7 +93,7 @@ export function createForestScene(canvas, options = {}) {
   let outcome = null, morning = null, location = 'overlook', focused = null, orbit = null;
   let frame = 0, lastTime = 0, elapsed = 0, cssWidth = 1, cssHeight = 1;
   let focusMix = 0, desiredFocus = 0, framing = 0, desiredFraming = 0;
-  let resizeObserver, assetTimeout, loadingManager;
+  let resizeObserver, assetTimeout, loadingManager, areaLightLease = false;
   const startedAt = performance.now();
   let loadMs = 0, renderedFrames = 0, intervalSum = 0, intervalCount = 0, metricsWindows = 0, windowStartFrame = 0;
   let currentPixelRatio = 1, pixelRatioLimit = Infinity, pendingResize = false;
@@ -103,7 +109,8 @@ export function createForestScene(canvas, options = {}) {
   const variants = { repair: new THREE.Group(), hold: new THREE.Group(),
     'crossing-guided': new THREE.Group(), 'anchor-found': new THREE.Group(), 'trail-checked': new THREE.Group() };
   const looseAnchor = new THREE.Group(), resetAnchor = new THREE.Group();
-  let moonLight, fireLight, sky, stars, water, hemi, inspectionLight;
+  let moonLight, fireLight, sky, stars, water, hemi, inspectionLight, portraitLight;
+  const portraitLightPosition = new THREE.Vector3(), portraitLightTarget = new THREE.Vector3();
   let seed = 77139;
   const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
   const range = (a, b) => a + random() * (b - a);
@@ -154,11 +161,15 @@ export function createForestScene(canvas, options = {}) {
     });
     scene.traverse(node => { node.shadow?.dispose(); if (node.isInstancedMesh) node.dispose(); });
     scene.clear();
+    if (areaLightLease) {
+      areaLightLease = false; areaLightUsers--;
+      AREA_LIGHT_TABLES.forEach(name => THREE.UniformsLib[name]?.dispose());
+    }
     renderer.dispose();
     geometries.clear(); materials.clear(); textures.clear(); actors.clear();
     mixers.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
     Object.values(variants).forEach(group => group.clear()); looseAnchor.clear(); resetAnchor.clear();
-    moonLight = fireLight = sky = stars = water = hemi = inspectionLight = null;
+    moonLight = fireLight = sky = stars = water = hemi = inspectionLight = portraitLight = null;
   }
   function fail(message, error) {
     if (disposed || failed) return;
@@ -571,6 +582,10 @@ export function createForestScene(canvas, options = {}) {
     fireShadow.position.set(-3, 3.0, 0); fireShadow.target.position.set(-3, 0, 0);
     fireShadow.castShadow = false;
     scene.add(fireShadow, fireShadow.target); fireLight.userData.shadowLight = fireShadow;
+    if (areaLightUsers === 0) RectAreaLightUniformsLib.init();
+    areaLightUsers++; areaLightLease = true;
+    portraitLight = new THREE.RectAreaLight(0xffe2bd, 0, 1.5, 1.8);
+    scene.add(portraitLight);
     scene.fog = new THREE.FogExp2(0x1b303b, 0.020);
     renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -597,9 +612,13 @@ export function createForestScene(canvas, options = {}) {
     if (actor) {
       const forward = v(Math.sin(actor.angle), 0, Math.cos(actor.angle));
       const side = v(Math.cos(actor.angle), 0, -Math.sin(actor.angle));
-      destinationEye.copy(actor.head).addScaledVector(forward, portrait ? 3.05 : 2.75).addScaledVector(side, 0.9);
-      destinationEye.y = actor.head.y + (portrait ? 0.4 : 0.18);
-      destinationAim.copy(actor.head); destinationAim.y -= portrait ? 0.70 : 0.26;
+      destinationEye.copy(actor.head).addScaledVector(forward, portrait ? 3.05 : 1.95).addScaledVector(side, portrait ? 0.9 : 1.15);
+      destinationEye.y = actor.head.y + (portrait ? 0.4 : 0.12);
+      destinationAim.copy(actor.head); destinationAim.y -= portrait ? 0.70 : 0.17;
+      // Broad, warm-neutral bounce from the camp side shapes the muzzle while
+      // the existing moon remains a cool rim. It does not add a shadow pass.
+      portraitLightPosition.copy(actor.head).addScaledVector(forward, 1.5).addScaledVector(side, -1.35);
+      portraitLightPosition.y += 0.62; portraitLightTarget.copy(actor.head);
     } else {
       destinationEye.fromArray(STOPS[location].eye); destinationAim.fromArray(STOPS[location].target);
     }
@@ -639,9 +658,16 @@ export function createForestScene(canvas, options = {}) {
     try {
       if (pendingResize) applyDrawingSize();
       moveCamera(0);
-      camera.fov = 48 - focusMix * 8; camera.aspect = cssWidth / cssHeight;
+      const portrait = cssWidth / cssHeight < 0.9;
+      camera.fov = 48 - focusMix * (portrait ? 8 : 14); camera.aspect = cssWidth / cssHeight;
       camera.lookAt(aim); camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
       camera.projectionMatrix.elements[8] = framing; camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+      portraitLight.position.copy(portraitLightPosition); portraitLight.lookAt(portraitLightTarget);
+      portraitLight.color.set(dawn ? 0xffebd3 : 0xffe2bd);
+      portraitLight.intensity = focusMix * (dawn ? 1.8 : 3.8);
+      hemi.intensity = (dawn ? 1.15 : 0.85) * (1 - focusMix * 0.34);
+      fireLight.intensity = (dawn ? 5 : 22) * (1 - focusMix * 0.74);
+      fireLight.userData.shadowLight.intensity = (dawn ? 3 : 15) * (1 - focusMix * 0.55);
       fireParts.forEach((flame, i) => { flame.position.y = flame.userData.baseY + Math.sin(elapsed * 3.2 + i) * 0.065; });
       motes.forEach(ember => { ember.position.y = 0.55 + ((elapsed * 0.26 + ember.userData.phase) % 1) * 1.65; });
       renderer.render(scene, camera); renderedFrames++;
