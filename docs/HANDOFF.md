@@ -1,6 +1,6 @@
 # Stakewolf — start here
 
-Last direction/checkpoint update: October 12, 2026, SCRUM-35 / coordination SCRUM-18.
+Last direction/checkpoint update: October 12, 2026, SCRUM-36 / coordination SCRUM-18.
 
 ## Read this before continuing
 
@@ -10,7 +10,24 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-35 technical preservation checkpoint
+## SCRUM-36 forest rendering benchmark
+
+The active `/wild/` now loads a local Three.js bundle, scanned ground/bark materials, fern and rock models, four detailed pine trees and provisional textured wolf meshes. Loading is explicit, required-asset failures retain the readable game, and desktop rendering can lower its drawing resolution after measuring slow frame intervals. All files are served locally; players install no plugin. The previous renderer remains preserved but is no longer loaded by the game.
+
+This is a technical and environmental-art checkpoint, **not completion of the cinematic target**. The 3,024-triangle wolf has a 512-pixel texture, no rig and no authored animation. It is not the owner's anthropomorphic reference. Its replacement is the next visual priority. Do not expand the story to compensate for that gap or treat the current animal encounter as accepted character art.
+
+- Renderer author: `hollow_scene`; asset preparation and provenance: `cinema_assets`; integration/UI/build/browser: coordinator; independent renderer QA and test author: `hollow_cast`. The coordinator reviewed the new tests; `cinema_assets` independently reviewed integration and license delivery.
+- Full frozen regression: **238 passed**, zero failures/skips. After a narrowly scoped camera-sightline tree exclusion, **six focused checks passed**, plus renderer/bundle syntax. Final identities and review limitations: [independent review](evidence/scrum36-review.md).
+- Browser verification includes an Orin encounter, responsive 390 × 844 layout, required-texture failure, and night decision through guided crossing in the morning. The foreground tree obstruction found during that playthrough was fixed and visually retested. Actual screenshots and performance limits: [browser record](evidence/scrum36-forest.md).
+- Assets total **10,767,112 bytes** plus a **662,816-byte** bundle. This exceeds the earlier proposed 1 MB transfer target. Local frame-interval samples do not establish broad hardware performance; physical-phone and slower-network validation remain pending.
+- Delivery branch: `codex/SCRUM-36-forest-materials`, based on PR21 / `codex/SCRUM-35-cinematic-clearing` at `bbf2e210ca6058102bc9305e515e228dd8767089`. Jira [SCRUM-36](https://sadhirr1.atlassian.net/browse/SCRUM-36) and coordination SCRUM-18 carry the resulting PR and integration identity. The draft stack remains unmerged.
+- Restart an older preview server because the new asset routes are explicit. `node server.mjs 4174`, then `http://127.0.0.1:4174/wild/`. The generated bundle is committed, so viewing needs Node only. Authoring/testing additionally needs `npm ci --ignore-scripts` and `npm run build:cinema`.
+
+Next: obtain and validate one coherent, properly rigged character with usable animations and suitable license, then improve its encounter staging against the owner's actual visual feedback. No suitable modern candidate was downloaded behind an authentication requirement; no paid asset or service was purchased. Next sessions must inspect live Jira/PR state before editing this dirty root. Do not stage unrelated files.
+
+Both player input and outside information remain future input sources. No live feed, AI service, save system or dynamic campaign was introduced. Schedules stay off; November 6/13 scope and delivery risks remain unresolved.
+
+## SCRUM-35 technical preservation checkpoint — historical
 
 The interrupted session added original procedural wolf geometry in `public/wild/cast.js`, richer clearing geometry and lights, encounter cameras and restrained idle motion, compact expandable dialogue and a motion control inside the modal. This is preserved experimental work, not fulfillment of the owner's revised visual bar. State rules remain at SCRUM-34.
 

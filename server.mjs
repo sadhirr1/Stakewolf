@@ -12,6 +12,30 @@ const assets = new Map([
   ['/wild/state.js', ['wild/state.js', 'text/javascript; charset=utf-8']],
   ['/wild/scene.js', ['wild/scene.js', 'text/javascript; charset=utf-8']],
   ['/wild/cast.js', ['wild/cast.js', 'text/javascript; charset=utf-8']],
+  ['/wild/cinema.bundle.js', ['wild/cinema.bundle.js', 'text/javascript; charset=utf-8']],
+  ['/wild/credits.html', ['wild/credits.html', 'text/html; charset=utf-8']],
+  ['/wild/assets/forest-floor/diffuse.jpg', ['wild/assets/forest-floor/diffuse.jpg', 'image/jpeg']],
+  ['/wild/assets/forest-floor/normal.jpg', ['wild/assets/forest-floor/normal.jpg', 'image/jpeg']],
+  ['/wild/assets/forest-floor/arm.jpg', ['wild/assets/forest-floor/arm.jpg', 'image/jpeg']],
+  ['/wild/assets/bark/diffuse.jpg', ['wild/assets/bark/diffuse.jpg', 'image/jpeg']],
+  ['/wild/assets/bark/normal.jpg', ['wild/assets/bark/normal.jpg', 'image/jpeg']],
+  ['/wild/assets/bark/arm.jpg', ['wild/assets/bark/arm.jpg', 'image/jpeg']],
+  ['/wild/assets/fern/fern.gltf', ['wild/assets/fern/fern.gltf', 'model/gltf+json']],
+  ['/wild/assets/fern/fern_02.bin', ['wild/assets/fern/fern_02.bin', 'application/octet-stream']],
+  ['/wild/assets/fern/textures/fern_02_diff_1k.jpg', ['wild/assets/fern/textures/fern_02_diff_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/fern/textures/fern_02_nor_gl_1k.jpg', ['wild/assets/fern/textures/fern_02_nor_gl_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/fern/textures/fern_02_arm_1k.jpg', ['wild/assets/fern/textures/fern_02_arm_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/rock-moss/rock-moss.gltf', ['wild/assets/rock-moss/rock-moss.gltf', 'model/gltf+json']],
+  ['/wild/assets/rock-moss/rock_moss_set_01.bin', ['wild/assets/rock-moss/rock_moss_set_01.bin', 'application/octet-stream']],
+  ['/wild/assets/rock-moss/textures/rock_moss_set_01_diff_1k.jpg', ['wild/assets/rock-moss/textures/rock_moss_set_01_diff_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/rock-moss/textures/rock_moss_set_01_nor_gl_1k.jpg', ['wild/assets/rock-moss/textures/rock_moss_set_01_nor_gl_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/rock-moss/textures/rock_moss_set_01_rough_1k.jpg', ['wild/assets/rock-moss/textures/rock_moss_set_01_rough_1k.jpg', 'image/jpeg']],
+  ['/wild/assets/wolf/wolf.glb', ['wild/assets/wolf/wolf.glb', 'model/gltf-binary']],
+  ['/wild/assets/pine/pine.gltf', ['wild/assets/pine/pine.gltf', 'model/gltf+json']],
+  ['/wild/assets/pine/pine.bin', ['wild/assets/pine/pine.bin', 'application/octet-stream']],
+  ['/wild/assets/pine/twig-diffuse.jpg', ['wild/assets/pine/twig-diffuse.jpg', 'image/jpeg']],
+  ['/wild/assets/pine/twig-normal.jpg', ['wild/assets/pine/twig-normal.jpg', 'image/jpeg']],
+  ['/wild/assets/pine/twig-arm.jpg', ['wild/assets/pine/twig-arm.jpg', 'image/jpeg']],
   ['/cover/the-room.webp', ['cover/the-room.webp', 'image/webp']],
   ['/cover/the-pressure.webp', ['cover/the-pressure.webp', 'image/webp']],
   ['/cover/the-aftermath.webp', ['cover/the-aftermath.webp', 'image/webp']],
@@ -29,6 +53,9 @@ const securityHeaders = {
   'Referrer-Policy': 'no-referrer',
   'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'",
 };
+const wildSecurityPolicy = securityHeaders['Content-Security-Policy']
+  .replace("img-src 'self' data:", "img-src 'self' data: blob:")
+  .replace("connect-src 'none'", "connect-src 'self' blob:");
 
 // Only the authored public assets are served. Repository files and arbitrary
 // filesystem paths are never derived from a request URL.
@@ -37,6 +64,7 @@ export function createStaticServer({ root = publicRoot } = {}) {
     const send = (status, body, type = 'text/plain; charset=utf-8', extra = {}) => {
       response.writeHead(status, {
         ...securityHeaders,
+        ...((request.url ?? '').startsWith('/wild/') ? { 'Content-Security-Policy': wildSecurityPolicy } : {}),
         'Content-Type': type,
         'Content-Length': Buffer.byteLength(body),
         ...extra,

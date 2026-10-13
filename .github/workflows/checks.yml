@@ -35,5 +35,11 @@ jobs:
           node --check public/app.js
           node --check public/engine.js
           node --check public/scenario.js
+      - name: Install pinned development dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify the shipped cinematic bundle
+        run: |
+          npm run build:cinema
+          git diff --exit-code -- public/wild/cinema.bundle.js
       - name: Run independent baseline tests
         run: node --test
