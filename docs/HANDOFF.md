@@ -1,6 +1,28 @@
 # Stakewolf — start here
 
-Last checkpoint: October 11, 2026, SCRUM-34.
+Last direction/checkpoint update: October 12, 2026, SCRUM-35 / coordination SCRUM-18.
+
+## Read this before continuing
+
+The owner rejects the present low-detail graphics as the target and rates overall depth at roughly 4% of expectations. Do not interpret prior encouraging feedback or passing tests as visual acceptance. Current priority: **looks/feel first, then story**. Target **desktop/laptop first with a simpler mobile fallback**. The eventual world must respond to **both player input and outside information**. The October 12 override at the top of `revised-release-plan.md` supersedes incompatible fixed workplace-case assumptions.
+
+Next output: one materially different visual benchmark, a playable forest arrival plus a character encounter using coherent authored models/materials/animation and deliberate lighting. Review its actual appearance and motion with the owner before widening the world. More procedural primitive detail alone is not the accepted route. A browser rendering library is a proposed application dependency, not a plugin the player installs. Actual asset sourcing, licensing, animation requirements, target hardware and any cost must be resolved concretely.
+
+Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
+
+## SCRUM-35 technical preservation checkpoint
+
+The interrupted session added original procedural wolf geometry in `public/wild/cast.js`, richer clearing geometry and lights, encounter cameras and restrained idle motion, compact expandable dialogue and a motion control inside the modal. This is preserved experimental work, not fulfillment of the owner's revised visual bar. State rules remain at SCRUM-34.
+
+- Character author: `hollow_cast`; scene author: `hollow_scene`; UI/integration: coordinator; independent review/test author: `hollow_qa`. Coordinator independently reviewed all ten new tests and inspected desktop/tablet/mobile encounters.
+- QA recovered the completed full regression from before interruption: **232 passed, zero failures/skips**, plus wild module syntax checks. See `evidence/scrum35-review.md` for execution details and final source identity. No new full suite is needed solely because the chat resumed.
+- Actual browser checks and limitations are recorded in `evidence/scrum35-clearing.md`. No GPU frame-time measurement, full final morning replay, production deployment or owner visual acceptance is claimed for this increment.
+- Intended preservation branch: `codex/SCRUM-35-cinematic-clearing`, parent PR20 / `be9f216e6fb35a659b0a449d3fd1fa9026fbde5f`. GitHub/Jira carry the integration commit and draft PR once published. Existing draft chain remains unmerged.
+- A new explicit `/wild/cast.js` server route requires restarting an older preview server; refreshing the page alone is insufficient. Run `node server.mjs 4174` after stopping the old server and use `http://127.0.0.1:4174/wild/`.
+
+Schedules remain off. The November 6/13 targets require scope and delivery reassessment. No purchase, paid-service integration or deadline change is authorized by this record.
+
+## Previous SCRUM-34 checkpoint — historical working baseline
 
 ## Current direction
 
@@ -23,7 +45,7 @@ Scene/visual author: `hollow_scene`. State/game-rules author: `hollow_rules`. In
 
 See `docs/evidence/scrum34-review.md` for final checks and source hashes, and `docs/evidence/scrum34-morning.md` for actual browser observations and limits. No full release, production deployment, FPS result or owner acceptance of this increment is claimed.
 
-## Next session
+## Previous next steps — superseded by the October 12 priorities above
 
 1. Read the owner's reaction to the playable morning, its work ledger and world changes at `/wild/`.
 2. Improve character animation, environmental detail and cinematic composition; measure performance on target devices. Current art is procedural and simple. Narrow screens use the reading panel as the reliable interaction route.
