@@ -15,12 +15,14 @@ const ASSETS = {
   fern: '/wild/assets/fern/fern.gltf',
   rock: '/wild/assets/rock-moss/rock-moss.gltf',
   pine: '/wild/assets/pine/pine.gltf',
-  wolf: '/wild/assets/warg/warg.glb'
+  wolf: '/wild/assets/warg/warg.glb',
+  ash: '/wild/assets/warg/ash.jpg',
+  black: '/wild/assets/warg/black.jpg'
 };
 const PEOPLE = {
   orin: { x: -5.9, z: 0.5, scale: 1.03, phase: 0 },
-  sera: { x: -0.15, z: -2.9, scale: 0.98, phase: 0.31 },
-  vela: { x: -1.8, z: 3.9, scale: 1.05, phase: 0.67 }
+  sera: { x: -0.15, z: -2.9, scale: 0.98, phase: 0.31, coat: 'black', introClipName: 'IdlePant' },
+  vela: { x: -1.8, z: 3.9, scale: 1.05, phase: 0.67, coat: 'ash' }
 };
 const MORNING = new Set(['crossing-guided', 'anchor-found', 'trail-checked']);
 const PINES = [
@@ -192,7 +194,7 @@ export function createForestScene(canvas, options = {}) {
       else resolve(model);
     }, undefined, reject));
   }
-  function loadTexture(url, color = false) {
+  function loadTexture(url, color = false, flipY = true) {
     return new Promise((resolve, reject) => {
       const texture = ownTexture(textureLoader.load(url, loaded => {
         if (disposed || failed) { loaded.dispose(); reject(new Error('Scene ended during texture loading')); return; }
@@ -202,6 +204,7 @@ export function createForestScene(canvas, options = {}) {
         resolve(loaded);
       }, undefined, reject));
       texture.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+      texture.flipY = flipY;
     });
   }
   const standard = settings => ownMaterial(new THREE.MeshStandardMaterial(settings));
@@ -349,7 +352,8 @@ export function createForestScene(canvas, options = {}) {
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geometry.setIndex(indices); geometry.computeVertexNormals();
     mesh(geometry, material, scene, false);
   }
-  function makeForest(groundMaps, barkMaps, fern, rock, wolf, pine) {
+  function makeForest(groundMaps, barkMaps, fern, rock, wolf, pine, ash, black) {
+    const coats = { ash, black };
     const groundMaterial = surface(groundMaps, [29, 33], 0x909982);
     const barkMaterial = surface(barkMaps, [1.8, 4.5], 0x9fa39b);
     const glow = glowTexture();
@@ -530,9 +534,13 @@ export function createForestScene(canvas, options = {}) {
       ctx.fillStyle = gradient; ctx.fillRect(0, 0, size, size);
     });
     const contactMaterial = basic({ map: contactTexture, color: 0x040607, transparent: true, opacity: 0.48, depthWrite: false });
-    function placeWolf(x, z, scale, angle, parent = scene, phase = 0) {
+    function placeWolf(x, z, scale, angle, parent = scene, phase = 0, coat = null, introClipName = null) {
       const group = new THREE.Group(); group.position.set(x, groundY(x, z) + 0.015, z); group.rotation.y = angle;
-      const character = createAnimatedCharacter(wolf, { phase }); characters.push(character);
+      const character = createAnimatedCharacter(wolf, { phase, introClipName, materialFactory(source) {
+        const variant = source.clone();
+        if (coat) variant.map = coats[coat];
+        return ownMaterial(variant);
+      } }); characters.push(character);
       character.root.scale.multiplyScalar(scale); group.add(character.root); parent.add(group);
       const contactGeometry = new THREE.PlaneGeometry(1.2 * scale, 2.0 * scale, 6, 8);
       contactGeometry.rotateX(-Math.PI / 2); contactGeometry.translate(0, 0, 0.10 * scale);
@@ -549,11 +557,11 @@ export function createForestScene(canvas, options = {}) {
     }
     for (const [id, person] of Object.entries(PEOPLE)) {
       const angle = Math.atan2(-3 - person.x, -person.z);
-      const { group, character } = placeWolf(person.x, person.z, person.scale, angle, scene, person.phase);
+      const { group, character } = placeWolf(person.x, person.z, person.scale, angle, scene, person.phase, person.coat, person.introClipName);
       // Sample the real bone once. A quiet idle should not make the camera
       // chase its breathing motion or move when the player pauses it.
       const head = character.getHeadPosition(v(0, 0, 0));
-      actors.set(id, { group, head, angle, body: group.position.clone() });
+      actors.set(id, { group, character, head, angle, body: group.position.clone() });
     }
     placeWolf(bridgeX - 3.7, -5.8, 0.75, -Math.PI / 2, variants['crossing-guided'], 0.13);
     placeWolf(bridgeX - 4.7, -4.8, 0.56, -Math.PI / 2 - 0.16, variants['crossing-guided'], 0.54);
@@ -638,6 +646,8 @@ export function createForestScene(canvas, options = {}) {
     } else {
       destinationEye.fromArray(STOPS[location].eye); destinationAim.fromArray(STOPS[location].target);
     }
+    // Focus intent changes here; bones advance only in the gated animation tick.
+    for (const [id, entry] of actors) entry.character.setFocus(id === focused ? destinationEye : null);
     if (instant) {
       camera.position.copy(destinationEye); aim.copy(destinationAim); focusMix = desiredFocus; framing = desiredFraming;
       if (!focused) orbit = null;
@@ -680,7 +690,9 @@ export function createForestScene(canvas, options = {}) {
       camera.projectionMatrix.elements[8] = framing; camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
       portraitLight.position.copy(portraitLightPosition); portraitLight.lookAt(portraitLightTarget);
       portraitLight.color.set(dawn ? 0xffebd3 : 0xffe2bd);
-      portraitLight.intensity = focusMix * (dawn ? 1.8 : 3.8);
+      // The charcoal coat needs a little more night fill to separate its face
+      // from the neck. Reuse the same area light; daylight and other roles stay unchanged.
+      portraitLight.intensity = focusMix * (dawn ? 1.8 : focused === 'sera' ? 4.9 : 3.8);
       hemi.intensity = (dawn ? 1.15 : 0.85) * (1 - focusMix * 0.34);
       fireLight.intensity = (dawn ? 5 : 22) * (1 - focusMix * 0.74);
       fireLight.userData.shadowLight.intensity = (dawn ? 3 : 15) * (1 - focusMix * 0.55);
@@ -745,7 +757,9 @@ export function createForestScene(canvas, options = {}) {
   Promise.all([
     Promise.all(['diffuse', 'normal', 'arm'].map((name, i) => loadTexture(`${ASSETS.ground}${name}.jpg`, i === 0))),
     Promise.all(['diffuse', 'normal', 'arm'].map((name, i) => loadTexture(`${ASSETS.bark}${name}.jpg`, i === 0))),
-    loadModel(ASSETS.fern), loadModel(ASSETS.rock), loadModel(ASSETS.wolf), loadModel(ASSETS.pine)
+    loadModel(ASSETS.fern), loadModel(ASSETS.rock), loadModel(ASSETS.wolf), loadModel(ASSETS.pine),
+    // These variants were flipped during packaging to match glTF UV orientation.
+    loadTexture(ASSETS.ash, true, false), loadTexture(ASSETS.black, true, false)
   ]).then(assets => {
     if (disposed || failed) return;
     clearTimeout(assetTimeout);

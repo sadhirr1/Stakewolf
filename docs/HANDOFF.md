@@ -10,7 +10,17 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 animated cast — latest
+## SCRUM-36 cast identity and attention — latest
+
+Orin now has the creator's brown coat, Vela ash and Sera charcoal. Encounters blend in a head turn capped at approximately 22 degrees over the existing animation; the camera stays on its stable anchor. Sera's first encounter briefly uses IdlePant (at most two cycles of active animation time) and returns to Idle, without restarting on revisit. Paused/hidden/reduced-motion scenes do not advance these poses. Sera's night portrait fill was modestly increased after browser inspection; her darker face still has weaker definition than the other two.
+
+Asset author `character_asset`, runtime author `character_runtime`, independent reviewer/test author `character_review`, integration/browser and independent test review by coordinator. Four new real-rig checks passed; the final full suite passed **246 tests**, zero failures/skips. Actual three-character desktop encounters, pause/resume and paused resize/refocus at 390 × 844 were checked. [Implementation/browser evidence](evidence/scrum36-cast.md), [independent review](evidence/scrum36-cast-review.md), [coat provenance](../public/wild/assets/warg/VARIANTS.md).
+
+Existing [PR22](https://github.com/sadhirr1/Stakewolf/pull/22) continues from `6c488d2d113a56b7ee8cd0b010f37a88627e09f2`; final commit and remote CI belong in GitHub/Jira. Root changes outside this bounded increment are preserved. Active assets now total 13,552,884 bytes plus a 928,739-byte bundle. Preview remains `http://127.0.0.1:4174/wild/`; the main server was restarted for the two explicit JPEG routes.
+
+This is a small cast-readability improvement, not final cinematic acceptance. Shared quadruped geometry, pointed fur, weak facial acting and Sera's night face remain art limitations. No new locations, deeper story, live information feed, campaign or save system was added. Next: use owner feedback on this actual encounter to resolve the portrait-quality character direction before widening the world. The November 6/13 scope and performance risks remain; schedules stay off.
+
+## SCRUM-36 animated cast — preceding checkpoint
 
 The active forest now uses a real 41-joint Warg rig with independent Idle animation for five characters, replacing the static wolf in the renderer. Actual candidate inspection caught and fixed incorrect vertex-color masks before integration. The 3,169,108-byte CC0 GLB preserves two clips, has 7,071 triangles and 1K maps; only Idle is currently used. Creator attribution, license, source hash and offline conversion script are retained. The older wolf and its attribution remain preserved.
 

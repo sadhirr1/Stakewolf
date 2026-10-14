@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "issue": "SCRUM-36",
   "verifiedDate": "2026-10-13",
-  "runtimeBytes": 13936220,
-  "runtimeFileCount": 23,
+  "runtimeBytes": 14508212,
+  "runtimeFileCount": 25,
   "character": {
     "path": "warg/warg.glb",
     "status": "provisional",
@@ -23,7 +23,12 @@
     "heightMeters": 1.2,
     "facing": "+Z",
     "up": "+Y",
-    "qualityRequirementMet": false
+    "qualityRequirementMet": false,
+    "coatVariants": {
+      "orin": "embedded brown",
+      "sera": "warg/black.jpg",
+      "vela": "warg/ash.jpg"
+    }
   },
   "files": [
     {
@@ -234,6 +239,26 @@
       "author": "Daniel Gruginski (algumacoisaqq)",
       "derived": true,
       "mimeType": "model/gltf-binary"
+    },
+    {
+      "path": "warg/ash.jpg",
+      "bytes": 324417,
+      "sha256": "c5fe52a844c3c57468649ce13efcc6e2b771740a2f944d03cda1e2de5d4a6730",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/black.jpg",
+      "bytes": 247575,
+      "sha256": "dd98e2618dfe2ec7ecfcedf3c4dabd5b221fc398fb9712cfed675502efc11c4f",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "image/jpeg"
     }
   ],
   "models": [
@@ -305,5 +330,5 @@
       "heightMeters": 1.0465238094329834
     }
   ],
-  "activeSceneBytes": 12980892
+  "activeSceneBytes": 13552884
 }
