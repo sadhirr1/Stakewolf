@@ -1,6 +1,6 @@
 # Stakewolf — start here
 
-Last direction/checkpoint update: October 12, 2026, SCRUM-36 / coordination SCRUM-18.
+Last direction/checkpoint update: October 13, 2026, SCRUM-36 / coordination SCRUM-18.
 
 ## Read this before continuing
 
@@ -10,7 +10,17 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 encounter continuation — latest
+## SCRUM-36 animated cast — latest
+
+The active forest now uses a real 41-joint Warg rig with independent Idle animation for five characters, replacing the static wolf in the renderer. Actual candidate inspection caught and fixed incorrect vertex-color masks before integration. The 3,169,108-byte CC0 GLB preserves two clips, has 7,071 triangles and 1K maps; only Idle is currently used. Creator attribution, license, source hash and offline conversion script are retained. The older wolf and its attribution remain preserved.
+
+Authors: `character_asset` and `character_runtime`; independent reviewer/test author: `character_review`; integration/browser/test review: coordinator. Four focused tests and the final **242-test full suite passed**. Actual desktop encounters, narrow 390 × 844 layout, pause/resume and paused resize/focus were checked. See [implementation and browser evidence](evidence/scrum36-character.md) and [independent review](evidence/scrum36-character-review.md). The source, helper, asset and manifest identities are recorded there; GitHub/Jira hold the final commit and CI result.
+
+This is a **technical animation increment, not final cinematic art**. The cast remains one generic quadruped with coarse, pointed fur. Facial acting, character differentiation, walking/lip-sync and final anthro art are unresolved. The frame budget and transfer targets are also unmet: active assets 12,980,892 bytes plus a 927,026-byte bundle. Moving wolves use soft contact patches rather than articulated cast shadows. No deeper story, dynamic-input service, save system or campaign was introduced.
+
+Publication continues existing PR22 / `codex/SCRUM-36-forest-materials` from parent `cd301ae40dca24baf815137bde2fa1f4cb32b82e`, preserving the dirty root and unmerged draft stack. Main preview remains `http://127.0.0.1:4174/wild/`; restart the server for the explicit new asset route if needed. Temporary showroom 4178 is stopped. Schedules remain off. Next work must reconcile live Jira/PR state and obtain owner feedback on the actual animated encounter before widening the visual scope. November 6/13 delivery risk remains unresolved.
+
+## SCRUM-36 encounter continuation — preceding checkpoint
 
 PR22 now also carries a closer desktop portrait camera, broad neutral-warm face light and a transparent desktop dialogue layout backed by a dark gradient. Narrow screens retain the opaque bottom panel. Renderer author `hollow_scene`, UI/build/browser coordinator, independent QA `hollow_cast`. A light-table cleanup-order defect was found by QA and fixed by the author before the frozen **238-test passing** run. Actual desktop and 390 × 844 browser checks, screenshots, source identities and limits: [encounter evidence](evidence/scrum36-encounter.md) and [independent review](evidence/scrum36-encounter-review.md).
 

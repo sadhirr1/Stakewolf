@@ -1,19 +1,24 @@
 {
   "schemaVersion": 1,
   "issue": "SCRUM-36",
-  "verifiedDate": "2026-10-12",
-  "runtimeBytes": 10767112,
-  "runtimeFileCount": 22,
+  "verifiedDate": "2026-10-13",
+  "runtimeBytes": 13936220,
+  "runtimeFileCount": 23,
   "character": {
-    "path": "wolf/wolf.glb",
+    "path": "warg/warg.glb",
     "status": "provisional",
-    "kind": "static quadruped",
-    "rigged": false,
-    "animations": 0,
-    "triangles": 3024,
+    "kind": "animated quadruped",
+    "rigged": true,
+    "joints": 41,
+    "animations": 2,
+    "animationNames": [
+      "Idle",
+      "IdlePant"
+    ],
+    "triangles": 7071,
     "textureDimensions": [
-      512,
-      512
+      1024,
+      1024
     ],
     "heightMeters": 1.2,
     "facing": "+Z",
@@ -219,6 +224,16 @@
       "sha256": "2eb0aa44124b5a4ae9401e00b23b3c916f4c3f421616ce1bb932f248fc061288",
       "license": "CC0-1.0",
       "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/warg.glb",
+      "bytes": 3169108,
+      "sha256": "e97b8563f061bb59f94090c0fceb96c7bc71e4517b360767c87ecc184b735026",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "model/gltf-binary"
     }
   ],
   "models": [
@@ -289,5 +304,6 @@
       "modification": "Variant b extracted; foliage simplified with meshoptimizer1.3.0, attribute-aware, target24000 triangles, error0.0015851600328460336; unused vertices/buffer views removed; original materials/maps retained",
       "heightMeters": 1.0465238094329834
     }
-  ]
+  ],
+  "activeSceneBytes": 12980892
 }

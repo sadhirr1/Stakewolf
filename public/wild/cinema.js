@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { clone as cloneRig } from 'three/addons/utils/SkeletonUtils.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+import { createAnimatedCharacter } from './character.js';
 
 // Three shares the area-light tables. Each renderer must release its GPU copy
 // before teardown; surviving renderers can upload the retained table data again.
@@ -15,12 +15,12 @@ const ASSETS = {
   fern: '/wild/assets/fern/fern.gltf',
   rock: '/wild/assets/rock-moss/rock-moss.gltf',
   pine: '/wild/assets/pine/pine.gltf',
-  wolf: '/wild/assets/wolf/wolf.glb'
+  wolf: '/wild/assets/warg/warg.glb'
 };
 const PEOPLE = {
-  orin: { x: -5.9, z: 0.5, tint: 0x876044, scale: 1.03 },
-  sera: { x: -0.15, z: -2.9, tint: 0x536b57, scale: 0.98 },
-  vela: { x: -1.8, z: 3.9, tint: 0x59546f, scale: 1.05 }
+  orin: { x: -5.9, z: 0.5, scale: 1.03, phase: 0 },
+  sera: { x: -0.15, z: -2.9, scale: 0.98, phase: 0.31 },
+  vela: { x: -1.8, z: 3.9, scale: 1.05, phase: 0.67 }
 };
 const MORNING = new Set(['crossing-guided', 'anchor-found', 'trail-checked']);
 const PINES = [
@@ -104,7 +104,7 @@ export function createForestScene(canvas, options = {}) {
   const destinationEye = new THREE.Vector3(...STOPS.overlook.eye);
   const destinationAim = aim.clone();
   camera.position.copy(destinationEye);
-  const actors = new Map(), mixers = [], windUniforms = [];
+  const actors = new Map(), characters = [], windUniforms = [];
   const fireParts = [], lanterns = [], motes = [];
   const variants = { repair: new THREE.Group(), hold: new THREE.Group(),
     'crossing-guided': new THREE.Group(), 'anchor-found': new THREE.Group(), 'trail-checked': new THREE.Group() };
@@ -151,7 +151,7 @@ export function createForestScene(canvas, options = {}) {
     window.removeEventListener('resize', resize);
     document.removeEventListener('visibilitychange', visibility);
     canvas.removeEventListener('webglcontextlost', contextLost);
-    mixers.forEach(mixer => { mixer.stopAllAction(); mixer.uncacheRoot(mixer.getRoot()); });
+    characters.forEach(character => character.dispose());
     geometries.forEach(geometry => geometry.dispose());
     materials.forEach(material => material.dispose());
     textures.forEach(texture => {
@@ -167,7 +167,7 @@ export function createForestScene(canvas, options = {}) {
     }
     renderer.dispose();
     geometries.clear(); materials.clear(); textures.clear(); actors.clear();
-    mixers.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
+    characters.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
     Object.values(variants).forEach(group => group.clear()); looseAnchor.clear(); resetAnchor.clear();
     moonLight = fireLight = sky = stars = water = hemi = inspectionLight = portraitLight = null;
   }
@@ -521,26 +521,42 @@ export function createForestScene(canvas, options = {}) {
         toe.scale.y = 0.12; toe.position.set(x + dx, groundY(x, z - 0.10) + 0.033, z - 0.10);
       }
     }
-    // This licensed static quadruped is a provisional lighting asset, not an
-    // authored humanoid cast or a claim of a working animation rig.
-    function placeWolf(x, z, scale, angle, parent = scene, tint = null) {
+    // This CC0 quadruped is a provisional rig benchmark, not the final cast.
+    // Keep expensive forest shadows cached: animated bodies receive them but
+    // use a modest terrain-conforming contact patch instead of frozen shadows.
+    const contactTexture = canvasTexture(64, (ctx, size) => {
+      const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      gradient.addColorStop(0, '#ffffffcc'); gradient.addColorStop(0.42, '#ffffff70'); gradient.addColorStop(1, '#ffffff00');
+      ctx.fillStyle = gradient; ctx.fillRect(0, 0, size, size);
+    });
+    const contactMaterial = basic({ map: contactTexture, color: 0x040607, transparent: true, opacity: 0.48, depthWrite: false });
+    function placeWolf(x, z, scale, angle, parent = scene, phase = 0) {
       const group = new THREE.Group(); group.position.set(x, groundY(x, z) + 0.015, z); group.rotation.y = angle;
-      const model = cloneRig(wolf.scene); model.scale.setScalar(scale); group.add(model); parent.add(group);
-      model.traverse(node => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } });
-      if (tint !== null) {
-        const collar = mesh(new THREE.TorusGeometry(0.225, 0.035, 8, 20), standard({ color: tint, roughness: 0.96 }), group);
-        collar.position.set(0, 0.81 * scale, 0.65 * scale); collar.rotation.x = Math.PI / 2 - 0.3;
+      const character = createAnimatedCharacter(wolf, { phase }); characters.push(character);
+      character.root.scale.multiplyScalar(scale); group.add(character.root); parent.add(group);
+      const contactGeometry = new THREE.PlaneGeometry(1.2 * scale, 2.0 * scale, 6, 8);
+      contactGeometry.rotateX(-Math.PI / 2); contactGeometry.translate(0, 0, 0.10 * scale);
+      const positions = contactGeometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) {
+        const px = positions.getX(i), pz = positions.getZ(i);
+        const worldX = x + Math.cos(angle) * px + Math.sin(angle) * pz;
+        const worldZ = z - Math.sin(angle) * px + Math.cos(angle) * pz;
+        positions.setY(i, groundY(worldX, worldZ) - group.position.y + 0.025);
       }
-      return group;
+      contactGeometry.computeVertexNormals();
+      const contact = mesh(contactGeometry, contactMaterial, group, false); contact.receiveShadow = false;
+      return { group, character };
     }
     for (const [id, person] of Object.entries(PEOPLE)) {
       const angle = Math.atan2(-3 - person.x, -person.z);
-      const group = placeWolf(person.x, person.z, person.scale, angle, scene, person.tint);
-      const head = v(0, 1.10 * person.scale, 1.14 * person.scale); group.updateMatrixWorld(true); group.localToWorld(head);
+      const { group, character } = placeWolf(person.x, person.z, person.scale, angle, scene, person.phase);
+      // Sample the real bone once. A quiet idle should not make the camera
+      // chase its breathing motion or move when the player pauses it.
+      const head = character.getHeadPosition(v(0, 0, 0));
       actors.set(id, { group, head, angle, body: group.position.clone() });
     }
-    placeWolf(bridgeX - 3.7, -5.8, 0.75, -Math.PI / 2, variants['crossing-guided']);
-    placeWolf(bridgeX - 4.7, -4.8, 0.56, -Math.PI / 2 - 0.16, variants['crossing-guided']);
+    placeWolf(bridgeX - 3.7, -5.8, 0.75, -Math.PI / 2, variants['crossing-guided'], 0.13);
+    placeWolf(bridgeX - 4.7, -4.8, 0.56, -Math.PI / 2 - 0.16, variants['crossing-guided'], 0.54);
     for (const x of [bridgeX - 4.8, bridgeX - 3]) makeLantern(x, 0.28, -6.5, variants['crossing-guided'], palette, glow, 0.8);
 
     sky = mesh(new THREE.SphereGeometry(115, 32, 16), ownMaterial(new THREE.ShaderMaterial({
@@ -695,7 +711,9 @@ export function createForestScene(canvas, options = {}) {
     if (disposed || failed || paused || reduced || document.hidden) { lastTime = 0; return; }
     const interval = lastTime ? Math.max(0, (time - lastTime) / 1000) : 0; lastTime = time;
     if (interval > 0) { intervalSum += interval * 1000; intervalCount++; }
-    elapsed += Math.min(interval, 0.05); moveCamera(1 - Math.exp(-Math.min(interval, 1) * 3.2));
+    const step = Math.min(interval, 0.05);
+    elapsed += step; characters.forEach(character => character.update(step));
+    moveCamera(1 - Math.exp(-Math.min(interval, 1) * 3.2));
     render(); schedule();
   }
   function schedule() {

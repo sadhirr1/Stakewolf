@@ -1,11 +1,12 @@
 # SCRUM-36 forest benchmark assets
 
-These are locally served assets for a provisional visual benchmark. They are not evidence that the owner's character-quality requirement is complete. The wolf is an older, static quadruped with a 512px hand-painted coat; it has no skeleton, animation, clothing, facial rig, or anthropomorphic body. Its role is to review forest materials and lighting around an actual textured mesh while a higher-quality character remains outstanding.
+These are locally served assets for a provisional visual benchmark. They are not evidence that the owner's character-quality requirement is complete. The active Warg is a rigged quadruped with two authored idle clips and 1K textures. Its AI/code-generated, top-down-game origins are disclosed by its creator; it remains unsuitable as proof of the final anthropomorphic, cinematic character target. The earlier static wolf stays in the repository with its original attribution.
 
 ## Licenses and attribution
 
 | Local asset | Creator and source | License | Changes |
 | --- | --- | --- | --- |
+| `warg/warg.glb` | **Warg** by **Daniel Gruginski (algumacoisaqq)**, [Fantasy Creatures](https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Rig-preserving FBX conversion, tack/mask removal, scale/orientation normalization, material correction, redundant animation-key removal, texture compression. See [conversion and provenance](warg/README.md). |
 | `wolf/wolf.glb` | **Wolf** by **Sirren**, made for **PARPG**, submitted by Q_x to [OpenGameArt](https://opengameart.org/content/wolf-0) | [Creative Commons Attribution-ShareAlike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/); [legal code](https://creativecommons.org/licenses/by-sa/3.0/legalcode) | Converted OBJ to glTF 2 binary; triangulated polygons; normalized height to 1.2m and centered on the ground; translated the texture coordinates to glTF convention; embedded the original unmodified Pelt.png; assigned rough fur and ivory teeth materials. The adapted GLB remains **CC BY-SA 3.0**. |
 | `forest-floor/*.jpg` | **Forest Leaves 04** by **Rob Tuytel**, [Poly Haven](https://polyhaven.com/a/forest_leaves_04) | [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) | Original 1K JPEG diffuse, OpenGL normal, and packed AO/roughness/metalness maps, renamed locally. |
 | `bark/*.jpg` | Bark maps supplied with **Pine Sapling Small**, photography by **Rob Tuytel**, modeling by **Rico Cilliers**, [Poly Haven](https://polyhaven.com/a/pine_sapling_small) | CC0 1.0 Universal | Original 1K JPEG diffuse, OpenGL normal, and packed AO/roughness/metalness maps, renamed locally. |
@@ -23,9 +24,15 @@ The selected licenses, author metadata, and file links were checked on October 1
 
 Original wolf archive: [Wolf.zip](https://opengameart.org/sites/default/files/Wolf.zip), SHA-256 `a1adfd72e2b4ca8e0f2dc3e0fde27a3d8ea37110bf6e2e0631ca782e7f424efe`. It contains `wolf.obj`, `Wolf.mtl`, and `Pelt.png`. `scripts/asset-prep-wolf.mjs` converts an extracted copy reproducibly; it reads data only and does not execute archive contents. Source texture unchanged; glTF contains all required texture bytes and no remote dependency.
 
+## Current character update — October 13
+
+The active renderer loads `warg/warg.glb`: 7,071 triangles, 41 joints, Idle (4 seconds) and IdlePant (3 seconds). Five independent instances use staggered Idle phases; IdlePant remains packaged for later direction. The model is 1.2m high, +Y up, +Z forward. Its head bone supplies a stable sampled encounter anchor. Moving wolves receive environment shadows and use soft contact patches; they do not cast articulated shadows into the cached forest shadow map.
+
+The new GLB is 3,169,108 bytes. All 23 retained runtime asset files total 13,936,220 bytes; the active scene's 22 files total 12,980,892 bytes because it does not request the earlier 955,328-byte wolf. These totals exclude the JavaScript bundle. The manifest includes both models so preservation and byte inventory stay explicit. Historical source-file counts below describe the October 12 intake.
+
 ## Renderer contract
 
-- Wolf: `/wild/assets/wolf/wolf.glb`; Y up, head toward +Z; base Y=0; 1.2m overall height, approximately 0.477m width and 2.757m nose-to-tail length; 3,024 triangles, three meshes. No animations or skinning. The benchmark must label it provisional.
+- Earlier wolf (retained, not loaded): `/wild/assets/wolf/wolf.glb`; Y up, head toward +Z; base Y=0; 1.2m overall height, approximately 0.477m width and 2.757m nose-to-tail length; 3,024 triangles, three meshes. No animations or skinning.
 - Ground and bark: `{diffuse,normal,arm}.jpg` under their respective folders. Diffuse uses sRGB; normal and ARM are linear data. ARM packs ambient occlusion in R, roughness in G, metalness in B.
 - Fern: `/wild/assets/fern/fern.gltf`; four variants. Source nodes `fern_02_b`, `fern_02_c`, `fern_02_a`, `fern_02_d` have 1,660 / 1,568 / 544 / 565 vertices and 2,384 / 2,248 / 784 / 816 triangles. Recenter individual meshes rather than preserving the source collection's grid placement. The source material is double-sided with alpha masking.
 - Rocks: `/wild/assets/rock-moss/rock-moss.gltf`; six variants. Prefer `rock_moss_set_01_rock03` (2,741 vertices / 5,000 triangles) and `rock_moss_set_01_rock06` (4,748 vertices / 8,994 triangles) for repeated placements. Recenter each source mesh before instancing. All source materials and textures are retained.
@@ -40,3 +47,4 @@ The tree reduction is reproducible with `scripts/asset-prep-pine.mjs`. Its sourc
 [Majestic Wolf by cyber_fox on Meshy](https://www.meshy.ai/3d-models/Majestic-Wolf-019c98b7-524c-7f4c-9665-69287c17d54f) is shown as CC0 in the public viewer, but the download workflow required sign-in. Its viewer reported 636,155 faces, requiring significant optimization if acquired. No account was created and no model bytes were obtained.
 
 The frequently shared 3DHaupt wolf was rejected because the checked sources applied noncommercial or personal-use restrictions. The 318-vertex OpenGameArt wolf was rejected as an unsuitable visual match. None of these rejected candidate assets is included in this directory.
+
