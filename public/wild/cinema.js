@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { createAnimatedCharacter } from './character.js';
+import { createFurMaterial, attachFurLayers } from './fur.js';
 
 // Three shares the area-light tables. Each renderer must release its GPU copy
 // before teardown; surviving renderers can upload the retained table data again.
@@ -15,7 +16,7 @@ const ASSETS = {
   fern: '/wild/assets/fern/fern.gltf',
   rock: '/wild/assets/rock-moss/rock-moss.gltf',
   pine: '/wild/assets/pine/pine.gltf',
-  wolf: '/wild/assets/warg/warg.glb',
+  wolf: '/wild/assets/warg/warg-groom.glb',
   ash: '/wild/assets/warg/ash.jpg',
   black: '/wild/assets/warg/black.jpg'
 };
@@ -95,6 +96,7 @@ export function createForestScene(canvas, options = {}) {
   let outcome = null, morning = null, location = 'overlook', focused = null, orbit = null;
   let frame = 0, lastTime = 0, elapsed = 0, cssWidth = 1, cssHeight = 1;
   let focusMix = 0, desiredFocus = 0, framing = 0, desiredFraming = 0;
+  let furSubject = null;
   let resizeObserver, assetTimeout, loadingManager, areaLightLease = false;
   const startedAt = performance.now();
   let loadMs = 0, renderedFrames = 0, intervalSum = 0, intervalCount = 0, metricsWindows = 0, windowStartFrame = 0;
@@ -104,9 +106,10 @@ export function createForestScene(canvas, options = {}) {
   const camera = new THREE.PerspectiveCamera(48, 1, 0.10, 150);
   const aim = new THREE.Vector3(...STOPS.overlook.target);
   const destinationEye = new THREE.Vector3(...STOPS.overlook.eye);
+  const furEye = destinationEye.clone();
   const destinationAim = aim.clone();
   camera.position.copy(destinationEye);
-  const actors = new Map(), characters = [], windUniforms = [];
+  const actors = new Map(), characters = [], coatsInFocus = [], windUniforms = [];
   const fireParts = [], lanterns = [], motes = [];
   const variants = { repair: new THREE.Group(), hold: new THREE.Group(),
     'crossing-guided': new THREE.Group(), 'anchor-found': new THREE.Group(), 'trail-checked': new THREE.Group() };
@@ -153,6 +156,7 @@ export function createForestScene(canvas, options = {}) {
     window.removeEventListener('resize', resize);
     document.removeEventListener('visibilitychange', visibility);
     canvas.removeEventListener('webglcontextlost', contextLost);
+    coatsInFocus.forEach(coat => coat.dispose());
     characters.forEach(character => character.dispose());
     geometries.forEach(geometry => geometry.dispose());
     materials.forEach(material => material.dispose());
@@ -169,7 +173,7 @@ export function createForestScene(canvas, options = {}) {
     }
     renderer.dispose();
     geometries.clear(); materials.clear(); textures.clear(); actors.clear();
-    characters.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
+    characters.length = coatsInFocus.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
     Object.values(variants).forEach(group => group.clear()); looseAnchor.clear(); resetAnchor.clear();
     moonLight = fireLight = sky = stars = water = hemi = inspectionLight = portraitLight = null;
   }
@@ -537,9 +541,7 @@ export function createForestScene(canvas, options = {}) {
     function placeWolf(x, z, scale, angle, parent = scene, phase = 0, coat = null, introClipName = null) {
       const group = new THREE.Group(); group.position.set(x, groundY(x, z) + 0.015, z); group.rotation.y = angle;
       const character = createAnimatedCharacter(wolf, { phase, introClipName, materialFactory(source) {
-        const variant = source.clone();
-        if (coat) variant.map = coats[coat];
-        return ownMaterial(variant);
+        return ownMaterial(createFurMaterial(source, { coatMap: coat ? coats[coat] : source.map }));
       } }); characters.push(character);
       character.root.scale.multiplyScalar(scale); group.add(character.root); parent.add(group);
       const contactGeometry = new THREE.PlaneGeometry(1.2 * scale, 2.0 * scale, 6, 8);
@@ -561,7 +563,8 @@ export function createForestScene(canvas, options = {}) {
       // Sample the real bone once. A quiet idle should not make the camera
       // chase its breathing motion or move when the player pauses it.
       const head = character.getHeadPosition(v(0, 0, 0));
-      actors.set(id, { group, character, head, angle, body: group.position.clone() });
+      const fur = attachFurLayers(character.root, { ownMaterial, ownGeometry }); coatsInFocus.push(fur);
+      actors.set(id, { group, character, fur, head, angle, body: group.position.clone() });
     }
     placeWolf(bridgeX - 3.7, -5.8, 0.75, -Math.PI / 2, variants['crossing-guided'], 0.13);
     placeWolf(bridgeX - 4.7, -4.8, 0.56, -Math.PI / 2 - 0.16, variants['crossing-guided'], 0.54);
@@ -688,6 +691,17 @@ export function createForestScene(canvas, options = {}) {
       camera.fov = 48 - focusMix * (portrait ? 8 : 14); camera.aspect = cssWidth / cssHeight;
       camera.lookAt(aim); camera.updateMatrixWorld(true); camera.updateProjectionMatrix();
       camera.projectionMatrix.elements[8] = framing; camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+      // Static coat detail stays on when paused/reduced-motion. Only the near,
+      // settled desktop encounter pays for one curved, skinned ribbon mesh.
+      if (focused && focusMix > 0.96 && camera.position.distanceToSquared(destinationEye) < 0.1225) {
+        furSubject = focused; furEye.copy(destinationEye);
+      }
+      // Retain only the last close portrait during departure. Returning the
+      // old clumps immediately on close would pop their silhouette in place.
+      const coatDetail = cssWidth >= 900 && focusMix > 0.1
+        ? Math.max(0, 1 - camera.position.distanceTo(furEye) / 0.35) : 0;
+      for (const [id, actor] of actors) actor.fur.setDetail(id === furSubject ? coatDetail : 0);
+      if (!focused && coatDetail === 0) furSubject = null;
       portraitLight.position.copy(portraitLightPosition); portraitLight.lookAt(portraitLightTarget);
       portraitLight.color.set(dawn ? 0xffebd3 : 0xffe2bd);
       // The charcoal coat needs a little more night fill to separate its face

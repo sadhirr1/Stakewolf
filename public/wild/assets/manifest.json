@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "issue": "SCRUM-36",
-  "verifiedDate": "2026-10-13",
-  "runtimeBytes": 14508212,
-  "runtimeFileCount": 25,
+  "verifiedDate": "2026-10-14",
+  "runtimeBytes": 18038716,
+  "runtimeFileCount": 26,
   "character": {
-    "path": "warg/warg.glb",
+    "path": "warg/warg-groom.glb",
     "status": "provisional",
     "kind": "animated quadruped",
     "rigged": true,
@@ -28,7 +28,9 @@
       "orin": "embedded brown",
       "sera": "warg/black.jpg",
       "vela": "warg/ash.jpg"
-    }
+    },
+    "groom": "Shortened detached locks; original closed body, rig and authored clips retained; semantic fur mask for material treatment.",
+    "retainedOriginal": "warg/warg.glb"
   },
   "files": [
     {
@@ -259,6 +261,14 @@
       "author": "Daniel Gruginski (algumacoisaqq)",
       "derived": true,
       "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/warg-groom.glb",
+      "url": "https://github.com/danielgruginski/Beasts",
+      "bytes": 3530504,
+      "sha256": "3349c9c75ba9c3f5210ab7995d6a0de10f824d6df318459fa255fc509969f9f6",
+      "license": "CC0-1.0",
+      "mimeType": "model/gltf-binary"
     }
   ],
   "models": [
@@ -330,5 +340,5 @@
       "heightMeters": 1.0465238094329834
     }
   ],
-  "activeSceneBytes": 13552884
+  "activeSceneBytes": 13914280
 }

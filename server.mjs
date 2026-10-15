@@ -32,6 +32,7 @@ const assets = new Map([
   ['/wild/assets/rock-moss/textures/rock_moss_set_01_rough_1k.jpg', ['wild/assets/rock-moss/textures/rock_moss_set_01_rough_1k.jpg', 'image/jpeg']],
   ['/wild/assets/wolf/wolf.glb', ['wild/assets/wolf/wolf.glb', 'model/gltf-binary']],
   ['/wild/assets/warg/warg.glb', ['wild/assets/warg/warg.glb', 'model/gltf-binary']],
+  ['/wild/assets/warg/warg-groom.glb', ['wild/assets/warg/warg-groom.glb', 'model/gltf-binary']],
   ['/wild/assets/warg/ash.jpg', ['wild/assets/warg/ash.jpg', 'image/jpeg']],
   ['/wild/assets/warg/black.jpg', ['wild/assets/warg/black.jpg', 'image/jpeg']],
   ['/wild/assets/pine/pine.gltf', ['wild/assets/pine/pine.gltf', 'model/gltf+json']],

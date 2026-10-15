@@ -1,6 +1,6 @@
 # Stakewolf — start here
 
-Last direction/checkpoint update: October 13, 2026, SCRUM-36 / coordination SCRUM-18.
+Last direction/checkpoint update: October 14, 2026, SCRUM-36 / coordination SCRUM-18.
 
 ## Read this before continuing
 
@@ -10,7 +10,17 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 cast identity and attention — latest
+## SCRUM-36 fur and groom — latest
+
+The owner again called quality subpar and requested continued wolf/fur work. Two rendered candidates were rejected before the final thin-strand treatment: shortened locks alone looked like scales, and broad ribbons became orange patches. The final version shortens 119 original locks for the distant fallback and adds 7,000 thin curved skinned strands for one close desktop character at a time. Coarse detached locks fade out in that portrait. Narrow views retain the simpler groom. Paused/reduced-motion views retain static detail. The original body/face, rig, maps and clips remain unchanged. No lighting or story change is included.
+
+Geometry author `character_asset`; material/runtime author `character_runtime`; independent reviewer/test author `character_review`; integration, browser and independent test review by coordinator. Four focused checks passed; the full frozen suite passed **250 tests**, zero failures/skips, 2,709.428 ms. The reviewed skin-attachment risk was reduced with bounded root resampling; sampled animated root gaps stayed below 0.581 mm. [Actual before/after evidence and limitations](evidence/scrum36-fur.md), [independent review](evidence/scrum36-fur-review.md), [asset reproduction](../public/wild/assets/warg/GROOM.md).
+
+Continue existing [PR22](https://github.com/sadhirr1/Stakewolf/pull/22) from parent `861a81aef4bccd300fea4778a01d4af265a51aa5`; GitHub/Jira record the final commit and exact CI result. Preserve the dirty root; publish only explicit reviewed files. Main preview runs at `http://127.0.0.1:4174/wild/` and was restarted for the new groom route. Active asset payload is 13,914,280 bytes before JavaScript; one focused coat adds 42,000 triangles and one draw.
+
+This is a visible fur improvement, **not cinematic acceptance**. Facial anatomy, eyes, low-resolution base maps and the generic quadruped remain below the owner's target. Do not spend another session merely retuning this same coat or reporting tests as art progress. Next visual priority is a portrait-suitable character with substantially better facial form and acting, resolved against an actual rendered benchmark before expanding scope. No external-input system, deeper story, campaign or save system was added. November 6/13 targets remain at risk; schedules stay off.
+
+## SCRUM-36 cast identity and attention — preceding checkpoint
 
 Orin now has the creator's brown coat, Vela ash and Sera charcoal. Encounters blend in a head turn capped at approximately 22 degrees over the existing animation; the camera stays on its stable anchor. Sera's first encounter briefly uses IdlePant (at most two cycles of active animation time) and returns to Idle, without restarting on revisit. Paused/hidden/reduced-motion scenes do not advance these poses. Sera's night portrait fill was modestly increased after browser inspection; her darker face still has weaker definition than the other two.
 
