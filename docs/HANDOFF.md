@@ -1,6 +1,6 @@
 # Stakewolf — start here
 
-Last direction/checkpoint update: October 14, 2026, SCRUM-36 / coordination SCRUM-18.
+Last direction/checkpoint update: October 15, 2026, SCRUM-36 / coordination SCRUM-18.
 
 ## Read this before continuing
 
@@ -10,7 +10,17 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 fur and groom — latest
+## SCRUM-36 portrait and forest depth — latest
+
+The owner resumed manually and requested more cinematic wolves and surroundings. The retained increment adds warmer, defined irises, a darker nose response, and a restrained narrower/longer muzzle. Sera's existing portrait light now illuminates her viewed facial planes. Height-aware haze softens the hard horizon; ten scanned pines (six more than the preceding checkpoint) provide real branch overlap. Two procedural distant-tree candidates were visibly rejected and removed. The existing coarse head/ear shapes and limited facial acting remain below target; this is not owner cinematic acceptance.
+
+Authors: `character_asset` (portrait helper) and `character_runtime` (lighting/environment/integration); independent reviewer/test author: `character_review`; coordinator: integration, test review, actual browser comparisons and publication. Four focused checks passed; the full frozen suite passed **254 tests**, zero failures/skips, 2,760.2335 ms. The first sandbox full-suite attempt was blocked from temporary loopback sockets; the permitted rerun passed. QA found an undefined shader angle on non-eye fragments, fixed before final verification. All three desktop coats, Sera motion/pause, paused 390 × 844 fallback, crossing inspection and the repair-to-dawn transition were inspected. Final captured browser warnings/errors: none. [Results and actual comparisons](evidence/scrum36-portrait.md), [independent review](evidence/scrum36-portrait-review.md).
+
+Continue existing [PR22](https://github.com/sadhirr1/Stakewolf/pull/22) from `f1735c2fc576547ce10d7d11a2d1ecd3c786af20`; GitHub/Jira record the final checkpoint and its CI. The parent fur checkpoint passed [Windows/Ubuntu CI](https://github.com/sadhirr1/Stakewolf/actions/runs/38688810606), reconciled this session after the earlier pause. Preserve the dirty root; publish only explicitly reviewed files. Preview remains `http://127.0.0.1:4174/wild/` with the generated bundle. No new server routes or downloaded assets were required. Bundle: 950,513 bytes; active assets: 13,914,280 bytes. Added pines cost 146,916 triangles in existing instanced material draws, plus small trunk subdivision changes. This is geometry cost, not a hardware-performance pass.
+
+Next: use this actual encounter as a comparison point for a substantially better authored face and ears, eyelids and facial acting. Do not repeat small shader/color adjustments and call them a new character. The current model's resting teeth, coarse anatomy, generic quadruped design and low-resolution maps remain the main blockers. No visible wet corneal glint, final performance budget, deeper story or dynamic-input system is claimed. November 6/13 targets remain at risk. Work is manual; schedules remain off; no purchase or reset credit was used.
+
+## SCRUM-36 fur and groom — preceding checkpoint
 
 The owner again called quality subpar and requested continued wolf/fur work. Two rendered candidates were rejected before the final thin-strand treatment: shortened locks alone looked like scales, and broad ribbons became orange patches. The final version shortens 119 original locks for the distant fallback and adds 7,000 thin curved skinned strands for one close desktop character at a time. Coarse detached locks fade out in that portrait. Narrow views retain the simpler groom. Paused/reduced-motion views retain static detail. The original body/face, rig, maps and clips remain unchanged. No lighting or story change is included.
 

@@ -3,6 +3,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { createAnimatedCharacter } from './character.js';
 import { createFurMaterial, attachFurLayers } from './fur.js';
+import { applyGladeFog } from './atmosphere.js';
+import { attachCharacterPortrait } from './portrait.js';
 
 // Three shares the area-light tables. Each renderer must release its GPU copy
 // before teardown; surviving renderers can upload the retained table data again.
@@ -30,7 +32,13 @@ const PINES = [
   { x: -10.8, z: 4.5, height: 12, angle: 0.4 },
   { x: 0.7, z: -13.5, height: 11, angle: 1.9 },
   { x: 13, z: -9, height: 14, angle: 2.6 },
-  { x: -12.2, z: -10.2, height: 13, angle: 4.1 }
+  { x: -12.2, z: -10.2, height: 13, angle: 4.1 },
+  { x: -8.5, z: 13, height: 15, angle: 1.4 },
+  { x: 5.5, z: 21, height: 19, angle: 3.7 },
+  { x: 10, z: -16, height: 19, angle: 0.9 },
+  { x: -7, z: -24, height: 21, angle: 2.2 },
+  { x: -16, z: -19, height: 24, angle: 5.3 },
+  { x: -4, z: 27, height: 23, angle: 4.6 }
 ];
 const STOPS = {
   overlook: { eye: [5.4, 2.15, 13.4], target: [-3.5, 1.45, -3.5] },
@@ -109,7 +117,7 @@ export function createForestScene(canvas, options = {}) {
   const furEye = destinationEye.clone();
   const destinationAim = aim.clone();
   camera.position.copy(destinationEye);
-  const actors = new Map(), characters = [], coatsInFocus = [], windUniforms = [];
+  const actors = new Map(), characters = [], coatsInFocus = [], portraits = [], windUniforms = [];
   const fireParts = [], lanterns = [], motes = [];
   const variants = { repair: new THREE.Group(), hold: new THREE.Group(),
     'crossing-guided': new THREE.Group(), 'anchor-found': new THREE.Group(), 'trail-checked': new THREE.Group() };
@@ -136,6 +144,7 @@ export function createForestScene(canvas, options = {}) {
   function ownMaterial(value) {
     const list = Array.isArray(value) ? value : [value];
     for (const material of list) {
+      applyGladeFog(material);
       for (const property of Object.values(material)) if (property?.isTexture) ownTexture(property);
       if (disposed || failed) material.dispose(); else materials.add(material);
     }
@@ -157,6 +166,7 @@ export function createForestScene(canvas, options = {}) {
     document.removeEventListener('visibilitychange', visibility);
     canvas.removeEventListener('webglcontextlost', contextLost);
     coatsInFocus.forEach(coat => coat.dispose());
+    portraits.forEach(portrait => portrait.dispose());
     characters.forEach(character => character.dispose());
     geometries.forEach(geometry => geometry.dispose());
     materials.forEach(material => material.dispose());
@@ -173,7 +183,7 @@ export function createForestScene(canvas, options = {}) {
     }
     renderer.dispose();
     geometries.clear(); materials.clear(); textures.clear(); actors.clear();
-    characters.length = coatsInFocus.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
+    characters.length = coatsInFocus.length = portraits.length = windUniforms.length = fireParts.length = lanterns.length = motes.length = 0;
     Object.values(variants).forEach(group => group.clear()); looseAnchor.clear(); resetAnchor.clear();
     moonLight = fireLight = sky = stars = water = hemi = inspectionLight = portraitLight = null;
   }
@@ -389,7 +399,7 @@ export function createForestScene(canvas, options = {}) {
     pathRibbon([[2, 18], [1, 8], [-3, 0], [-1.3, -9], [-1.7, -23], [0, -45]], 1.3, pathMaterial);
     pathRibbon([[-2, -2], [3, -4.6], [7, -5.2], [15, -5.2]], 1.1, pathMaterial);
 
-    // Bark-covered instanced trunks have flared roots and varying lean. The dense
+    // Bark-covered instanced trunks have irregular tapers and varying lean. The dense
     // lower planting is made from a scanned fern mesh, not billboard silhouettes.
     const trunks = [], branches = [], foliage = [], roots = [];
     const treePositions = [];
@@ -399,18 +409,21 @@ export function createForestScene(canvas, options = {}) {
       if (Math.abs(x - riverX(z)) < 3.2 || (Math.abs(x + 1.5) < 2.5 && z < -7)) continue;
       if (x > -1 && x < 8 && z > 3 && z < 18) continue;
       if (PINES.some(p => Math.hypot(x - p.x, z - p.z) < 3)) continue;
-      const y = groundY(x, z), height = range(12, 23), thickness = range(0.30, 0.69);
+      const y = groundY(x, z), height = range(11, 26), thickness = range(0.22, 0.77);
+      const leanX = Math.sin(angle * 2.3) * height * 0.06, leanZ = Math.cos(angle * 1.7) * height * 0.04;
       // Consume every candidate's canopy samples before exclusion so removing a
       // foreground trunk does not reshuffle any subsequent seeded placements.
       const canopy = [];
-      for (let j = 0; j < 6; j++) canopy.push(matrixAt(x + range(-2.9, 2.9), y + height * range(0.63, 1.02),
-        z + range(-2.9, 2.9), range(3, 5), 1, range(3, 5), range(0, 6.28)));
+      for (let j = 0; j < 6; j++) canopy.push(matrixAt(x + leanX + range(-2.9, 2.9), y + height * range(0.63, 1.02),
+        z + leanZ + range(-2.9, 2.9), range(3, 5), 1, range(3, 5), range(0, 6.28)));
       if (blocksCameraSightline(x, z, thickness)) continue;
       treePositions.push({ x, y, z, height, thickness });
-      trunks.push(matrixAt(x, y + height / 2, z, thickness, height, thickness, angle));
-      roots.push(matrixAt(x, y + 0.45, z, thickness * 1.8, 0.9, thickness * 1.8, angle));
+      const tilt = new THREE.Quaternion().setFromUnitVectors(v(0, 1, 0), v(leanX, height, leanZ).normalize());
+      tilt.multiply(new THREE.Quaternion().setFromAxisAngle(v(0, 1, 0), angle));
+      trunks.push(new THREE.Matrix4().compose(v(x + leanX / 2, y + height / 2, z + leanZ / 2), tilt, v(thickness, height, thickness)));
+      roots.push(matrixAt(x, y + 0.30, z, thickness * 1.35, 0.6, thickness * 1.35, angle));
       for (let j = 0; j < 3; j++) {
-        const a = angle + j * 2.2, start = v(x, y + height * (0.48 + j * 0.1), z);
+        const a = angle + j * 2.2, t = 0.48 + j * 0.1, start = v(x + leanX * t, y + height * t, z + leanZ * t);
         const end = v(x + Math.cos(a) * 3.1, start.y + 1.3, z + Math.sin(a) * 3.1);
         const delta = end.clone().sub(start);
         branches.push(new THREE.Matrix4().compose(start.add(end).multiplyScalar(0.5),
@@ -418,7 +431,14 @@ export function createForestScene(canvas, options = {}) {
       }
       foliage.push(...canopy);
     }
-    const trunkGeometry = new THREE.CylinderGeometry(0.46, 1, 1, 9, 5);
+    const trunkGeometry = new THREE.CylinderGeometry(0.38, 1, 1, 9, 7);
+    const trunkVertices = trunkGeometry.attributes.position;
+    for (let i = 0; i < trunkVertices.count; i++) {
+      const x = trunkVertices.getX(i), y = trunkVertices.getY(i), z = trunkVertices.getZ(i);
+      const angle = Math.atan2(z, x), irregularity = 1 + Math.sin(angle * 3 + y * 5) * 0.09;
+      trunkVertices.setXYZ(i, x * irregularity, y, z * irregularity);
+    }
+    trunkGeometry.computeVertexNormals();
     instanced(trunkGeometry, barkMaterial, trunks, true);
     instanced(new THREE.CylinderGeometry(0.57, 1, 1, 9, 2), barkMaterial, roots, true);
     instanced(new THREE.CylinderGeometry(0.25, 1, 1, 6), barkMaterial, branches, false);
@@ -544,6 +564,10 @@ export function createForestScene(canvas, options = {}) {
         return ownMaterial(createFurMaterial(source, { coatMap: coat ? coats[coat] : source.map }));
       } }); characters.push(character);
       character.root.scale.multiplyScalar(scale); group.add(character.root); parent.add(group);
+      // Refine the actual face before generating surface-bound strands. This
+      // same-pass treatment stays readable on narrow and paused views as well.
+      const portrait = attachCharacterPortrait(character.root, { ownMaterial, ownGeometry });
+      portrait.setDetail(1); portraits.push(portrait);
       const contactGeometry = new THREE.PlaneGeometry(1.2 * scale, 2.0 * scale, 6, 8);
       contactGeometry.rotateX(-Math.PI / 2); contactGeometry.translate(0, 0, 0.10 * scale);
       const positions = contactGeometry.attributes.position;
@@ -555,31 +579,33 @@ export function createForestScene(canvas, options = {}) {
       }
       contactGeometry.computeVertexNormals();
       const contact = mesh(contactGeometry, contactMaterial, group, false); contact.receiveShadow = false;
-      return { group, character };
+      return { group, character, portrait };
     }
     for (const [id, person] of Object.entries(PEOPLE)) {
       const angle = Math.atan2(-3 - person.x, -person.z);
-      const { group, character } = placeWolf(person.x, person.z, person.scale, angle, scene, person.phase, person.coat, person.introClipName);
+      const { group, character, portrait } = placeWolf(person.x, person.z, person.scale, angle, scene, person.phase, person.coat, person.introClipName);
       // Sample the real bone once. A quiet idle should not make the camera
       // chase its breathing motion or move when the player pauses it.
       const head = character.getHeadPosition(v(0, 0, 0));
       const fur = attachFurLayers(character.root, { ownMaterial, ownGeometry }); coatsInFocus.push(fur);
-      actors.set(id, { group, character, fur, head, angle, body: group.position.clone() });
+      actors.set(id, { group, character, portrait, fur, head, angle, body: group.position.clone() });
     }
     placeWolf(bridgeX - 3.7, -5.8, 0.75, -Math.PI / 2, variants['crossing-guided'], 0.13);
     placeWolf(bridgeX - 4.7, -4.8, 0.56, -Math.PI / 2 - 0.16, variants['crossing-guided'], 0.54);
     for (const x of [bridgeX - 4.8, bridgeX - 3]) makeLantern(x, 0.28, -6.5, variants['crossing-guided'], palette, glow, 0.8);
 
     sky = mesh(new THREE.SphereGeometry(115, 32, 16), ownMaterial(new THREE.ShaderMaterial({
-      side: THREE.BackSide, depthWrite: false, uniforms: { uDawn: { value: 0 } },
+      side: THREE.BackSide, depthWrite: false, uniforms: { uDawn: { value: 0 },
+        uNightHorizon: { value: new THREE.Color(0x29464b) }, uNightTop: { value: new THREE.Color(0x060e19) },
+        uDayHorizon: { value: new THREE.Color(0x81958b) }, uDayTop: { value: new THREE.Color(0x527985) } },
       vertexShader: 'varying vec3 direction;void main(){direction=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
       fragmentShader: `varying vec3 direction;uniform float uDawn;
+        uniform vec3 uNightHorizon;uniform vec3 uNightTop;uniform vec3 uDayHorizon;uniform vec3 uDayTop;
         void main(){
-          float h=clamp(normalize(direction).y,0.,1.);
-          vec3 night=mix(vec3(.044,.072,.09),vec3(.005,.013,.031),pow(h,.65));
-          vec3 day=mix(vec3(.49,.36,.24),vec3(.15,.24,.29),pow(h,.65));
+          vec3 d=normalize(direction);float h=clamp(d.y,0.,1.);
+          vec3 night=mix(uNightHorizon,uNightTop,pow(h,.55));
+          vec3 day=mix(uDayHorizon,uDayTop,pow(h,.55));
           gl_FragColor=vec4(mix(night,day,uDawn),1.);
-          #include <tonemapping_fragment>
           #include <colorspace_fragment>
         }`
     })), scene, false); sky.renderOrder = -2;
@@ -598,8 +624,8 @@ export function createForestScene(canvas, options = {}) {
       const shaft = mesh(new THREE.ConeGeometry(2, 23, 14, 1, true), shaftMaterial, scene, false);
       shaft.position.set(x, 10, z); shaft.rotation.z = -0.23;
     }
-    hemi = new THREE.HemisphereLight(0x9ab8d0, 0x263023, 0.85); scene.add(hemi);
-    moonLight = new THREE.DirectionalLight(0xb5cfeb, 2.4); moonLight.position.set(-12, 20, -12);
+    hemi = new THREE.HemisphereLight(0x9bbcc8, 0x1f291f, 0.65); scene.add(hemi);
+    moonLight = new THREE.DirectionalLight(0xa9cfe2, 2.8); moonLight.position.set(-12, 20, -12);
     moonLight.target.position.set(-3, 0, -3); scene.add(moonLight, moonLight.target); moonLight.castShadow = true;
     moonLight.shadow.mapSize.set(1024, 1024); moonLight.shadow.camera.left = -18; moonLight.shadow.camera.right = 18;
     moonLight.shadow.camera.top = 18; moonLight.shadow.camera.bottom = -18; moonLight.shadow.camera.near = 1; moonLight.shadow.camera.far = 65;
@@ -611,9 +637,9 @@ export function createForestScene(canvas, options = {}) {
     scene.add(fireShadow, fireShadow.target); fireLight.userData.shadowLight = fireShadow;
     if (areaLightUsers === 0) RectAreaLightUniformsLib.init();
     areaLightUsers++; areaLightLease = true;
-    portraitLight = new THREE.RectAreaLight(0xffe2bd, 0, 1.5, 1.8);
+    portraitLight = new THREE.RectAreaLight(0xffe5c9, 0, 2.2, 2.1);
     scene.add(portraitLight);
-    scene.fog = new THREE.FogExp2(0x1b303b, 0.020);
+    scene.fog = new THREE.FogExp2(0x29464b, 0.018);
     renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
@@ -625,9 +651,9 @@ export function createForestScene(canvas, options = {}) {
     for (const [name, group] of Object.entries(variants)) group.visible = name === outcome || name === morning;
     looseAnchor.visible = !(dawn && outcome === 'repair'); resetAnchor.visible = !looseAnchor.visible;
     sky.material.uniforms.uDawn.value = dawn ? 1 : 0; stars.visible = !dawn;
-    moonLight.color.set(dawn ? 0xffd9a0 : 0xb5cfeb); moonLight.intensity = dawn ? 3.0 : 2.4;
-    hemi.color.set(dawn ? 0xb7c8cc : 0x9ab8d0); hemi.intensity = dawn ? 1.15 : 0.85;
-    scene.fog.color.set(dawn ? 0x7e8b84 : 0x1b303b); scene.fog.density = dawn ? 0.016 : 0.020;
+    moonLight.color.set(dawn ? 0xffd9a0 : 0xa9cfe2); moonLight.intensity = dawn ? 3.0 : 2.8;
+    hemi.color.set(dawn ? 0xb7c8cc : 0x9bbcc8); hemi.intensity = dawn ? 1.15 : 0.65;
+    scene.fog.color.set(dawn ? 0x81958b : 0x29464b); scene.fog.density = dawn ? 0.013 : 0.018;
     fireLight.intensity = dawn ? 5 : 22; fireLight.userData.shadowLight.intensity = dawn ? 3 : 15;
     lanterns.forEach(lamp => { lamp.material.opacity = dawn ? 0.16 : 0.34; });
     fireParts.forEach(flame => { flame.material.opacity = dawn ? 0.13 : 0.50; });
@@ -644,8 +670,10 @@ export function createForestScene(canvas, options = {}) {
       destinationAim.copy(actor.head); destinationAim.y -= portrait ? 0.70 : 0.17;
       // Broad, warm-neutral bounce from the camp side shapes the muzzle while
       // the existing moon remains a cool rim. It does not add a shadow pass.
-      portraitLightPosition.copy(actor.head).addScaledVector(forward, 1.5).addScaledVector(side, -1.35);
-      portraitLightPosition.y += 0.62; portraitLightTarget.copy(actor.head);
+      const charcoal = focused === 'sera';
+      portraitLightPosition.copy(actor.head).addScaledVector(forward, charcoal ? 1.8 : 1.65)
+        .addScaledVector(side, charcoal ? 0.45 : -0.80);
+      portraitLightPosition.y += charcoal ? 0.55 : 0.82; portraitLightTarget.copy(actor.head);
     } else {
       destinationEye.fromArray(STOPS[location].eye); destinationAim.fromArray(STOPS[location].target);
     }
@@ -703,11 +731,11 @@ export function createForestScene(canvas, options = {}) {
       for (const [id, actor] of actors) actor.fur.setDetail(id === furSubject ? coatDetail : 0);
       if (!focused && coatDetail === 0) furSubject = null;
       portraitLight.position.copy(portraitLightPosition); portraitLight.lookAt(portraitLightTarget);
-      portraitLight.color.set(dawn ? 0xffebd3 : 0xffe2bd);
+      portraitLight.color.set(dawn ? 0xffebd3 : focused === 'sera' ? 0xe5eff2 : 0xffe5c9);
       // The charcoal coat needs a little more night fill to separate its face
       // from the neck. Reuse the same area light; daylight and other roles stay unchanged.
-      portraitLight.intensity = focusMix * (dawn ? 1.8 : focused === 'sera' ? 4.9 : 3.8);
-      hemi.intensity = (dawn ? 1.15 : 0.85) * (1 - focusMix * 0.34);
+      portraitLight.intensity = focusMix * (dawn ? 1.5 : focused === 'sera' ? 5.5 : 3.1);
+      hemi.intensity = (dawn ? 1.15 : 0.65) * (1 - focusMix * 0.18);
       fireLight.intensity = (dawn ? 5 : 22) * (1 - focusMix * 0.74);
       fireLight.userData.shadowLight.intensity = (dawn ? 3 : 15) * (1 - focusMix * 0.55);
       fireParts.forEach((flame, i) => { flame.position.y = flame.userData.baseY + Math.sin(elapsed * 3.2 + i) * 0.065; });
