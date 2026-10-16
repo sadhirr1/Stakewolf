@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stakewolf — Before the council</title>
+  <link rel="stylesheet" href="/portrait/forest.css">
+  <script src="/portrait/encounter.js" defer></script>
+  <script src="/portrait/forest.bundle.js" defer></script>
+</head>
+<body>
+  <main class="encounter" data-motion="paused" aria-labelledby="leader-name">
+    <div class="environment" aria-hidden="true"><canvas id="forest"></canvas></div>
+    <div class="distance-haze" aria-hidden="true"></div>
+    <div class="character-position"><img id="leader" src="/portrait/leader-cutout.png" width="1084" height="1451" alt="The human council leader, in a weathered charcoal coat, waiting in a misty forest clearing." fetchpriority="high"></div>
+    <div class="foreground-haze" aria-hidden="true"></div>
+    <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <header><a class="wordmark" href="/">STAKE<span>WOLF</span></a><p>THE HOLLOW <span>/</span> DUSK</p><span class="study-mark">ENCOUNTER STUDY · 01</span></header>
+    <section class="scene-caption">
+      <p class="eyebrow">AT THE EDGE OF THE CLEARING</p>
+      <h1 id="leader-name">The council leader</h1>
+      <p class="scene-line">The others will arrive soon.<br>For a moment, it is just the two of you.</p>
+    </section>
+    <nav class="scene-controls" aria-label="Preview controls"><button id="motion" type="button" aria-pressed="false" disabled>Motion paused</button><a href="/study">Compare portrait <span aria-hidden="true">↗</span></a></nav>
+  </main>
+  <footer class="preview-note"><p>One character · 2D artwork in a 3D forest · atmosphere preview</p><p id="scene-status" role="status">Preparing the clearing…</p><p id="portrait-status" role="status"></p><noscript><p>The portrait is visible, but the forest and motion require JavaScript.</p></noscript></footer>
+</body>
+</html>
