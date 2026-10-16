@@ -10,7 +10,15 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 asset-first fallback — latest
+## SCRUM-36 varied council cast — latest
+
+The owner rejected the wolf face and challenged all-wolf casting, then approved a bounded two-character scene. A separate comparison now runs at `http://127.0.0.1:4180/`: human scout Dain and guardian Rhea, different silhouettes, real original rigs and idle animation, shared woodland, individual/council views, orbit, light and pause controls. Public responsibility and appearance must remain separate from hidden allegiance. This proof assigns no factions and has no gameplay. [Setup and original asset identities](../public/wild/cast-proof/README.md), [actual captures and limits](evidence/scrum36-council.md).
+
+Coordinator authored; `cast_gate` independently reviewed provenance, source and screenshots. **Both faces fail the cinematic close-up gate.** The hooded scout has muddy eyes/mouth; the guardian has malformed eyes/lips. Do not integrate or repeatedly polish these assets. Local comparison only; raw Asset Yard AI-generated sample GLBs remain ignored and production redistribution clearance is unresolved. The reviewer found a cached-navigation disposal defect; persisted navigation now suspends/resumes instead. Syntax and seven bounded HTTP checks passed; actual desktop controls and a narrow layout were inspected. One PMREM shader precision warning remains. No full-game regression, CI, performance, facial animation or production acceptance is claimed.
+
+Stop for owner judgment on cast direction. A further model must first demonstrate a convincing unretouched close-up. Preserve the main game at 4174 and rejected wolf comparison at 4179. Publish only the reviewed council source, bundle, evidence and handoff to existing draft PR22 from verified parent `fdf276d04af62eeb538a71a5d9bd3a2551f8a4be`. Weekly account usage was observed at 25% initially and 27% near completion; this is an account-wide reading, not exact chat attribution. No purchase/reset credit or schedules. SCRUM-36 remains In Review; November 6/13 targets remain at risk.
+
+## SCRUM-36 asset-first fallback — preceding checkpoint
 
 The owner rejected the preceding visual output and selected a bounded replacement-asset test: one better wolf, one small scene, conserve usage, no further polish before judging it. A separate local proof now runs at `http://127.0.0.1:4179/`; the existing game at 4174 is unchanged. It uses Literock Studios' free Dire Wolf Lite with its original rig/materials/idle/walk clips, plus existing scenery. Raw licensed assets are kept only in ignored `.tmp-scrum36/wolf-proof/` and must not be uploaded to the public repository. [Setup/provenance](../public/wild/wolf-proof/README.md), [actual rendered evidence and review](evidence/scrum36-wolf-proof.md).
 
