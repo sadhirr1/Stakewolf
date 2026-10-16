@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stakewolf — Council leader portrait</title>
+  <meta name="description" content="One council leader. A local illustrated character study for Stakewolf.">
+  <link rel="stylesheet" href="/portrait/style.css">
+  <script src="/portrait/portrait.js" defer></script>
+</head>
+<body>
+  <main class="study" data-source="cutout" data-framing="close" data-light="neutral">
+    <header class="masthead"><a href="/" aria-label="Stakewolf portrait study">STAKE<span>WOLF</span></a><span>THE HOLLOW <i>/</i> CHARACTER STUDY 01</span></header>
+    <div class="composition">
+      <section class="introduction" aria-labelledby="character-name">
+        <p class="eyebrow"><span></span> AT THE COUNCIL</p>
+        <h1 id="character-name">The council<br><em>leader.</em></h1>
+        <p class="description">A familiar face.<br>An unreadable intention.</p>
+        <div class="rule"></div>
+        <p class="study-label">YOUR ARTWORK · FIRST PORTRAIT TEST</p>
+      </section>
+      <figure class="portrait" aria-label="Council leader portrait">
+        <div class="halo" aria-hidden="true"></div>
+        <img id="character" src="/portrait/leader-cutout.png" alt="A middle-aged human council leader with hazel eyes, dark greying hair and a weathered charcoal coat." width="1084" height="1451" fetchpriority="high">
+        <div class="edge-shade" aria-hidden="true"></div>
+        <figcaption><span class="portrait-number">01</span><span>HUMAN<br>COUNCIL LEADER</span></figcaption>
+      </figure>
+    </div>
+    <footer class="controls">
+      <fieldset><legend>Framing</legend><div class="button-group"><button type="button" data-framing="close" aria-pressed="true">Close-up</button><button type="button" data-framing="portrait" aria-pressed="false">Portrait</button></div></fieldset>
+      <fieldset><legend>Colour</legend><div class="button-group"><button type="button" data-light="neutral" aria-pressed="true">Neutral</button><button type="button" data-light="warm" aria-pressed="false">Warm</button></div></fieldset>
+      <fieldset><legend>Artwork</legend><div class="button-group"><button type="button" data-source="cutout" aria-pressed="true">Cutout</button><button type="button" data-source="original" aria-pressed="false">Original</button></div></fieldset>
+      <p id="asset-status" role="status" aria-live="polite">Loading portrait…</p>
+    </footer>
+    <p class="disclosure">A 2D portrait study, not a 3D character. The generated cutout changes some fine skin and fabric detail; compare it with your original. Warm adds a colour grade, not physical relighting.</p>
+    <noscript><p class="disclosure">The portrait is still visible. Enable JavaScript to use the comparison controls.</p></noscript>
+  </main>
+</body>
+</html>
