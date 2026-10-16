@@ -10,7 +10,15 @@ Next output: one materially different visual benchmark, a playable forest arriva
 
 Keep the reusable gameplay state, history, rules and interaction checks. Future input adapters should translate player/outside information into validated world events; they must not let generated narration overwrite facts or history. No external feed, model service, saving system or dynamic campaign has been built in this checkpoint.
 
-## SCRUM-36 portrait and forest depth — latest
+## SCRUM-36 asset-first fallback — latest
+
+The owner rejected the preceding visual output and selected a bounded replacement-asset test: one better wolf, one small scene, conserve usage, no further polish before judging it. A separate local proof now runs at `http://127.0.0.1:4179/`; the existing game at 4174 is unchanged. It uses Literock Studios' free Dire Wolf Lite with its original rig/materials/idle/walk clips, plus existing scenery. Raw licensed assets are kept only in ignored `.tmp-scrum36/wolf-proof/` and must not be uploaded to the public repository. [Setup/provenance](../public/wild/wolf-proof/README.md), [actual rendered evidence and review](evidence/scrum36-wolf-proof.md).
+
+Coordinator authored the proof. Independent `asset_gate` approves local evaluation only: anatomy, ears, eyes and muzzle improve, but the coat is carved/scaly, the mouth stiff, and a black nose wedge remains visible. The removed shadow-map setting was corrected and rebuilt. Syntax, bounded HTTP routes and actual desktop idle/walk/pause/camera/light checks passed; no full-game, mobile, cinematic or performance approval is claimed. One candidate and one reviewer; weekly account meter observed 20% to 24%, not precise chat attribution. No purchase/reset credit used. Publish the explicit reviewed proof/evidence files on draft PR22 from verified parent `9bb8cce9ebea27698a28308047af86dd58d264e6`, preserving the dirty root.
+
+**Stop here for the owner's visible judgment. Do not integrate or start another model-polishing loop.** This is an asset comparison, not accepted production art. SCRUM-36 remains In Review; November 6/13 targets remain at risk; schedules stay off.
+
+## SCRUM-36 portrait and forest depth — preceding checkpoint
 
 The owner resumed manually and requested more cinematic wolves and surroundings. The retained increment adds warmer, defined irises, a darker nose response, and a restrained narrower/longer muzzle. Sera's existing portrait light now illuminates her viewed facial planes. Height-aware haze softens the hard horizon; ten scanned pines (six more than the preceding checkpoint) provide real branch overlap. Two procedural distant-tree candidates were visibly rejected and removed. The existing coarse head/ear shapes and limited facial acting remain below target; this is not owner cinematic acceptance.
 
