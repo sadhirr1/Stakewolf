@@ -100,3 +100,78 @@ test('all topics return bounded text across reachable phases without mutating an
     }assert.equal(JSON.stringify(s),before);}
   }
 });
+
+test('ordinary paraphrases find the intended subject without a fixed question sentence',()=>{
+  const examples={
+    crossing:['Can the families get across yet?','Would you let someone over that bridge?','Why can’t we use the river route?','Can someone check the bridge?'],
+    order:['Who gave that instruction?','Are you saying she is lying?','What is your version of this?','Did he tell you to do it?','Why should I believe you?'],
+    injury:['Did anyone get hurt?','How is the traveller doing?','Is the wounded person alright?'],
+    work:['Have we got any hands to spare?','Who can help?','Is anyone free?','How many people are left?'],
+    watch:['Are you upset I kept you here?','What if I had locked him up?'],
+    supplies:['Will the food be okay?','Did we move the crates?'],
+    hearing:['Have we heard both sides?','What do both accounts establish?']
+  };
+  for(const [topic,questions]of Object.entries(examples))for(const q of questions)assert.equal(respond(plan(),'orin',q).topic,topic,q);
+  for(const q of ['How does a laptop work?','Can you repair my car?','Write me a poem','Why?'])assert.equal(respond(plan(),'orin',q).kind,'clarify',q);
+});
+test('why and evidence follow-ups add distinct angles, then acknowledge no new information',()=>{
+  const s=plan(),first=respond(s,'orin','Who gave the instruction?');
+  const why=respond(s,'orin','Why?',first.memory),proof=respond(s,'orin','What’s your evidence?',why.memory);
+  assert.match(why.text,/handling a rope and deciding to loosen it/i);
+  assert.match(proof.text,/signed field note/);
+  assert.equal(new Set([first.text,why.text,proof.text]).size,3);
+  const again=respond(s,'orin','Tell me more',proof.memory);
+  assert.match(again.text,/nothing new/);assert.equal(again.memory.seen.length,3);
+  assert.equal(JSON.stringify(s),JSON.stringify(plan()));
+});
+test('rephrased repeated questions vary without granting an admission',()=>{
+  let memory=null;const answers=[];
+  for(const q of ['Who gave the instruction?','Who ordered the line loosened?','Are you saying she is lying?']){
+    const reply=respond(plan(),'orin',q,memory);answers.push(reply.text);memory=reply.memory;
+    assert.doesNotMatch(reply.text,/I admitted|I gave a temporary instruction/);
+  }
+  assert.equal(new Set(answers).size,3);
+  assert.doesNotMatch(respond(plan(),'orin','Why are the stores exposed?').text,/my explanation for the instruction/);
+});
+test('changed facts and speaker switch invalidate used angles; bare follow-ups need context',()=>{
+  const n=night(),first=respond(n,'orin','Is the crossing safe?');
+  const done=finish(morning(n),['check']);
+  const next=respond(done,'orin','Has that changed?',first.memory);
+  assert.match(next.text,/Supervised passage is cleared/);assert.deepEqual(next.memory.seen,['answer']);
+  const source=respond(n,'sera','How do you know?',first.memory);
+  assert.equal(source.topic,'crossing');assert.deepEqual(source.memory.seen,['evidence']);
+  assert.equal(respond(n,'sera','How do you know?').kind,'clarify');
+  for(const q of ['Is it safe yet?','What makes you say that?','What would it take?'])assert.equal(respond(n,'orin',q,first.memory).topic,'crossing');
+});
+test('multiple subjects ask for clarification instead of silently answering just one',()=>{
+  const response=respond(plan(),'orin','Can families cross? Are the stores protected?');
+  assert.equal(response.kind,'clarify');assert.match(response.text,/one at a time/);
+  assert.equal(respond(plan(),'orin','Is the bridge ready and who is available for work?').kind,'clarify');
+});
+test('all dialogue angles preserve stage boundaries and Sera witness restriction',()=>{
+  for(const speaker of ['orin','sera']){
+    for(const q of ['What happened to the traveler?','How do you know?','Why?']){
+      const r=respond(night(),speaker,q,{topic:'injury'});assert.match(r.text,/no .*report|not taken|not become|not an event/i);
+      assert.doesNotMatch(r.text,/turned an ankle|escort returned/);
+    }
+  }
+  const s=morning(night('sera',['inspect']));let memory=null;
+  for(const q of ['Who ordered the line loosened?','Why?','What is your evidence?']){
+    const r=respond(s,'sera',q,memory);assert.match(r.text,/not giving a new briefing without a witness/);memory=r.memory;
+  }
+});
+
+test('Sera acknowledges an existing admission even while rejecting an allegiance accusation',()=>{
+  const s=night('none',['repair'],true);
+  const reply=respond(s,'sera','Why are you a werewolf?');
+  assert.match(reply.text,/Orin admitted giving the instruction/);
+  assert.doesNotMatch(reply.text,/who gave the instruction/);
+  assert.match(reply.text,/not his motive or hidden allegiance/);
+});
+test('same-sentence follow-ups use the new explicit subject, not the last turn',()=>{
+  const prior=respond(plan(),'orin','Are the stores protected?');
+  const reply=respond(plan(),'orin','Is the crossing safe and why?',prior.memory);
+  assert.equal(reply.kind,'reply');assert.equal(reply.topic,'crossing');
+  assert.match(reply.text,/A sound fastening and a safe approach/);
+  assert.equal(respond(plan(),'orin','Is the crossing safe and are the stores protected?',prior.memory).kind,'clarify');
+});

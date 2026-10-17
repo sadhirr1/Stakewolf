@@ -3,7 +3,7 @@ import {TOPICS,SPEAKERS,respond} from '/portrait/dialogue.js';
 const stage=document.querySelector('.encounter'),panel=document.querySelector('#play-panel');
 const saveNotice=document.querySelector('#save-notice'),resetDialog=document.querySelector('#reset-dialog');
 let state=fresh(),view='table',record=null,saveAvailable=true;
-let talking=false,speaker='orin',conversation=[],lastTopics={orin:null,sera:null},questionDraft='',talkError='';
+let talking=false,speaker='orin',conversation=[],dialogueMemory={orin:null,sera:null},questionDraft='',talkError='';
 try{
   const stored=localStorage.getItem(SAVE_KEY);
   if(stored){const restored=restore(stored);if(restored){state=restored;if(JSON.parse(stored).version===1)saveNotice.textContent=state.version===1?'Your earlier night is preserved. Start again to play the new council dispute.':'Your work plan is retained. Read the changed accounts and choose a council watch before committing.';}else saveNotice.textContent='An incompatible local save could not be restored. A fresh attempt is ready.';}
@@ -40,7 +40,7 @@ function morningScreen(){
 }
 function conversationScreen(){
   const labels={planning:'Before nightfall',dispatched:'Night work',dawn:'First light',morning:'Morning plan','morning-dispatched':'Morning work',noon:'Noon'};
-  return `${button('close-talk','← Return to your decisions','class="back"')}<p class="eyebrow">BY THE COUNCIL FIRE / ${labels[state.phase]}</p><h2 tabindex="-1">Ask in your own words.</h2><p class="small">Local dialogue about this encounter. Replies use the current work record and each person’s account. Asking does not issue orders or challenge a denial on the record.</p><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}${key==='orin'?' · council leader':' · scout (off-screen)'}</option>`).join('')}</select><ol class="conversation-log" aria-label="Recent conversation">${conversation.map(item=>`<li><p class="conversation-time">${escape(item.phase)} · ${SPEAKERS[item.speaker]}</p><p class="your-question"><b>You</b> ${escape(item.question)}</p><blockquote><b>${item.kind==='reply'?SPEAKERS[item.speaker]:'Choose a topic'}</b> ${escape(item.answer)}</blockquote></li>`).join('')}</ol><form id="question-form"><label for="character-question">Your question for ${SPEAKERS[speaker]}</label><textarea id="character-question" rows="3" maxlength="360" aria-describedby="question-help question-error" placeholder="${speaker==='orin'?'Why did you blame Sera?':'Who told you to loosen the line?'}">${escape(questionDraft)}</textarea><p id="question-help" class="small">One topic at a time · 360 characters. Enter sends; Shift+Enter adds a line.</p><p id="question-error" class="question-error" role="alert">${escape(talkError)}</p><button type="submit" class="primary">Ask ${SPEAKERS[speaker]} →</button></form><details class="question-examples"><summary>Questions this encounter can answer</summary><div>${Object.entries(TOPICS).map(([key,text])=>`<button type="button" data-question="${key}">${escape(text)}</button>`).join('')}</div></details><p class="small">Only the latest eight exchanges stay in this tab. Reload or restart clears the conversation; your saved game decisions remain.</p>`;
+  return `${button('close-talk','← Return to your decisions','class="back"')}<p class="eyebrow">BY THE COUNCIL FIRE / ${labels[state.phase]}</p><h2 tabindex="-1">Ask in your own words.</h2><p class="small">Local dialogue about this encounter. Replies use the current work record and each person’s account. Asking does not issue orders or challenge a denial on the record.</p><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}${key==='orin'?' · council leader':' · scout (off-screen)'}</option>`).join('')}</select><ol class="conversation-log" aria-label="Recent conversation">${conversation.map(item=>`<li><p class="conversation-time">${escape(item.phase)} · ${SPEAKERS[item.speaker]}</p><p class="your-question"><b>You</b> ${escape(item.question)}</p><blockquote><b>${item.kind==='reply'?SPEAKERS[item.speaker]:'Choose a topic'}</b> ${escape(item.answer)}</blockquote></li>`).join('')}</ol><form id="question-form"><label for="character-question">Your question for ${SPEAKERS[speaker]}</label><textarea id="character-question" rows="3" maxlength="360" aria-describedby="question-help question-error" placeholder="${speaker==='orin'?'Why did you blame Sera?':'Who told you to loosen the line?'}">${escape(questionDraft)}</textarea><p id="question-help" class="small">Try Why? or How do you know? One topic at a time · 360 characters. Enter sends; Shift+Enter adds a line.</p><p id="question-error" class="question-error" role="alert">${escape(talkError)}</p><button type="submit" class="primary">Ask ${SPEAKERS[speaker]} →</button></form><details class="question-examples"><summary>Questions this encounter can answer</summary><div>${Object.entries(TOPICS).map(([key,text])=>`<button type="button" data-question="${key}">${escape(text)}</button>`).join('')}</div></details><p class="small">Only the latest eight exchanges stay in this tab. Reload or restart clears the conversation; your saved game decisions remain.</p>`;
 }
 function render(focus=true){
   const previousScroll=panel.scrollTop;
@@ -97,11 +97,11 @@ panel.addEventListener('click',event=>{
 });
 function askQuestion(){
   const input=panel.querySelector('#character-question');questionDraft=input.value;
-  const reply=respond(state,speaker,questionDraft,lastTopics[speaker]);
+  const reply=respond(state,speaker,questionDraft,dialogueMemory[speaker]);
   if(reply.kind==='validation'||reply.kind==='unavailable'){talkError=reply.text;render(false);panel.querySelector('#character-question')?.focus();return;}
   const phases={planning:'Dusk',dispatched:'Nightfall',dawn:'First light',morning:'Morning plan','morning-dispatched':'Morning work',noon:'Noon'};
   conversation.push({phase:phases[state.phase],speaker,question:questionDraft.trim(),answer:reply.text,kind:reply.kind});conversation=conversation.slice(-8);
-  lastTopics[speaker]=reply.topic;questionDraft='';talkError='';render(false);
+  dialogueMemory[speaker]=reply.memory||null;questionDraft='';talkError='';render(false);
   panel.querySelector('#character-question').focus();document.querySelector('#talk-status').textContent=`${SPEAKERS[speaker]}: ${reply.text}`;
 }
 panel.addEventListener('submit',event=>{if(event.target.id==='question-form'){event.preventDefault();askQuestion();}});
@@ -119,6 +119,6 @@ function setOverview(open){
 }
 overviewButton.addEventListener('click',()=>setOverview(stage.dataset.overview!=='true'));
 document.querySelector('#cancel-reset').addEventListener('click',()=>resetDialog.close());
-document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();record=null;view='table';talking=false;speaker='orin';conversation=[];lastTopics={orin:null,sera:null};questionDraft='';talkError='';document.querySelector('#talk-status').textContent='';setOverview(false);persist();resetDialog.close();render();});
+document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();record=null;view='table';talking=false;speaker='orin';conversation=[];dialogueMemory={orin:null,sera:null};questionDraft='';talkError='';document.querySelector('#talk-status').textContent='';setOverview(false);persist();resetDialog.close();render();});
 if(saveAvailable&&saveNotice.textContent==='')saveNotice.textContent=state.phase==='intro'?'Progress saves on this device.':'Your previous encounter has been restored.';
 render(false);

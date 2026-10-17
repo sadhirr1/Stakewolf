@@ -2,7 +2,13 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — typed local conversation
+## Current checkpoint — less repetitive local replies
+
+Owner requested broader natural wording and less repetition, keeping usage low. The existing port4181 **Talk to the council** now recognizes more paraphrases and uses distinct answer/reason/evidence angles for follow-ups. Per-speaker bounded context resets on topic/state changes; repeated same-topic questions eventually acknowledge no new information. Compound topics clarify; “and why?” follows the explicit same-sentence topic. Asking still does not issue orders or acquire evidence. No model, training, API or new dependency.
+
+Coordinator authored; independent `cast_gate` approved after fixing Sera's admission-memory wording and same-sentence follow-up routing. Final focused runs: 43/43 for both coordinator and reviewer. Browser verified varied Orin/Sera exchanges, context isolation, current night facts and mobile390×844 layout while preserving existing orders. [Evidence, limits and Gemma feasibility](evidence/scrum36-dialogue-polish.md). Continue PR22 from verified parent `07f2f527eb833530d20e71ad1f300f4d1d3b1675`; consult SCRUM-36 for the final published commit. Exact reviewed files only; preserve unrelated dirty root/private art. Next: owner tries natural wording. A small pretrained local Gemma trial is a possible later experiment after hardware check; training is not necessary for that trial. SCRUM-36 remains In Review; prior release risks remain; schedules stay off.
+
+## Preceding checkpoint — typed local conversation
 
 Owner explicitly selected local replies with no API cost. At `http://127.0.0.1:4181/`, choose **Talk to the council** and type questions to Orin or off-screen Sera. Replies select authored text from the current night/morning facts, testimony and custody history. Short follow-ups retain each speaker's last topic; unsupported questions clarify. Asking does not issue orders, mark evidence read or perform the formal challenge. Latest eight exchanges are tab-local and clear on reload/restart; saved game decisions retain schema3. No external model, key, purchases, dependencies, art or schedules. See [precise verification and limits](evidence/scrum36-local-dialogue.md).
 
