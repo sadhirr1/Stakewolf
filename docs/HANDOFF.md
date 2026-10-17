@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — one playable clearing with the owner portrait
+## Current checkpoint — conflicting stories and a costly council watch
+
+Owner accepted the playable clearing, then asked for stronger Werewolf-style conflict/consequences with low usage. The same one-portrait forest now has Orin/Sera's incompatible accounts, an optional challenge, a watch decision that consumes one of two workers, and a night event with consequences for tomorrow's capacity. Watching Orin prevents his announced unsafe passage; otherwise a traveler is injured and needs a worker's escort tomorrow. Watching Sera produces a witnessed-hearing obligation. No character expansion or new art. Preview remains `http://127.0.0.1:4181/`.
+
+Coordinator authored; `cast_gate` independently reviewed. Sixteen focused tests passed for both, and desktop/mobile opposite outcomes were checked. A malformed-watch save defect found in review was corrected. [Evidence and limits](evidence/scrum36-council-dispute.md). New saves use schema2 under the existing key; completed schema1 nights retain original outcomes, while old uncommitted plans explicitly require the new council choice. Tomorrow's obligations are still recorded only, not playable. This is a fixed dispute, not a complete hidden-role game.
+
+Continue existing draft PR22 from parent `39b3ef2bc5187b87837e43e1673bede206be9b49`; publish only explicit reviewed files and preserve the dirty root. Next: owner plays the changed encounter before further expansion. No purchases, generation, dependencies, reset credits or schedules. November6/13 risks remain.
+
+## Preceding checkpoint — one playable clearing with the owner portrait
 
 This entry takes precedence over the historical character evaluations below. The owner accepted the one-human forest direction for a short playable test. Preview: `http://127.0.0.1:4181/`, start with `node scripts/serve-portrait-proof.mjs`. One leader, two dated evidence items, two-person crew allocation, one night commitment and dawn obligations; no cast expansion or new artwork. The `/study` comparison and earlier `/wild/` prototype are preserved.
 
