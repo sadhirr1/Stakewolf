@@ -11,6 +11,8 @@ playwright-report/
 test-results/
 .cache/
 *.tsbuildinfo
+.tmp-npm-cache/
+.tmp-scrum36/
 
 # Local configuration and secrets; keep shareable examples
 .env

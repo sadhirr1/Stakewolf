@@ -1,5 +1,13 @@
 # Stakewolf: revised one-case release plan
 
+## October 17 owner correction — skeleton before story
+
+The owner clarified that recent encounter/consequence work was moving ahead of the intended priority. **Pause further story, dialogue and consequence expansion. Build the place, character presentation and interactive cinematic environment first.** The ambitious story will be decided later with the owner. Existing narrative prototypes are preserved as technical groundwork, not a plot constraint or accepted depth target.
+
+The next bounded deliverable is the separate local `/explore` environment study: a spatial council clearing, river and shelter, curated camera travel, Orin/Sera viewpoints, lighting previews and motion/accessibility controls. Reuse the current licensed local scenery and owner portraits to keep usage low. These are 2.5D portrait stand-ins within a 3D scene, not new full-body or facially rigged characters. No new generation, paid assets, plugins or model calls are authorized by this increment.
+
+Review actual exploration, framing and atmosphere with the owner before widening locations. Then improve the reusable character presentation and select the next coherent environment/character asset work. Asset quality, animation and target-device performance remain open gates; do not claim the skeleton is the final cinematic standard. Keep future story/state adapters separate from this presentation layer. No story features, external information adapters, schedule restart or revised delivery date are added here. November6/13 targets remain at material risk pending a bounded visual scope.
+
 ## October 12 owner direction — takes precedence over the historical plan below
 
 The owner considers the current game roughly 4% of the intended experience and explicitly rejects the low-detail procedural graphics as the visual target. Prioritize **looks and feel first, then story**, while keeping the architecture ready for a world that evolves from **both player input and outside information**. The owner selected **desktop/laptop first, with a simpler mobile fallback**. This is direction authorization, not acceptance of the current prototype, a production budget, or a new delivery promise.

@@ -1,0 +1,57 @@
+# SCRUM-36 forest benchmark assets
+
+These are locally served assets for a provisional visual benchmark. They are not evidence that the owner's character-quality requirement is complete. The active Warg is a rigged quadruped with two authored idle clips and 1K textures. Its AI/code-generated, top-down-game origins are disclosed by its creator; it remains unsuitable as proof of the final anthropomorphic, cinematic character target. The earlier static wolf stays in the repository with its original attribution.
+
+## Licenses and attribution
+
+| Local asset | Creator and source | License | Changes |
+| --- | --- | --- | --- |
+| `warg/warg-groom.glb` | Derivative of Daniel Gruginski's Warg below | CC0 1.0 | Shortened 119 separate locks with fixed roots; added semantic fur attributes; original body, facial geometry, rig, UVs, maps and animation retained. See [groom provenance](warg/GROOM.md). |
+| `warg/warg.glb` | **Warg** by **Daniel Gruginski (algumacoisaqq)**, [Fantasy Creatures](https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Rig-preserving FBX conversion, tack/mask removal, scale/orientation normalization, material correction, redundant animation-key removal, texture compression. See [conversion and provenance](warg/README.md). |
+| `wolf/wolf.glb` | **Wolf** by **Sirren**, made for **PARPG**, submitted by Q_x to [OpenGameArt](https://opengameart.org/content/wolf-0) | [Creative Commons Attribution-ShareAlike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/); [legal code](https://creativecommons.org/licenses/by-sa/3.0/legalcode) | Converted OBJ to glTF 2 binary; triangulated polygons; normalized height to 1.2m and centered on the ground; translated the texture coordinates to glTF convention; embedded the original unmodified Pelt.png; assigned rough fur and ivory teeth materials. The adapted GLB remains **CC BY-SA 3.0**. |
+| `forest-floor/*.jpg` | **Forest Leaves 04** by **Rob Tuytel**, [Poly Haven](https://polyhaven.com/a/forest_leaves_04) | [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) | Original 1K JPEG diffuse, OpenGL normal, and packed AO/roughness/metalness maps, renamed locally. |
+| `bark/*.jpg` | Bark maps supplied with **Pine Sapling Small**, photography by **Rob Tuytel**, modeling by **Rico Cilliers**, [Poly Haven](https://polyhaven.com/a/pine_sapling_small) | CC0 1.0 Universal | Original 1K JPEG diffuse, OpenGL normal, and packed AO/roughness/metalness maps, renamed locally. |
+| `pine/pine.gltf`, `pine/pine.bin`, `pine/twig-*.jpg` | **Pine Sapling Small**, photography by **Rob Tuytel**, modeling by **Rico Cilliers**, [Poly Haven](https://polyhaven.com/a/pine_sapling_small) | CC0 1.0 Universal | Variant b extracted; foliage reduced from 121,749 to 24,000 triangles, unused vertices and other variants removed. Original bark geometry, materials and 1K maps retained; bark maps shared with `bark/`. |
+| `fern/fern.gltf`, its BIN and textures | **Fern 02**, scanning by **Rob Tuytel**, modeling by **Rico Cilliers**, [Poly Haven](https://polyhaven.com/a/fern_02) | CC0 1.0 Universal | Original 1K glTF package; only the entry-point filename was renamed. |
+| `rock-moss/rock-moss.gltf`, its BIN and textures | **Rock Moss Set 01** by **Kless Gyzen**, [Poly Haven](https://polyhaven.com/a/rock_moss_set_01) | CC0 1.0 Universal | Original 1K glTF package; only the entry-point filename was renamed. |
+
+[Poly Haven's license statement](https://polyhaven.com/license) explicitly permits asset redistribution, including with a public project. The website's render previews are excluded; none are bundled here. These asset licenses are separate from the application's code license. Keep the wolf attribution, license link, and modification notice with any redistributed adaptation. No creator endorsement is implied.
+
+Suggested in-app credit: **Warg and alternate coats by Daniel Gruginski (algumacoisaqq), CC0; converted and prepared for Stakewolf. Earlier Wolf by Sirren for PARPG (OpenGameArt), CC BY-SA 3.0; converted and rescaled. Forest assets by Rob Tuytel, Rico Cilliers, and Kless Gyzen via Poly Haven, CC0.** Link the model names and licenses to the URLs above.
+
+## Source and verification
+
+The initial licenses, author metadata, and file links were checked on October 12, 2026. `source-files.json` records the original Poly Haven texture and unmodified model download URLs and publisher MD5. The downloaded bytes matched all 19 retained original-file checksums. That intake staged 22 runtime files totaling 10,767,112 bytes. The current `manifest.json` includes subsequent character additions; current totals are below. Hashes detect changes; they do not establish visual acceptance.
+
+Original wolf archive: [Wolf.zip](https://opengameart.org/sites/default/files/Wolf.zip), SHA-256 `a1adfd72e2b4ca8e0f2dc3e0fde27a3d8ea37110bf6e2e0631ca782e7f424efe`. It contains `wolf.obj`, `Wolf.mtl`, and `Pelt.png`. `scripts/asset-prep-wolf.mjs` converts an extracted copy reproducibly; it reads data only and does not execute archive contents. Source texture unchanged; glTF contains all required texture bytes and no remote dependency.
+
+## Current groom asset — October 14
+
+The renderer now requests `warg/warg-groom.glb` (3,530,504 bytes), a reversible derivative described in [GROOM.md](warg/GROOM.md). The original rig and two clips are retained. Fine portrait fur is generated locally by application code using the derivative's semantic surface tags; it adds no image download or external service. The original Warg and earlier Sirren wolf remain preserved but are not requested by the active scene.
+
+All 26 retained runtime files total **18,038,716 bytes**; the active scene's 24 files total **13,914,280 bytes**, excluding JavaScript. The added semantic attributes increase the active asset payload by 361,396 bytes. Current rendered findings and limits belong to [the fur review](../../../docs/evidence/scrum36-fur.md). This model is still a provisional quadruped, not accepted cinematic character art.
+
+## Preceding character update — October 13
+
+The preceding renderer loaded `warg/warg.glb`: 7,071 triangles, 41 joints, Idle (4 seconds) and IdlePant (3 seconds). Five independent instances use staggered Idle phases. Orin keeps the brown coat; Vela uses the creator's ash coat and Sera the charcoal coat. Sera's first active encounter blends into IdlePant for at most two cycles before returning to Idle; revisiting does not restart it. Focus adds a bounded head turn over the authored motion. The model is 1.2m high, +Y up, +Z forward. Its head bone supplies a stable sampled encounter anchor. Moving wolves receive environment shadows and use soft contact patches; they do not cast articulated shadows into the cached forest shadow map.
+
+The GLB remains 3,169,108 bytes. Two 1K JPEG coat maps add 571,992 bytes. All 25 retained runtime asset files total 14,508,212 bytes; the active scene's 24 files total 13,552,884 bytes because it does not request the earlier 955,328-byte wolf. These totals exclude the JavaScript bundle. The creator's coat maps remain CC0; only format, compression and row orientation changed. See [variant provenance and hashes](warg/VARIANTS.md). External coat textures use sRGB and `flipY=false`; unchanged normal and roughness maps are shared, while actor materials are separately owned by the scene. The manifest includes both models so preservation and byte inventory stay explicit. Historical source-file counts above describe the October 12 intake.
+
+## Renderer contract
+
+- Earlier wolf (retained, not loaded): `/wild/assets/wolf/wolf.glb`; Y up, head toward +Z; base Y=0; 1.2m overall height, approximately 0.477m width and 2.757m nose-to-tail length; 3,024 triangles, three meshes. No animations or skinning.
+- Ground and bark: `{diffuse,normal,arm}.jpg` under their respective folders. Diffuse uses sRGB; normal and ARM are linear data. ARM packs ambient occlusion in R, roughness in G, metalness in B.
+- Fern: `/wild/assets/fern/fern.gltf`; four variants. Source nodes `fern_02_b`, `fern_02_c`, `fern_02_a`, `fern_02_d` have 1,660 / 1,568 / 544 / 565 vertices and 2,384 / 2,248 / 784 / 816 triangles. Recenter individual meshes rather than preserving the source collection's grid placement. The source material is double-sided with alpha masking.
+- Rocks: `/wild/assets/rock-moss/rock-moss.gltf`; six variants. Prefer `rock_moss_set_01_rock03` (2,741 vertices / 5,000 triangles) and `rock_moss_set_01_rock06` (4,748 vertices / 8,994 triangles) for repeated placements. Recenter each source mesh before instancing. All source materials and textures are retained.
+- Pine: `/wild/assets/pine/pine.gltf`; source node `pine_sapling_small_b`, one mesh containing bark and foliage primitives, 486 + 24,000 triangles and 315 + 34,332 vertices. The two primitives share the same origin and must be scaled together. Source bounds are approximately X [-0.2652, 0.2635], Y [0.0009, 1.0465], Z [-0.3314, 0.3990] meters, Y up. Rebase the small Y minimum and scale the whole tree as needed. The original materials are retained. Five added files total 2,824,128 bytes, reusing the existing bark maps. Full pine-tree geometry and the other two sapling variants remain excluded.
+
+The tree reduction is reproducible with `scripts/asset-prep-pine.mjs`. Its source is [the 1K glTF](https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/pine_sapling_small/pine_sapling_small_1k.gltf), publisher MD5 `237a7672645631550ae571743aa9f55b`, and [the source BIN](https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_sapling_small/pine_sapling_small.bin), MD5 `76dd1802d8de128c812f2e124a258b35`; the downloaded BIN matched. An offline, temporary [meshoptimizer 1.3.0](https://www.npmjs.com/package/meshoptimizer) module performed attribute-aware reduction with UV weights 1, normal weights 0.1, target error 0.025, and `Prune` / `Permissive` options; reported achieved error was 0.00158516. The original 122,235-triangle variant became 24,486 triangles. This is lossy geometry processing, so silhouette and foliage quality require rendered review. No meshoptimizer library or decoder is shipped with the game, and no app dependency was added. The derived tree remains CC0.
+
+## Character sourcing limits
+
+[Terris, Wolf by SKYE](https://sketchfab.com/3d-models/terris-wolf-b25769a93ff642be98ed9eaece731847) is a more suitable anthro candidate with a CC BY 4.0 license shown by Sketchfab's public metadata, but the official download API required authentication (401). No model bytes were obtained.
+
+[Majestic Wolf by cyber_fox on Meshy](https://www.meshy.ai/3d-models/Majestic-Wolf-019c98b7-524c-7f4c-9665-69287c17d54f) is shown as CC0 in the public viewer, but the download workflow required sign-in. Its viewer reported 636,155 faces, requiring significant optimization if acquired. No account was created and no model bytes were obtained.
+
+The frequently shared 3DHaupt wolf was rejected because the checked sources applied noncommercial or personal-use restrictions. The 318-vertex OpenGameArt wolf was rejected as an unsuitable visual match. None of these rejected candidate assets is included in this directory.
+

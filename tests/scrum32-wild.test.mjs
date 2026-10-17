@@ -210,7 +210,7 @@ test('SCRUM-32 HTTP: all six explicit routes deliver exact bytes, correct MIME, 
     assert.equal(get.headers['cache-control'], 'no-store', path);
     assert.equal(get.headers['x-content-type-options'], 'nosniff', path);
     assert.match(get.headers['content-security-policy'], /(?:^|; )script-src 'self';/, path);
-    assert.match(get.headers['content-security-policy'], /(?:^|; )connect-src 'none';/, path);
+    assert.match(get.headers['content-security-policy'], /(?:^|; )connect-src 'self' blob:;/, path);
     const head = await read(port, path, 'HEAD');
     assert.equal(head.status, 200, path);
     assert.equal(head.body.length, 0, path);
