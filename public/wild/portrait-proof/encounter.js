@@ -19,7 +19,8 @@ window.addEventListener('pageshow',syncMotion);
 function portraitState(){
   const missing=!leader.naturalWidth;
   encounter.classList.toggle('portrait-missing',missing);
-  document.querySelector('#portrait-status').textContent=missing?'Portrait unavailable. Restore the local cutout and reload.':'';
+  const name=leader.dataset.character==='sera'?'Sera':'Orin';
+  document.querySelector('#portrait-status').textContent=missing?`${name}’s portrait is unavailable. You can continue the conversation or switch speakers.`:'';
 }
 leader.addEventListener('load',portraitState);
 leader.addEventListener('error',portraitState);

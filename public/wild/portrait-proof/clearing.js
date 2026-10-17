@@ -14,6 +14,21 @@ function persist(){
 }
 const escape=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const button=(action,label,extra='')=>`<button type="button" data-action="${action}" ${extra}>${label}</button>`;
+const portraits={
+  orin:{src:'/portrait/leader-cutout.png',alt:'Orin, the human council leader in a weathered charcoal coat, in the forest clearing.'},
+  sera:{src:'/portrait/sera-cutout-v1.png',alt:'Sera, the human scout with tied-back dark hair, a charcoal mantle and a leather strap, in the forest clearing.'}
+};
+function showPortrait(){
+  const key=talking?speaker:'orin',portrait=stage.querySelector('#leader');
+  stage.querySelector('.character-position').hidden=stage.dataset.overview==='true';
+  if(portrait.dataset.character===key)return;
+  portrait.dataset.character=key;
+  portrait.alt=portraits[key].alt;
+  // Hide the previous face while the newly selected image loads.
+  stage.classList.add('portrait-missing');
+  document.querySelector('#portrait-status').textContent=`Loading ${SPEAKERS[key]}’s portrait…`;
+  portrait.src=portraits[key].src;
+}
 const map=`<svg class="route-map" viewBox="0 0 440 170" role="img" aria-label="Route sketch: council clearing west of the river, crossing to the east, stores on the north path."><path class="contour" d="M0 22Q95 80 148 20T322 35T440 13M0 145Q100 85 155 145T315 129T440 155M0 101Q90 140 130 80T310 95"/><path class="river" d="M295 -10Q240 40 280 85T259 180"/><path class="trail" d="M60 116Q130 120 170 92T330 76M170 92L191 29"/><circle cx="60" cy="116" r="5"/><circle cx="191" cy="29" r="5"/><path class="bridge" d="M264 65L293 65M265 84L297 84"/><text x="20" y="146">CLEARING</text><text x="153" y="16">STORES</text><text x="315" y="71">CROSSING</text><text x="307" y="96" class="map-note">last checked yesterday</text></svg>`;
 function council(){
   const heardBoth=state.seen.includes('leader')&&state.seen.includes('report');
@@ -46,8 +61,8 @@ function conversationScreen(){
   const exchange=item=>`<p class="conversation-time">${escape(item.phase)} · ${SPEAKERS[item.speaker]}</p><p class="your-question"><b>You</b> ${escape(item.question)}</p><blockquote><b>${item.kind==='reply'?SPEAKERS[item.speaker]:'Choose a topic'}</b> ${escape(item.answer)}</blockquote>`;
   return `${button('close-talk','← Return to your decisions','class="back"')}
     <p class="eyebrow">BY THE COUNCIL FIRE / ${labels[state.phase]}</p>
-    <div class="conversation-heading"><div><h2 tabindex="-1">${SPEAKERS[speaker]}</h2><p class="talk-role">${speaker==='orin'?'Council leader':'Scout · off-screen'}</p></div><div class="speaker-switch"><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}${key==='sera'?' · off-screen':''}</option>`).join('')}</select></div></div>
-    <section class="active-exchange" aria-label="Latest exchange with ${SPEAKERS[speaker]}">${latest?exchange(latest):`<p class="conversation-invitation">${speaker==='orin'?'Ask him about the order. Then ask what supports his account.':'Hear the scout’s account, and compare it with Orin’s.'}</p><p class="small">${speaker==='sera'?'Sera’s portrait is not yet available. Her replies appear here.':'The work continues around you. Your questions do not advance the shift.'}</p>`}</section>
+    <div class="conversation-heading"><div><h2 tabindex="-1">${SPEAKERS[speaker]}</h2><p class="talk-role">${speaker==='orin'?'Council leader':'Scout'}</p></div><div class="speaker-switch"><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}</option>`).join('')}</select></div></div>
+    <section class="active-exchange" aria-label="Latest exchange with ${SPEAKERS[speaker]}">${latest?exchange(latest):`<p class="conversation-invitation">${speaker==='orin'?'Ask him about the order. Then ask what supports his account.':'Hear the scout’s account, and compare it with Orin’s.'}</p><p class="small">The work continues around you. Your questions do not advance the shift.</p>`}</section>
     <form id="question-form"><label for="character-question">Your question for ${SPEAKERS[speaker]}</label><textarea id="character-question" rows="2" maxlength="360" aria-describedby="question-help question-error" placeholder="${speaker==='orin'?'Why did you blame Sera?':'Who told you to loosen the line?'}">${escape(questionDraft)}</textarea><p id="question-help" class="small">One topic · 360 characters. Enter sends; Shift+Enter adds a line.</p><p id="question-error" class="question-error" role="alert">${escape(talkError)}</p><button type="submit" class="primary">Ask ${SPEAKERS[speaker]} →</button></form>
     ${earlier.length?`<details class="conversation-history"><summary>Earlier exchanges (${earlier.length})</summary><ol class="conversation-log" aria-label="Earlier conversation">${earlier.map(item=>`<li>${exchange(item)}</li>`).join('')}</ol></details>`:''}
     <details class="question-examples"><summary>Conversation guide</summary><p>Local, authored replies about this encounter. Try “Why?” or “How do you know?”. Asking does not issue orders or challenge a denial on the record.</p><div>${Object.entries(TOPICS).map(([key,text])=>`<button type="button" data-question="${key}">${escape(text)}</button>`).join('')}</div><p>Only the latest eight exchanges stay in this tab. Reload or restart clears the conversation; your saved game decisions remain.</p></details>`;
@@ -64,7 +79,7 @@ function render(focus=true){
   document.querySelector('#world-summary').innerHTML=`<h2>The work on the ground</h2><p class="small">The two lanterns mark your workers. Movement shows activity; only advancing the shift confirms completion.</p><div class="world-facts"><p><b>River crossing</b>${visible.crossing==='open'?'Gate open · verified higher approach':visible.crossing==='reset'?'Anchor reset · clearance pending':'Loose line · gate closed'}</p><p><b>Northern stores</b>${visible.stores==='protected'?'Moved to the raised platform':'Still at the water’s edge'}</p><p><b>Your two workers</b>${visible.jobs.map((job,i)=>`${i+1}: ${jobNames[job]}`).join('<br>')}</p></div>`;
   document.querySelector('#restart-encounter').hidden=state.phase==='intro';
   document.querySelector('#talk').hidden=state.phase==='intro'||state.version!==3;
-  stage.querySelector('.character-position').hidden=stage.dataset.overview==='true'||(talking&&speaker==='sera');
+  showPortrait();
   if(state.phase==='intro'){
     panel.innerHTML=`<p class="eyebrow">ONE NIGHT AT THE HOLLOW</p><h1 tabindex="-1">Someone is lying.</h1><p class="opening">The crossing is failing. The leader blames his scout. She says she followed his order. Beyond the river, families wait for the dawn he promised.</p><p class="opening quiet">Two workers. One night. Someone may have to stay by the fire.</p>${button('start','Enter the clearing <span aria-hidden="true">→</span>','class="primary"')}<p class="small">Hear their stories. Decide whom to watch. Live with the work left undone.</p>`;
   }else if(state.phase==='planning'&&record){
@@ -126,7 +141,7 @@ const overviewButton=document.querySelector('#overview'),worldSummary=document.q
 function setOverview(open){
   stage.dataset.overview=String(open);
   overviewButton.setAttribute('aria-pressed',String(open));overviewButton.textContent=open?'Return to the council':'Look around the clearing';
-  panel.hidden=open;worldSummary.hidden=!open;stage.querySelector('.character-position').hidden=open||(talking&&speaker==='sera');
+  panel.hidden=open;worldSummary.hidden=!open;stage.querySelector('.character-position').hidden=open;
   if(matchMedia('(max-width:760px)').matches)stage.scrollIntoView({block:'start',behavior:'instant'});
 }
 overviewButton.addEventListener('click',()=>setOverview(stage.dataset.overview!=='true'));

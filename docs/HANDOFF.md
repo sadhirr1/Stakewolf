@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — closer conversation and Sera brief
+## Current checkpoint — Sera portrait in the forest
+
+Owner supplied Sera's JPEG and authorized one extraction/forest comparison with low usage. At port4181, Talk to the council → Speak to now displays either Sera or Orin under the same existing forest treatment. One built-in image edit; private original and `sera-cutout-v1.png` retained separately. [Evidence and exact prompt](evidence/scrum36-sera-portrait.md). Extraction changes fine face/fabric details and leaves some fine hair fringe; it is not an exact matte. No second edit or new cast.
+
+Coordinator authored; independent `cast_gate` approved local comparison, noting the fidelity/edge limitations. Three syntax checks and43/43 focused checks passed; desktop/mobile switching, overview, portrait restoration and pause inspected. Six bounded HTTP checks passed after sandbox loopback denial required an approved rerun. Saved night orders unchanged. Source/docs only go to existing draft PR22 from verified parent `0c081117599809b90080a41416bb68fc21375225`; consult SCRUM-36 for published commit. Private art/screenshots stay local.
+
+Stop for owner judgment of Sera beside Orin before more art or implementation. Local preview server PID37424 serves the exact new routes; reverify identity before any future restart. SCRUM-36 remains In Review; November6/13 risks remain. Account meter14→16% observed, not exact task usage. No purchases/reset/schedules/model work.
+
+## Preceding checkpoint — closer conversation and Sera brief
 
 Owner deferred local models and chose to create Sera's art. At port4181, conversation now frames Orin closer and focuses the selected speaker's latest exchange; earlier retained exchanges are collapsible. Decisions restore wider framing; overview still shows the clearing. Sera remains off-screen pending her portrait. [Copyable portrait brief](art/sera-portrait-brief.md), [actual browser checks and limits](evidence/scrum36-cinematic-dialogue.md). No new art generation or model work.
 

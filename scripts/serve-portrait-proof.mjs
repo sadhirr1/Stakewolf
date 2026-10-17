@@ -15,6 +15,8 @@ const files=new Map([
   ['/portrait/style.css',['public/wild/portrait-proof/style.css','text/css; charset=utf-8']],
   ['/portrait/portrait.js',['public/wild/portrait-proof/portrait.js','text/javascript; charset=utf-8']],
   ['/portrait/leader-cutout.png',['.tmp-scrum36/portrait-proof/leader-cutout.png','image/png']],
+  ['/portrait/sera-cutout-v1.png',['.tmp-scrum36/portrait-proof/sera-cutout-v1.png','image/png']],
+  ['/portrait/sera-original.jpg',['.tmp-scrum36/portrait-proof/sera-original.jpg','image/jpeg']],
   ['/portrait/leader-original.jpg',['.tmp-scrum36/portrait-proof/leader-original.jpg','image/jpeg']]
 ]);
 const root=new URL('../',import.meta.url);

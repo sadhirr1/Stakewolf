@@ -32,11 +32,9 @@
 .conversation-history summary:focus-visible{outline:2px solid #ddc28c;outline-offset:3px}
 .conversation-history .conversation-log{margin:0}
 .question-examples p{line-height:1.8}
-[data-conversation="true"][data-speaker="sera"]:not([data-overview="true"]) .foreground-haze{opacity:.28}
 @media(max-width:760px){
   .encounter[data-conversation="true"]:not([data-overview="true"]){padding-top:305px}
   .encounter[data-conversation="true"]:not([data-overview="true"]) .character-position{top:45px;height:600px;left:58%}
-  .encounter[data-conversation="true"][data-speaker="sera"]:not([data-overview="true"]){padding-top:190px}
   .encounter[data-conversation="true"] .play-panel{top:auto;bottom:auto;width:100%;padding:22px 18px;background:#0d1b17f5}
   .conversation-heading{gap:12px}.conversation-heading h2{font-size:34px}.speaker-switch{width:135px}
   .speaker-switch select{font-size:16px}.active-exchange blockquote{font-size:18px}
