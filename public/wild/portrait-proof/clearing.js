@@ -83,7 +83,7 @@ function enterBeat(beat){
 function confrontationScreen(){
   const {beat,plan,reaction}=confrontation,line=sceneLine(beat,state);
   const leave=button('leave-scene','← Return to your decisions','class="back"');
-  const heading='<p class="eyebrow">THE LAST BELL / ORIN & SERA</p>';
+  const heading=`<p class="eyebrow">${beat.startsWith('morning-')?'FIRST LIGHT':beat.startsWith('noon-')?'NOON':'THE LAST BELL'} / ORIN & SERA</p>`;
   if(beat==='receipt'){
     const who=confrontationSpeaker(),order=PLANS[plan];
     return `${heading}<p class="scene-cue">Your order is given. It cannot be recalled tonight.</p><h2 tabindex="-1">${SPEAKERS[who]}</h2><blockquote class="scene-line">“${escape(order[who])}”</blockquote><p class="commit-note">${escape(order.summary)}</p>${button(reaction===0?'scene-reaction':'leave-scene',reaction===0?'Hear Sera’s answer →':'See the work begin →','class="primary"')}`;
@@ -94,7 +94,7 @@ function confrontationScreen(){
     const existing=`${state.watch===null?'No watch selected':WATCH[state.watch].name}; ${Object.entries(state.crew).filter(([,n])=>n).map(([job])=>TASKS[job].name).join(', ')||'no work assigned'}.`;
     return `${heading}<h2 tabindex="-1">${escape(order.title)}</h2><p class="opening">${escape(order.summary)}</p><p class="commit-note">${escape(order.risk)}</p><p class="small"><b>This replaces your uncommitted plan:</b> ${escape(existing)}<br>Confirming locks the whole night. Reading the accounts does not establish anyone’s allegiance.</p>${button('confirm-scene','Give this order →','class="primary"')}${button('back-scene','Go back without changing my plan','class="back"')}`;
   }
-  return `${leave}${heading}<p class="scene-cue">${escape(line.cue)}</p><h2 tabindex="-1">${SPEAKERS[line.speaker]}</h2><blockquote class="scene-line">“${escape(line.line)}”</blockquote>${beat==='intervene'?`<p class="scene-prompt">Break the silence.</p><div class="scene-choices">${button('press-orin',state.challenged?'Orin, explain the order you admitted.':'Orin, she says you gave the order. Did you?')}${button('ask-sera','Sera, what can you actually prove?')}${button('scene-decide','Enough. Here is what we will do.')}</div>`:button('scene-next',line.next==='decision'?'Make your decision →':line.next==='intervene'?'Step between them →':`Hear ${line.speaker==='orin'?'Sera':'Orin'} →`,'class="primary"')}${button('scene-question','Ask my own question','class="back"')}<p class="small">Continue at your pace. Only confirmed orders advance the work.</p>`;
+  return `${leave}${heading}<p class="scene-cue">${escape(line.cue)}</p><h2 tabindex="-1">${SPEAKERS[line.speaker]}</h2><blockquote class="scene-line">“${escape(line.line)}”</blockquote>${line.note?`<p class="commit-note">${escape(line.note)}</p>`:''}${beat==='intervene'?`<p class="scene-prompt">Break the silence.</p><div class="scene-choices">${button('press-orin',state.challenged?'Orin, explain the order you admitted.':'Orin, she says you gave the order. Did you?')}${button('ask-sera','Sera, what can you actually prove?')}${button('scene-decide','Enough. Here is what we will do.')}</div>`:button('scene-next',line.next==='morning-orders'?'Choose the morning’s work →':line.next==='noon-summary'?'See what still needs doing →':line.next==='decision'?'Make your decision →':line.next==='intervene'?'Step between them →':`Hear ${line.speaker==='orin'?'Sera':'Orin'} →`,'class="primary"')}${button('scene-question','Ask my own question','class="back"')}<p class="small">Continue at your pace. Hearing an account does not complete a job.</p>`;
 }
 function render(focus=true){
   const previousScroll=panel.scrollTop;
@@ -128,6 +128,7 @@ function render(focus=true){
     const outcome=result(state);
     panel.innerHTML=`<p class="eyebrow">FIRST LIGHT / WHAT YOUR ORDERS LEFT BEHIND</p><h2 tabindex="-1">${escape(outcome.title)}</h2><blockquote class="leader-reaction">“${escape(outcome.reaction)}”</blockquote><p class="small">${escape(outcome.context)}</p>${outcome.events?`<ol class="night-events">${outcome.events.map(item=>`<li><span>${escape(item.time)}</span><p>${escape(item.text)}</p></li>`).join('')}</ol><p class="morning-capacity"><b>${outcome.availableTomorrow} / 2</b> workers available for new work this morning</p>${button('morning','Take the morning’s work →','class="primary"')}`:'<p class="small">Earlier edition: your original outcome has been preserved. Start again for the council dispute.</p>'}<div class="obligations">${outcome.threads.map(thread=>`<article><p class="thread-status">${escape(thread.status)}</p><h3>${escape(thread.name)}</h3><p>${escape(thread.detail)}</p><p class="next-work"><b>Still to do</b> ${escape(thread.next)}</p></article>`).join('')}</div><p class="small">${outcome.unassigned?'One worker stayed unassigned this night; no extra task was completed. ':''}${escape(outcome.unresolved||'The cause of the anchor movement is still unknown.')}</p>${button('replay','Try another council decision')}`;
   }
+  if(state.version===3&&['dawn','morning','noon'].includes(state.phase))panel.innerHTML=button(state.phase==='noon'?'noon-reactions':'morning-reactions',state.phase==='noon'?'Hear Orin and Sera at noon →':'Hear Orin and Sera this morning →','class="primary"')+panel.innerHTML;
   if(talking)panel.innerHTML=conversationScreen();
   if(confrontation)panel.innerHTML=confrontationScreen();
   panel.scrollTop=focus?0:previousScroll;
@@ -153,7 +154,20 @@ panel.addEventListener('click',event=>{
   if(action==='scene-question'){
     speaker=confrontationSpeaker();suspendedScene=confrontation;confrontation=null;talking=true;render();return;
   }
-  if(action==='scene-next'&&confrontation){enterBeat(sceneLine(confrontation.beat,state).next);return;}
+  if(action==='scene-next'&&confrontation){
+    const next=sceneLine(confrontation.beat,state).next;
+    if(next==='morning-orders'||next==='noon-summary'){
+      confrontation=null;
+      if(next==='morning-orders'&&state.phase==='dawn'){state=act(state,'morning');persist();}
+      render();return;
+    }
+    enterBeat(next);return;
+  }
+  if(action==='morning-reactions'&&state.version===3&&['dawn','morning'].includes(state.phase)){enterBeat('morning-orin');return;}
+  if(action==='noon-reactions'&&state.version===3&&state.phase==='noon'){enterBeat('noon-orin');return;}
+  if((action==='dawn'&&state.phase==='dispatched'||action==='noon'&&state.phase==='morning-dispatched')&&state.version===3){
+    state=act(state,action);persist();enterBeat(action==='dawn'?'morning-orin':'noon-orin');return;
+  }
   if(action==='press-orin'){state=act(state,'challenge');persist();enterBeat('admission');return;}
   if(action==='ask-sera'){enterBeat('limits');return;}
   if(action==='scene-decide'||action==='back-scene'){enterBeat('decision');return;}

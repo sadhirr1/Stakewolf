@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — Orin and Sera confront each other
+## Current checkpoint — the morning remembers
+
+Owner authorized one low-usage local continuation. First light now stages Orin/Sera's reactions to custody, injury, admission and completed night work; Orin then names outstanding jobs and actual crew capacity. Noon reactions reflect completed morning work and witnessed testimony while retaining custody memory. Replay preserves existing assignments. No new artwork, dependency, model calls, schema or physical-rule changes. [Evidence and limits](evidence/scrum36-morning-reactions.md).
+
+Coordinator authored; independent `cast_gate` approved source/tests with no blocking findings. Coordinator and reviewer each passed56/56 focused checks; both changed modules passed syntax checks. Actual desktop/mobile held-Sera path, morning replay with allocated hearing, keyboard noon advance, typed-question return and reload were checked. The owner's4181 save was preserved at noon (held Orin, stores protected, hearing/admission retained) and the matching Orin reaction verified. Private captures stay local. This remains one authored encounter ending at noon.
+
+Publish only the six reviewed source/test/docs files to existing draft PR22 from verified parent `12c6702c8af01c3fb48a8afbb91426cfcc6d6197`; consult SCRUM-36/18 for final commit confirmation. Main preview process7008 remains; verify identity before restarting. Next: owner can continue the displayed noon exchange via **Hear Sera**, or on a new night use **Wait for first light** to see morning reactions automatically. Existing dawn/morning saves have a replay control. Stop before widening scope. SCRUM-36 remains In Review; November6/13 risks and canceled schedules unchanged.
+
+## Preceding checkpoint — Orin and Sera confront each other
 
 Owner authorized one local confrontation with consequences, conserving usage. Port4181 now starts new attempts with a paced Orin/Sera exchange, intervention branches, typed-question detour/return, full order preview, and both characters' immediate reactions. The three optional orders feed existing night/morning costs; custom assignments remain. Speaker framing/grade follow the active portrait. No new art, models, dependencies or purchases. [Evidence and limits](evidence/scrum36-confrontation.md).
 
