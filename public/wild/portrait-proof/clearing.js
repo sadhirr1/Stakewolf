@@ -1,9 +1,11 @@
 import {SAVE_KEY,TASKS,RECORDS,WATCH,MORNING_TASKS,fresh,used,act,restore,result,morningCapacity,morningUsed,morningBlock,noonResult,world} from '/portrait/clearing-state.js';
 import {TOPICS,SPEAKERS,respond} from '/portrait/dialogue.js';
+import {PLANS,proposedOrders,confirmOrders,sceneLine} from '/portrait/confrontation.js';
 const stage=document.querySelector('.encounter'),panel=document.querySelector('#play-panel');
 const saveNotice=document.querySelector('#save-notice'),resetDialog=document.querySelector('#reset-dialog');
 let state=fresh(),view='table',record=null,saveAvailable=true;
 let talking=false,speaker='orin',conversation=[],dialogueMemory={orin:null,sera:null},questionDraft='',talkError='';
+let confrontation=null,suspendedScene=null;
 try{
   const stored=localStorage.getItem(SAVE_KEY);
   if(stored){const restored=restore(stored);if(restored){state=restored;if(JSON.parse(stored).version===1)saveNotice.textContent=state.version===1?'Your earlier night is preserved. Start again to play the new council dispute.':'Your work plan is retained. Read the changed accounts and choose a council watch before committing.';}else saveNotice.textContent='An incompatible local save could not be restored. A fresh attempt is ready.';}
@@ -19,7 +21,7 @@ const portraits={
   sera:{src:'/portrait/sera-cutout-v1.png',alt:'Sera, the human scout with tied-back dark hair, a charcoal mantle and a leather strap, in the forest clearing.'}
 };
 function showPortrait(){
-  const key=talking?speaker:'orin',portrait=stage.querySelector('#leader');
+  const key=confrontation?confrontationSpeaker():talking?speaker:'orin',portrait=stage.querySelector('#leader');
   stage.querySelector('.character-position').hidden=stage.dataset.overview==='true';
   if(portrait.dataset.character===key)return;
   portrait.dataset.character=key;
@@ -32,7 +34,7 @@ function showPortrait(){
 const map=`<svg class="route-map" viewBox="0 0 440 170" role="img" aria-label="Route sketch: council clearing west of the river, crossing to the east, stores on the north path."><path class="contour" d="M0 22Q95 80 148 20T322 35T440 13M0 145Q100 85 155 145T315 129T440 155M0 101Q90 140 130 80T310 95"/><path class="river" d="M295 -10Q240 40 280 85T259 180"/><path class="trail" d="M60 116Q130 120 170 92T330 76M170 92L191 29"/><circle cx="60" cy="116" r="5"/><circle cx="191" cy="29" r="5"/><path class="bridge" d="M264 65L293 65M265 84L297 84"/><text x="20" y="146">CLEARING</text><text x="153" y="16">STORES</text><text x="315" y="71">CROSSING</text><text x="307" y="96" class="map-note">last checked yesterday</text></svg>`;
 function council(){
   const heardBoth=state.seen.includes('leader')&&state.seen.includes('report');
-  return `<p class="eyebrow">01 / THE ACCOUNTS</p><div class="evidence-items">${Object.entries(RECORDS).map(([key,item],i)=>`<button class="evidence-object" type="button" data-record="${key}"><span class="object-index">0${i+1}</span><span><strong>${escape(item.title)}</strong><small>${key==='map'?'Before the river rose':key==='leader'?'“I gave no such order.”':'“He told me to loosen it.”'}</small></span><span class="read-mark">${state.seen.includes(key)?'Read':'Hear ↗'}</span></button>`).join('')}</div>
+  return `${button('confront','Bring them face to face →','class="primary"')}<p class="eyebrow">01 / THE ACCOUNTS</p><div class="evidence-items">${Object.entries(RECORDS).map(([key,item],i)=>`<button class="evidence-object" type="button" data-record="${key}"><span class="object-index">0${i+1}</span><span><strong>${escape(item.title)}</strong><small>${key==='map'?'Before the river rose':key==='leader'?'“I gave no such order.”':'“He told me to loosen it.”'}</small></span><span class="read-mark">${state.seen.includes(key)?'Read':'Hear ↗'}</span></button>`).join('')}</div>
   ${heardBoth?`<div class="contradiction"><p class="eyebrow">THE STORIES CANNOT BOTH BE TRUE</p><p>Orin denies giving the order. Sera says he gave it. Both agree that she handled the line.</p>${state.challenged?`<blockquote>“I told her to ease the outer line. To free the ferry for the stores. I did not tell her to leave it loose.”</blockquote><p class="small">Orin has changed his account. The instruction is admitted; his reason and the cause of the slip remain unverified.</p>`:button('challenge','Challenge Orin’s denial','class="challenge"')}</div>`:''}
   ${button('council','Make the council decision →','class="primary"')}`;
 }
@@ -59,7 +61,7 @@ function conversationScreen(){
   const latest=conversation.filter(item=>item.speaker===speaker).at(-1);
   const earlier=conversation.filter(item=>item!==latest);
   const exchange=item=>`<p class="conversation-time">${escape(item.phase)} · ${SPEAKERS[item.speaker]}</p><p class="your-question"><b>You</b> ${escape(item.question)}</p><blockquote><b>${item.kind==='reply'?SPEAKERS[item.speaker]:'Choose a topic'}</b> ${escape(item.answer)}</blockquote>`;
-  return `${button('close-talk','← Return to your decisions','class="back"')}
+  return `${suspendedScene?button('resume-scene','← Return to the confrontation','class="back"'):''}${button('close-talk','← Return to your decisions','class="back"')}
     <p class="eyebrow">BY THE COUNCIL FIRE / ${labels[state.phase]}</p>
     <div class="conversation-heading"><div><h2 tabindex="-1">${SPEAKERS[speaker]}</h2><p class="talk-role">${speaker==='orin'?'Council leader':'Scout'}</p></div><div class="speaker-switch"><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}</option>`).join('')}</select></div></div>
     <section class="active-exchange" aria-label="Latest exchange with ${SPEAKERS[speaker]}">${latest?exchange(latest):`<p class="conversation-invitation">${speaker==='orin'?'Ask him about the order. Then ask what supports his account.':'Hear the scout’s account, and compare it with Orin’s.'}</p><p class="small">The work continues around you. Your questions do not advance the shift.</p>`}</section>
@@ -67,11 +69,39 @@ function conversationScreen(){
     ${earlier.length?`<details class="conversation-history"><summary>Earlier exchanges (${earlier.length})</summary><ol class="conversation-log" aria-label="Earlier conversation">${earlier.map(item=>`<li>${exchange(item)}</li>`).join('')}</ol></details>`:''}
     <details class="question-examples"><summary>Conversation guide</summary><p>Local, authored replies about this encounter. Try “Why?” or “How do you know?”. Asking does not issue orders or challenge a denial on the record.</p><div>${Object.entries(TOPICS).map(([key,text])=>`<button type="button" data-question="${key}">${escape(text)}</button>`).join('')}</div><p>Only the latest eight exchanges stay in this tab. Reload or restart clears the conversation; your saved game decisions remain.</p></details>`;
 }
+function confrontationSpeaker(){
+  if(confrontation.beat==='receipt')return confrontation.reaction===0?'orin':'sera';
+  return sceneLine(confrontation.beat,state)?.speaker||'sera';
+}
+function enterBeat(beat){
+  confrontation={beat,plan:null,reaction:0};talking=false;record=null;
+  document.querySelector('#talk-status').textContent='';
+  const line=sceneLine(beat,state);
+  if(line?.record){state=act(state,'read',line.record);persist();}
+  render();
+}
+function confrontationScreen(){
+  const {beat,plan,reaction}=confrontation,line=sceneLine(beat,state);
+  const leave=button('leave-scene','← Return to your decisions','class="back"');
+  const heading='<p class="eyebrow">THE LAST BELL / ORIN & SERA</p>';
+  if(beat==='receipt'){
+    const who=confrontationSpeaker(),order=PLANS[plan];
+    return `${heading}<p class="scene-cue">Your order is given. It cannot be recalled tonight.</p><h2 tabindex="-1">${SPEAKERS[who]}</h2><blockquote class="scene-line">“${escape(order[who])}”</blockquote><p class="commit-note">${escape(order.summary)}</p>${button(reaction===0?'scene-reaction':'leave-scene',reaction===0?'Hear Sera’s answer →':'See the work begin →','class="primary"')}`;
+  }
+  if(beat==='decision')return `${leave}${heading}<h2 tabindex="-1">They are waiting for your order.</h2><p class="opening">You cannot guard someone, repair the line and protect the stores with two workers. Whose freedom will you restrict—and which work will wait?</p><div class="scene-choices">${Object.entries(PLANS).map(([key,item])=>`<button type="button" data-scene-plan="${key}"><strong>${escape(item.title)}</strong><span>${escape(item.summary)}</span></button>`).join('')}</div>${button('custom-orders','Choose my own assignments','class="back"')}<p class="small">Selecting a plan opens a preview. Nothing is dispatched until you confirm. Custody is not proof of guilt.</p>`;
+  if(beat==='preview'){
+    const order=PLANS[plan];
+    const existing=`${state.watch===null?'No watch selected':WATCH[state.watch].name}; ${Object.entries(state.crew).filter(([,n])=>n).map(([job])=>TASKS[job].name).join(', ')||'no work assigned'}.`;
+    return `${heading}<h2 tabindex="-1">${escape(order.title)}</h2><p class="opening">${escape(order.summary)}</p><p class="commit-note">${escape(order.risk)}</p><p class="small"><b>This replaces your uncommitted plan:</b> ${escape(existing)}<br>Confirming locks the whole night. Reading the accounts does not establish anyone’s allegiance.</p>${button('confirm-scene','Give this order →','class="primary"')}${button('back-scene','Go back without changing my plan','class="back"')}`;
+  }
+  return `${leave}${heading}<p class="scene-cue">${escape(line.cue)}</p><h2 tabindex="-1">${SPEAKERS[line.speaker]}</h2><blockquote class="scene-line">“${escape(line.line)}”</blockquote>${beat==='intervene'?`<p class="scene-prompt">Break the silence.</p><div class="scene-choices">${button('press-orin',state.challenged?'Orin, explain the order you admitted.':'Orin, she says you gave the order. Did you?')}${button('ask-sera','Sera, what can you actually prove?')}${button('scene-decide','Enough. Here is what we will do.')}</div>`:button('scene-next',line.next==='decision'?'Make your decision →':line.next==='intervene'?'Step between them →':`Hear ${line.speaker==='orin'?'Sera':'Orin'} →`,'class="primary"')}${button('scene-question','Ask my own question','class="back"')}<p class="small">Continue at your pace. Only confirmed orders advance the work.</p>`;
+}
 function render(focus=true){
   const previousScroll=panel.scrollTop;
   stage.dataset.phase=state.phase;
-  stage.dataset.conversation=String(talking);
-  stage.dataset.speaker=speaker;
+  stage.dataset.conversation=String(talking||Boolean(confrontation));
+  stage.dataset.confrontation=String(Boolean(confrontation));
+  stage.dataset.speaker=confrontation?confrontationSpeaker():speaker;
   const visible=world(state);stage.dataset.world=JSON.stringify(visible);
   document.querySelector('#phase-label').textContent=({dusk:'DUSK',night:'NIGHTFALL',morning:'FIRST LIGHT',noon:'NOON'})[visible.light];
   document.querySelector('#world-work').textContent='';
@@ -99,6 +129,7 @@ function render(focus=true){
     panel.innerHTML=`<p class="eyebrow">FIRST LIGHT / WHAT YOUR ORDERS LEFT BEHIND</p><h2 tabindex="-1">${escape(outcome.title)}</h2><blockquote class="leader-reaction">“${escape(outcome.reaction)}”</blockquote><p class="small">${escape(outcome.context)}</p>${outcome.events?`<ol class="night-events">${outcome.events.map(item=>`<li><span>${escape(item.time)}</span><p>${escape(item.text)}</p></li>`).join('')}</ol><p class="morning-capacity"><b>${outcome.availableTomorrow} / 2</b> workers available for new work this morning</p>${button('morning','Take the morning’s work →','class="primary"')}`:'<p class="small">Earlier edition: your original outcome has been preserved. Start again for the council dispute.</p>'}<div class="obligations">${outcome.threads.map(thread=>`<article><p class="thread-status">${escape(thread.status)}</p><h3>${escape(thread.name)}</h3><p>${escape(thread.detail)}</p><p class="next-work"><b>Still to do</b> ${escape(thread.next)}</p></article>`).join('')}</div><p class="small">${outcome.unassigned?'One worker stayed unassigned this night; no extra task was completed. ':''}${escape(outcome.unresolved||'The cause of the anchor movement is still unknown.')}</p>${button('replay','Try another council decision')}`;
   }
   if(talking)panel.innerHTML=conversationScreen();
+  if(confrontation)panel.innerHTML=confrontationScreen();
   panel.scrollTop=focus?0:previousScroll;
   if(focus)panel.querySelector('h1,h2')?.focus({preventScroll:!matchMedia('(max-width:760px)').matches});
 }
@@ -110,8 +141,30 @@ panel.addEventListener('click',event=>{
   if(target.dataset.morning){const key=target.dataset.morning;state=act(state,'morning-assign',key);persist();render(false);panel.querySelector(`[data-morning="${key}"]`)?.focus({preventScroll:true});return;}
   if(target.dataset.watch){state=act(state,'watch',target.dataset.watch);persist();const key=target.dataset.watch;render(false);panel.querySelector(`[data-watch="${key}"]`)?.focus({preventScroll:true});return;}
   const action=target.dataset.action;
+  if(target.dataset.scenePlan&&confrontation&&proposedOrders(state,target.dataset.scenePlan)){
+    confrontation={beat:'preview',plan:target.dataset.scenePlan,reaction:0};render();return;
+  }
+  if(action==='start'||action==='confront'){
+    if(state.phase==='intro'){state=act(state,'start');persist();}
+    if(state.phase==='planning'){enterBeat('opening');return;}
+  }
+  if(action==='leave-scene'){confrontation=null;talking=false;render();return;}
+  if(action==='resume-scene'){talking=false;confrontation=suspendedScene;suspendedScene=null;render();return;}
+  if(action==='scene-question'){
+    speaker=confrontationSpeaker();suspendedScene=confrontation;confrontation=null;talking=true;render();return;
+  }
+  if(action==='scene-next'&&confrontation){enterBeat(sceneLine(confrontation.beat,state).next);return;}
+  if(action==='press-orin'){state=act(state,'challenge');persist();enterBeat('admission');return;}
+  if(action==='ask-sera'){enterBeat('limits');return;}
+  if(action==='scene-decide'||action==='back-scene'){enterBeat('decision');return;}
+  if(action==='custom-orders'){confrontation=null;view='council';render();return;}
+  if(action==='confirm-scene'&&confrontation?.beat==='preview'){
+    const next=confirmOrders(state,confrontation.plan);
+    if(next!==state){state=next;confrontation.beat='receipt';confrontation.reaction=0;persist();render();}return;
+  }
+  if(action==='scene-reaction'&&confrontation?.beat==='receipt'){confrontation.reaction=1;render();return;}
   if(target.dataset.question){const input=panel.querySelector('#character-question');questionDraft=TOPICS[target.dataset.question];input.value=questionDraft;input.focus();return;}
-  if(action==='close-talk'){talking=false;talkError='';render();return;}
+  if(action==='close-talk'){talking=false;suspendedScene=null;talkError='';render();return;}
   if(action==='replay'){resetDialog.showModal();return;}
   if(action==='close-record'){record=null;render();return;}
   if(action==='challenge'){
@@ -135,7 +188,7 @@ panel.addEventListener('submit',event=>{if(event.target.id==='question-form'){ev
 panel.addEventListener('keydown',event=>{if(event.target.id==='character-question'&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(!event.repeat)askQuestion();}});
 panel.addEventListener('input',event=>{if(event.target.id==='character-question')questionDraft=event.target.value;});
 panel.addEventListener('change',event=>{if(event.target.id==='talk-speaker'){speaker=event.target.value;talkError='';render(false);panel.scrollTop=0;panel.querySelector('#talk-speaker').focus({preventScroll:!matchMedia('(max-width:760px)').matches});}});
-document.querySelector('#talk').addEventListener('click',()=>{setOverview(false);talking=true;record=null;render();});
+document.querySelector('#talk').addEventListener('click',()=>{setOverview(false);if(confrontation){suspendedScene=confrontation;confrontation=null;}talking=true;record=null;render();});
 document.querySelector('#restart-encounter').addEventListener('click',()=>resetDialog.showModal());
 const overviewButton=document.querySelector('#overview'),worldSummary=document.querySelector('#world-summary');
 function setOverview(open){
@@ -146,6 +199,6 @@ function setOverview(open){
 }
 overviewButton.addEventListener('click',()=>setOverview(stage.dataset.overview!=='true'));
 document.querySelector('#cancel-reset').addEventListener('click',()=>resetDialog.close());
-document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();record=null;view='table';talking=false;speaker='orin';conversation=[];dialogueMemory={orin:null,sera:null};questionDraft='';talkError='';document.querySelector('#talk-status').textContent='';setOverview(false);persist();resetDialog.close();render();});
+document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();confrontation=null;suspendedScene=null;record=null;view='table';talking=false;speaker='orin';conversation=[];dialogueMemory={orin:null,sera:null};questionDraft='';talkError='';document.querySelector('#talk-status').textContent='';setOverview(false);persist();resetDialog.close();render();});
 if(saveAvailable&&saveNotice.textContent==='')saveNotice.textContent=state.phase==='intro'?'Progress saves on this device.':'Your previous encounter has been restored.';
 render(false);

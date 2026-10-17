@@ -9,6 +9,7 @@ const files=new Map([
   ['/portrait/clearing.js',['public/wild/portrait-proof/clearing.js','text/javascript; charset=utf-8']],
   ['/portrait/clearing-state.js',['public/wild/portrait-proof/clearing-state.js','text/javascript; charset=utf-8']],
   ['/portrait/dialogue.js',['public/wild/portrait-proof/dialogue.js','text/javascript; charset=utf-8']],
+  ['/portrait/confrontation.js',['public/wild/portrait-proof/confrontation.js','text/javascript; charset=utf-8']],
   ['/portrait/forest.css',['public/wild/portrait-proof/forest.css','text/css; charset=utf-8']],
   ['/portrait/encounter.js',['public/wild/portrait-proof/encounter.js','text/javascript; charset=utf-8']],
   ['/portrait/forest.bundle.js',['public/wild/portrait-proof/forest.bundle.js','text/javascript; charset=utf-8']],
@@ -33,4 +34,6 @@ const server=createServer(async(req,res)=>{
   }catch{res.writeHead(404,{'Content-Type':'text/plain'});res.end('Local portrait unavailable. See public/wild/portrait-proof/README.md.');}
 });
 server.once('error',error=>{console.error(error.message);process.exitCode=1;});
-server.listen(4181,'127.0.0.1',()=>console.log('Council leader portrait: http://127.0.0.1:4181/'));
+const port=process.argv[2]===undefined?4181:Number(process.argv[2]);
+if(!Number.isInteger(port)||port<1024||port>65535)throw new Error('Use a port between 1024 and 65535.');
+server.listen(port,'127.0.0.1',()=>console.log(`Council portrait: http://127.0.0.1:${port}/`));

@@ -31,6 +31,21 @@
 .conversation-history summary,.question-examples summary{min-height:44px;padding:13px 0;cursor:pointer}
 .conversation-history summary:focus-visible{outline:2px solid #ddc28c;outline-offset:3px}
 .conversation-history .conversation-log{margin:0}
+.scene-cue{font:italic 14px/1.7 Georgia,serif;color:#b6c3b7;margin:4px 0 24px}
+.scene-line{font:400 clamp(23px,2.2vw,31px)/1.5 Georgia,serif;color:#eee4cd;margin:0 0 24px}
+.scene-prompt{font:italic 17px Georgia,serif;color:#d8c095;margin:26px 0 14px}
+.scene-choices{display:grid;gap:10px;margin:18px 0 22px}
+.scene-choices button{text-align:left;font:15px/1.6 Georgia,serif;padding:14px 16px!important}
+.scene-choices strong{display:block;font-weight:400;color:#f1dfb8}
+.scene-choices span{display:block;font:12px/1.65 Arial,sans-serif;color:#c0cdbe;margin-top:8px}
+[data-confrontation="true"] .play-panel{background:linear-gradient(100deg,#091511ed,#0b1715d9);border-left:2px solid #c6ab73}
+[data-confrontation="true"] .character-position{transition:left .65s ease,top .65s ease}
+[data-confrontation="true"][data-speaker="sera"]:not([data-overview="true"]) .character-position{left:74%;top:3%}
+[data-confrontation="true"] #leader{transition:filter .65s ease}
+[data-confrontation="true"][data-speaker="sera"] #leader{filter:brightness(.87) saturate(.72) sepia(.05)}
+[data-confrontation="true"][data-speaker="orin"] #leader{filter:brightness(.88) saturate(.76) sepia(.13)}
+[data-confrontation="true"] .back{margin-top:16px}
+[data-motion="paused"] .character-position,[data-motion="paused"] #leader{transition:none!important}
 .question-examples p{line-height:1.8}
 @media(max-width:760px){
   .encounter[data-conversation="true"]:not([data-overview="true"]){padding-top:305px}
@@ -38,4 +53,6 @@
   .encounter[data-conversation="true"] .play-panel{top:auto;bottom:auto;width:100%;padding:22px 18px;background:#0d1b17f5}
   .conversation-heading{gap:12px}.conversation-heading h2{font-size:34px}.speaker-switch{width:135px}
   .speaker-switch select{font-size:16px}.active-exchange blockquote{font-size:18px}
+  .scene-line{font-size:23px}
+  .encounter[data-confrontation="true"][data-speaker="sera"]:not([data-overview="true"]) .character-position{left:56%;top:45px}
 }

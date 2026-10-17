@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — Sera portrait in the forest
+## Current checkpoint — Orin and Sera confront each other
+
+Owner authorized one local confrontation with consequences, conserving usage. Port4181 now starts new attempts with a paced Orin/Sera exchange, intervention branches, typed-question detour/return, full order preview, and both characters' immediate reactions. The three optional orders feed existing night/morning costs; custom assignments remain. Speaker framing/grade follow the active portrait. No new art, models, dependencies or purchases. [Evidence and limits](evidence/scrum36-confrontation.md).
+
+Coordinator authored; independent `cast_gate` approved scoped source/tests with50/50 passing. Coordinator50/50 plus final7/7 and three syntax checks; actual desktop/mobile two-path play, keyboard activation, chat return, preview/back, reload, and pause verified on isolated port4182. Owner's4181 save preserved. Reload exits unfinished staging safely; committed nights are immutable. This remains one authored encounter with still portraits, not a full dynamic campaign.
+
+Publish only eight reviewed source/test/docs files to existing draft PR22 from verified parent `c7343a0ceb781d71bda9b6f529debb486ab0f620`; consult SCRUM-36/18 for publication confirmation and the final commit. Live preview process7008; verify identity before restarting. Next: owner tries **Restart encounter → Start again → Enter the clearing** and judges whether the interaction feels like a confrontation. Stop before expanding scope. SCRUM-36 stays In Review; November6/13 risks and canceled schedules unchanged.
+
+## Preceding checkpoint — Sera portrait in the forest
 
 Owner supplied Sera's JPEG and authorized one extraction/forest comparison with low usage. At port4181, Talk to the council → Speak to now displays either Sera or Orin under the same existing forest treatment. One built-in image edit; private original and `sera-cutout-v1.png` retained separately. [Evidence and exact prompt](evidence/scrum36-sera-portrait.md). Extraction changes fine face/fabric details and leaves some fine hair fringe; it is not an exact matte. No second edit or new cast.
 
