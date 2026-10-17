@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — changing clearing and playable morning
+## Current checkpoint — typed local conversation
+
+Owner explicitly selected local replies with no API cost. At `http://127.0.0.1:4181/`, choose **Talk to the council** and type questions to Orin or off-screen Sera. Replies select authored text from the current night/morning facts, testimony and custody history. Short follow-ups retain each speaker's last topic; unsupported questions clarify. Asking does not issue orders, mark evidence read or perform the formal challenge. Latest eight exchanges are tab-local and clear on reload/restart; saved game decisions retain schema3. No external model, key, purchases, dependencies, art or schedules. See [precise verification and limits](evidence/scrum36-local-dialogue.md).
+
+Coordinator authored; independent `cast_gate` approved source/tests with no blocking findings and independently passed 35/35 focused checks. Coordinator also verified Enter/button/Shift+Enter, speaker switching, cross-phase follow-up, reload, restart, escaped typed text and mobile layout. The stale port4181 preview server was verified and restarted for the new module route. Source is a bounded keyword-based prototype, not open-ended AI; follow-ups can repeat if state is unchanged.
+
+Continue existing draft PR22 from verified parent `10aa281964b7110cda2a011a4b0a4c0c33672357`, publishing only the explicit reviewed dialogue/UI/test/docs files. Final commit is linked on SCRUM-36. Preserve unrelated dirty root, private portrait and earlier prototypes. Next: owner tries their own questions and identifies important unsupported/unconvincing ones before expanding scope. SCRUM-36 remains In Review; previous November6/13 risks remain. Account meter moved from 5% to 8% in the same window; it is account-wide, not precise task accounting. No hours or reset-credit use claimed.
+
+## Preceding checkpoint — changing clearing and playable morning
 
 Owner approved dynamic consequences after the council dispute. The same one-portrait preview at `http://127.0.0.1:4181/` now continues dawn→morning orders→noon. Escort reserves one worker if Orin was free; repair/check prerequisites, supplies and witnessed-hearing choices carry real costs. Noon preserves pending work, admissions and custody memory. Look around the clearing shows crossing/store changes and two moving worker lanterns. No new cast, assets, service or purchases. This is one authored dispute, not an AI-driven campaign.
 

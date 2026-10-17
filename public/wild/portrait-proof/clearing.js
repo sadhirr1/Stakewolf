@@ -1,7 +1,9 @@
 import {SAVE_KEY,TASKS,RECORDS,WATCH,MORNING_TASKS,fresh,used,act,restore,result,morningCapacity,morningUsed,morningBlock,noonResult,world} from '/portrait/clearing-state.js';
+import {TOPICS,SPEAKERS,respond} from '/portrait/dialogue.js';
 const stage=document.querySelector('.encounter'),panel=document.querySelector('#play-panel');
 const saveNotice=document.querySelector('#save-notice'),resetDialog=document.querySelector('#reset-dialog');
 let state=fresh(),view='table',record=null,saveAvailable=true;
+let talking=false,speaker='orin',conversation=[],lastTopics={orin:null,sera:null},questionDraft='',talkError='';
 try{
   const stored=localStorage.getItem(SAVE_KEY);
   if(stored){const restored=restore(stored);if(restored){state=restored;if(JSON.parse(stored).version===1)saveNotice.textContent=state.version===1?'Your earlier night is preserved. Start again to play the new council dispute.':'Your work plan is retained. Read the changed accounts and choose a council watch before committing.';}else saveNotice.textContent='An incompatible local save could not be restored. A fresh attempt is ready.';}
@@ -36,6 +38,10 @@ function morningScreen(){
   const out=noonResult(state);
   return `<p class="eyebrow">NOON / WHAT ACTUALLY CHANGED</p><h2 tabindex="-1">${escape(out.title)}</h2><div class="obligations">${[['The crossing',out.crossing],['The stores',out.stores],['The traveler',out.escortText],['The council record',out.testimony],['What they remember',out.memory]].map(([title,detail])=>`<article><h3>${title}</h3><p>${escape(detail)}</p></article>`).join('')}</div><h3 class="pending-title">Work still waiting</h3><ul class="pending-work">${out.pending.map(text=>`<li>${escape(text)}</li>`).join('')}</ul><p class="small">${out.unused} available worker${out.unused===1?' was':'s were'} left unassigned this morning. No additional job was completed. This short test ends at noon; the remaining work and accusation history stay saved. No hidden allegiance has been proved.</p>${button('replay','Try a different night','class="primary"')}`;
 }
+function conversationScreen(){
+  const labels={planning:'Before nightfall',dispatched:'Night work',dawn:'First light',morning:'Morning plan','morning-dispatched':'Morning work',noon:'Noon'};
+  return `${button('close-talk','← Return to your decisions','class="back"')}<p class="eyebrow">BY THE COUNCIL FIRE / ${labels[state.phase]}</p><h2 tabindex="-1">Ask in your own words.</h2><p class="small">Local dialogue about this encounter. Replies use the current work record and each person’s account. Asking does not issue orders or challenge a denial on the record.</p><label class="speaker-label" for="talk-speaker">Speak to</label><select id="talk-speaker">${Object.entries(SPEAKERS).map(([key,name])=>`<option value="${key}" ${speaker===key?'selected':''}>${name}${key==='orin'?' · council leader':' · scout (off-screen)'}</option>`).join('')}</select><ol class="conversation-log" aria-label="Recent conversation">${conversation.map(item=>`<li><p class="conversation-time">${escape(item.phase)} · ${SPEAKERS[item.speaker]}</p><p class="your-question"><b>You</b> ${escape(item.question)}</p><blockquote><b>${item.kind==='reply'?SPEAKERS[item.speaker]:'Choose a topic'}</b> ${escape(item.answer)}</blockquote></li>`).join('')}</ol><form id="question-form"><label for="character-question">Your question for ${SPEAKERS[speaker]}</label><textarea id="character-question" rows="3" maxlength="360" aria-describedby="question-help question-error" placeholder="${speaker==='orin'?'Why did you blame Sera?':'Who told you to loosen the line?'}">${escape(questionDraft)}</textarea><p id="question-help" class="small">One topic at a time · 360 characters. Enter sends; Shift+Enter adds a line.</p><p id="question-error" class="question-error" role="alert">${escape(talkError)}</p><button type="submit" class="primary">Ask ${SPEAKERS[speaker]} →</button></form><details class="question-examples"><summary>Questions this encounter can answer</summary><div>${Object.entries(TOPICS).map(([key,text])=>`<button type="button" data-question="${key}">${escape(text)}</button>`).join('')}</div></details><p class="small">Only the latest eight exchanges stay in this tab. Reload or restart clears the conversation; your saved game decisions remain.</p>`;
+}
 function render(focus=true){
   const previousScroll=panel.scrollTop;
   stage.dataset.phase=state.phase;
@@ -45,6 +51,8 @@ function render(focus=true){
   const jobNames={idle:'at the clearing',crossing:'at the crossing',stores:'at the stores',watch:'on council watch',escort:'escorting the traveler',hearing:'witnessing the hearing'};
   document.querySelector('#world-summary').innerHTML=`<h2>The work on the ground</h2><p class="small">The two lanterns mark your workers. Movement shows activity; only advancing the shift confirms completion.</p><div class="world-facts"><p><b>River crossing</b>${visible.crossing==='open'?'Gate open · verified higher approach':visible.crossing==='reset'?'Anchor reset · clearance pending':'Loose line · gate closed'}</p><p><b>Northern stores</b>${visible.stores==='protected'?'Moved to the raised platform':'Still at the water’s edge'}</p><p><b>Your two workers</b>${visible.jobs.map((job,i)=>`${i+1}: ${jobNames[job]}`).join('<br>')}</p></div>`;
   document.querySelector('#restart-encounter').hidden=state.phase==='intro';
+  document.querySelector('#talk').hidden=state.phase==='intro'||state.version!==3;
+  stage.querySelector('.character-position').hidden=stage.dataset.overview==='true'||(talking&&speaker==='sera');
   if(state.phase==='intro'){
     panel.innerHTML=`<p class="eyebrow">ONE NIGHT AT THE HOLLOW</p><h1 tabindex="-1">Someone is lying.</h1><p class="opening">The crossing is failing. The leader blames his scout. She says she followed his order. Beyond the river, families wait for the dawn he promised.</p><p class="opening quiet">Two workers. One night. Someone may have to stay by the fire.</p>${button('start','Enter the clearing <span aria-hidden="true">→</span>','class="primary"')}<p class="small">Hear their stories. Decide whom to watch. Live with the work left undone.</p>`;
   }else if(state.phase==='planning'&&record){
@@ -63,16 +71,20 @@ function render(focus=true){
     const outcome=result(state);
     panel.innerHTML=`<p class="eyebrow">FIRST LIGHT / WHAT YOUR ORDERS LEFT BEHIND</p><h2 tabindex="-1">${escape(outcome.title)}</h2><blockquote class="leader-reaction">“${escape(outcome.reaction)}”</blockquote><p class="small">${escape(outcome.context)}</p>${outcome.events?`<ol class="night-events">${outcome.events.map(item=>`<li><span>${escape(item.time)}</span><p>${escape(item.text)}</p></li>`).join('')}</ol><p class="morning-capacity"><b>${outcome.availableTomorrow} / 2</b> workers available for new work this morning</p>${button('morning','Take the morning’s work →','class="primary"')}`:'<p class="small">Earlier edition: your original outcome has been preserved. Start again for the council dispute.</p>'}<div class="obligations">${outcome.threads.map(thread=>`<article><p class="thread-status">${escape(thread.status)}</p><h3>${escape(thread.name)}</h3><p>${escape(thread.detail)}</p><p class="next-work"><b>Still to do</b> ${escape(thread.next)}</p></article>`).join('')}</div><p class="small">${outcome.unassigned?'One worker stayed unassigned this night; no extra task was completed. ':''}${escape(outcome.unresolved||'The cause of the anchor movement is still unknown.')}</p>${button('replay','Try another council decision')}`;
   }
+  if(talking)panel.innerHTML=conversationScreen();
   panel.scrollTop=focus?0:previousScroll;
   if(focus)panel.querySelector('h1,h2')?.focus({preventScroll:!matchMedia('(max-width:760px)').matches});
 }
 panel.addEventListener('click',event=>{
   const target=event.target.closest('button');if(!target||target.disabled)return;
+  if(target.type==='submit')return;
   if(target.dataset.record){record=target.dataset.record;state=act(state,'read',record);persist();render();return;}
   if(target.dataset.task){state=act(state,'assign',target.dataset.task);persist();const key=target.dataset.task;render(false);panel.querySelector(`[data-task="${key}"]`)?.focus({preventScroll:true});return;}
   if(target.dataset.morning){const key=target.dataset.morning;state=act(state,'morning-assign',key);persist();render(false);panel.querySelector(`[data-morning="${key}"]`)?.focus({preventScroll:true});return;}
   if(target.dataset.watch){state=act(state,'watch',target.dataset.watch);persist();const key=target.dataset.watch;render(false);panel.querySelector(`[data-watch="${key}"]`)?.focus({preventScroll:true});return;}
   const action=target.dataset.action;
+  if(target.dataset.question){const input=panel.querySelector('#character-question');questionDraft=TOPICS[target.dataset.question];input.value=questionDraft;input.focus();return;}
+  if(action==='close-talk'){talking=false;talkError='';render();return;}
   if(action==='replay'){resetDialog.showModal();return;}
   if(action==='close-record'){record=null;render();return;}
   if(action==='challenge'){
@@ -83,16 +95,30 @@ panel.addEventListener('click',event=>{
   if(action==='table'||action==='council'||action==='plan'){view=action;render();return;}
   state=act(state,action);persist();render();
 });
+function askQuestion(){
+  const input=panel.querySelector('#character-question');questionDraft=input.value;
+  const reply=respond(state,speaker,questionDraft,lastTopics[speaker]);
+  if(reply.kind==='validation'||reply.kind==='unavailable'){talkError=reply.text;render(false);panel.querySelector('#character-question')?.focus();return;}
+  const phases={planning:'Dusk',dispatched:'Nightfall',dawn:'First light',morning:'Morning plan','morning-dispatched':'Morning work',noon:'Noon'};
+  conversation.push({phase:phases[state.phase],speaker,question:questionDraft.trim(),answer:reply.text,kind:reply.kind});conversation=conversation.slice(-8);
+  lastTopics[speaker]=reply.topic;questionDraft='';talkError='';render(false);
+  panel.querySelector('#character-question').focus();document.querySelector('#talk-status').textContent=`${SPEAKERS[speaker]}: ${reply.text}`;
+}
+panel.addEventListener('submit',event=>{if(event.target.id==='question-form'){event.preventDefault();askQuestion();}});
+panel.addEventListener('keydown',event=>{if(event.target.id==='character-question'&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();if(!event.repeat)askQuestion();}});
+panel.addEventListener('input',event=>{if(event.target.id==='character-question')questionDraft=event.target.value;});
+panel.addEventListener('change',event=>{if(event.target.id==='talk-speaker'){speaker=event.target.value;talkError='';render(false);panel.querySelector('#talk-speaker').focus();}});
+document.querySelector('#talk').addEventListener('click',()=>{setOverview(false);talking=true;record=null;render();});
 document.querySelector('#restart-encounter').addEventListener('click',()=>resetDialog.showModal());
 const overviewButton=document.querySelector('#overview'),worldSummary=document.querySelector('#world-summary');
 function setOverview(open){
   stage.dataset.overview=String(open);
   overviewButton.setAttribute('aria-pressed',String(open));overviewButton.textContent=open?'Return to the council':'Look around the clearing';
-  panel.hidden=open;worldSummary.hidden=!open;stage.querySelector('.character-position').hidden=open;
+  panel.hidden=open;worldSummary.hidden=!open;stage.querySelector('.character-position').hidden=open||(talking&&speaker==='sera');
   if(matchMedia('(max-width:760px)').matches)stage.scrollIntoView({block:'start',behavior:'instant'});
 }
 overviewButton.addEventListener('click',()=>setOverview(stage.dataset.overview!=='true'));
 document.querySelector('#cancel-reset').addEventListener('click',()=>resetDialog.close());
-document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();record=null;view='table';setOverview(false);persist();resetDialog.close();render();});
+document.querySelector('#confirm-reset').addEventListener('click',()=>{state=fresh();record=null;view='table';talking=false;speaker='orin';conversation=[];lastTopics={orin:null,sera:null};questionDraft='';talkError='';document.querySelector('#talk-status').textContent='';setOverview(false);persist();resetDialog.close();render();});
 if(saveAvailable&&saveNotice.textContent==='')saveNotice.textContent=state.phase==='intro'?'Progress saves on this device.':'Your previous encounter has been restored.';
 render(false);

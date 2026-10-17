@@ -8,6 +8,7 @@ const files=new Map([
   ['/portrait/clearing.css',['public/wild/portrait-proof/clearing.css','text/css; charset=utf-8']],
   ['/portrait/clearing.js',['public/wild/portrait-proof/clearing.js','text/javascript; charset=utf-8']],
   ['/portrait/clearing-state.js',['public/wild/portrait-proof/clearing-state.js','text/javascript; charset=utf-8']],
+  ['/portrait/dialogue.js',['public/wild/portrait-proof/dialogue.js','text/javascript; charset=utf-8']],
   ['/portrait/forest.css',['public/wild/portrait-proof/forest.css','text/css; charset=utf-8']],
   ['/portrait/encounter.js',['public/wild/portrait-proof/encounter.js','text/javascript; charset=utf-8']],
   ['/portrait/forest.bundle.js',['public/wild/portrait-proof/forest.bundle.js','text/javascript; charset=utf-8']],

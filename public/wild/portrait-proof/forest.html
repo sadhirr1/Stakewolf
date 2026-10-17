@@ -23,8 +23,9 @@
     <section class="play-panel" id="play-panel" aria-label="Encounter">
       <h1>Before the council</h1><p>The encounter is loading. If it does not appear, reload this page.</p>
     </section>
-    <nav class="scene-controls" aria-label="Encounter controls"><button id="overview" type="button" aria-pressed="false">Look around the clearing</button><button id="motion" type="button" aria-pressed="false" disabled>Motion paused</button><button id="restart-encounter" type="button" hidden>Restart encounter</button><a href="/study">Portrait study <span aria-hidden="true">↗</span></a></nav>
+    <nav class="scene-controls" aria-label="Encounter controls"><button id="talk" type="button" hidden>Talk to the council</button><button id="overview" type="button" aria-pressed="false">Look around the clearing</button><button id="motion" type="button" aria-pressed="false" disabled>Motion paused</button><button id="restart-encounter" type="button" hidden>Restart encounter</button><a href="/study">Portrait study <span aria-hidden="true">↗</span></a></nav>
   </main>
+  <p id="talk-status" class="screen-reader-only" role="status" aria-live="polite"></p>
   <footer class="preview-note"><p>One playable encounter · illustrated character</p><p id="save-notice" role="status"></p><p id="scene-status" role="status">Preparing the clearing…</p><p id="portrait-status" role="status"></p><noscript><p>The portrait is visible. Enable JavaScript to play the encounter.</p></noscript></footer>
   <dialog id="reset-dialog" aria-labelledby="reset-title"><h2 id="reset-title">Start this night again?</h2><p>This replaces the saved attempt, including your orders and pending work. It does not affect other Stakewolf prototypes.</p><button type="button" id="cancel-reset" autofocus>Keep this attempt</button><button type="button" id="confirm-reset">Start again</button></dialog>
 </body>
