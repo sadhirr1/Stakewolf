@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — less repetitive local replies
+## Current checkpoint — closer conversation and Sera brief
+
+Owner deferred local models and chose to create Sera's art. At port4181, conversation now frames Orin closer and focuses the selected speaker's latest exchange; earlier retained exchanges are collapsible. Decisions restore wider framing; overview still shows the clearing. Sera remains off-screen pending her portrait. [Copyable portrait brief](art/sera-portrait-brief.md), [actual browser checks and limits](evidence/scrum36-cinematic-dialogue.md). No new art generation or model work.
+
+Coordinator authored; independent `cast_gate` approved source/brief with 43/43 focused checks. Coordinator also passed 43/43 and checked desktop/mobile, per-speaker attribution, accessible earlier history, overview, pause and unchanged saved night orders. The requested mobile scroll check caught a focus issue; it was corrected and rechecked. Mobile crop was reduced to leave the face visible. This remains one illustrated character in a 3D forest, not a facial rig or full cinematic cast.
+
+Publish only reviewed UI/docs to existing draft PR22 from verified parent `35d24aa10357a3c409bd5ca4d5740a33c4a790c5`; consult SCRUM-36 for the published commit. Preserve unrelated dirty root/private art. Next: receive and validate one neutral Sera transparent PNG, match it in the current scene, then seek owner visual feedback before more characters/expressions. No local-model training, purchases or schedules. SCRUM-36 remains In Review and November6/13 risks remain. Account meter11→14% observed, not precise task usage.
+
+## Preceding checkpoint — less repetitive local replies
 
 Owner requested broader natural wording and less repetition, keeping usage low. The existing port4181 **Talk to the council** now recognizes more paraphrases and uses distinct answer/reason/evidence angles for follow-ups. Per-speaker bounded context resets on topic/state changes; repeated same-topic questions eventually acknowledge no new information. Compound topics clarify; “and why?” follows the explicit same-sentence topic. Asking still does not issue orders or acquire evidence. No model, training, API or new dependency.
 
