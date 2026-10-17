@@ -4,6 +4,9 @@ import {createStaticServer} from '../server.mjs';
 const scenery=createStaticServer();
 const files=new Map([
   ['/', ['public/wild/portrait-proof/forest.html','text/html; charset=utf-8']],
+  ['/explore', ['public/wild/portrait-proof/exploration.html','text/html; charset=utf-8']],
+  ['/portrait/exploration.css',['public/wild/portrait-proof/exploration.css','text/css; charset=utf-8']],
+  ['/portrait/exploration.bundle.js',['public/wild/portrait-proof/exploration.bundle.js','text/javascript; charset=utf-8']],
   ['/study', ['public/wild/portrait-proof/index.html','text/html; charset=utf-8']],
   ['/portrait/clearing.css',['public/wild/portrait-proof/clearing.css','text/css; charset=utf-8']],
   ['/portrait/clearing.js',['public/wild/portrait-proof/clearing.js','text/javascript; charset=utf-8']],

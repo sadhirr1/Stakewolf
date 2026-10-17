@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — the morning remembers
+## Current checkpoint — cinematic skeleton first; stop story expansion
+
+The owner explicitly corrected direction: build the place, characters and interactive cinematic environment; decide the ambitious story later. Current priority is `/explore` at **http://127.0.0.1:4181/explore**. Five curated views (council fire, Orin, Sera, riverbank, shelter), projected pins, smooth camera travel, local lighting previews, animated atmosphere and pause/reduced-motion controls are separate from story/save state. Same private portrait cutouts and retained local scanned assets. No new art, models, dependencies, external inputs or dialogue. [Scope and actual checks](evidence/scrum36-exploration.md). [Priority override](revised-release-plan.md).
+
+Coordinator authored; independent `cast_gate` reviewed. Mobile entry visibility, failed-start pins and hotspot focus were corrected; browser verification covers all views, keyboard pin focus, lighting, byte-identical paused frames, mobile390×844 navigation and return to the unchanged saved noon encounter. Render source/bundle/server syntax and seven route checks passed. No broader regression, forced renderer failure, actual system reduced-motion or target-device performance test claimed. This is a 2.5D character/environment skeleton with provisional props, not final character animation or accepted cinematic quality.
+
+Publish only reviewed exploration source/bundle/style/HTML, exact routes, entry-link HTML/CSS, README and three planning/evidence docs to existing PR22 from parent `e04e21ecfb0e40e2f0104f3565e805979addf81c`; final commit/review in SCRUM-36/18. Main preview PID40124 replaced verified PID7008 for new routes; reverify before any future restart. Next: owner judges navigation, atmosphere and character framing, then choose one bounded visual/asset improvement. **Do not resume story/dialogue/consequence expansion by default.** Schedules remain off; November6/13 targets need reforecast after the visual scope is bounded.
+
+## Preceding checkpoint — the morning remembers
 
 Owner authorized one low-usage local continuation. First light now stages Orin/Sera's reactions to custody, injury, admission and completed night work; Orin then names outstanding jobs and actual crew capacity. Noon reactions reflect completed morning work and witnessed testimony while retaining custody memory. Replay preserves existing assignments. No new artwork, dependency, model calls, schema or physical-rule changes. [Evidence and limits](evidence/scrum36-morning-reactions.md).
 

@@ -56,3 +56,4 @@
   .scene-line{font-size:23px}
   .encounter[data-confrontation="true"][data-speaker="sera"]:not([data-overview="true"]) .character-position{left:56%;top:45px}
 }
+.explore-link{font:10px Arial,sans-serif;letter-spacing:1px;color:#e0d4b8;padding:14px 12px;background:#10231dba;border:1px solid #b7b69444;min-height:44px}.explore-link:focus-visible{outline:2px solid #e9ce95;outline-offset:3px}@media(max-width:760px){.explore-link{position:absolute;top:70px;right:6%;font-size:9px;letter-spacing:.4px}}

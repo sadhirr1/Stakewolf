@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Stakewolf — Explore the Hollow</title>
+  <link rel="stylesheet" href="/portrait/exploration.css">
+  <script src="/portrait/exploration.bundle.js" defer></script>
+</head>
+<body>
+  <main id="world" data-place="council" data-light="moon" aria-label="Explore the Hollow">
+    <canvas id="landscape" aria-label="A wooded riverside clearing with a council fire, Orin, Sera and a canvas shelter"></canvas>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <header><a class="brand" href="/explore">STAKE<span>WOLF</span></a><p>THE HOLLOW <span> / </span> <b id="location-mark">COUNCIL FIRE</b></p><a class="return" href="/">Return to encounter ↗</a></header>
+    <div id="waypoints" aria-label="Places in the clearing">
+      <button type="button" data-destination="orin" class="waypoint" hidden><span class="pin" aria-hidden="true">+</span> Orin</button>
+      <button type="button" data-destination="sera" class="waypoint" hidden><span class="pin" aria-hidden="true">+</span> Sera</button>
+      <button type="button" data-destination="river" class="waypoint" hidden><span class="pin" aria-hidden="true">↗</span> Riverbank</button>
+      <button type="button" data-destination="shelter" class="waypoint" hidden><span class="pin" aria-hidden="true">↗</span> Shelter</button>
+    </div>
+    <section class="scene-caption" aria-label="Current place">
+      <p class="eyebrow" id="scene-index">01 / THE CLEARING</p>
+      <h1 id="place-name">The Hollow.</h1>
+      <p id="place-detail">Step into the clearing. Choose a person or a place to move closer.</p>
+      <p class="gesture">Move the pointer gently to look around.</p>
+    </section>
+    <aside class="scene-settings" aria-label="Scene settings">
+      <fieldset><legend>Lighting preview</legend><button type="button" id="moon" aria-pressed="true">Moonlight</button><button type="button" id="dawn" aria-pressed="false">Dawn</button></fieldset>
+      <button type="button" id="motion" aria-pressed="false">Pause motion</button>
+    </aside>
+    <nav class="journey" aria-label="Explore the clearing">
+      <button type="button" data-destination="council" aria-current="location"><span>01</span>Council fire</button>
+      <button type="button" data-destination="orin"><span>02</span>Orin</button>
+      <button type="button" data-destination="sera"><span>03</span>Sera</button>
+      <button type="button" data-destination="river"><span>04</span>Riverbank</button>
+      <button type="button" data-destination="shelter"><span>05</span>Shelter</button>
+    </nav>
+    <p class="world-status" id="world-status" role="status">Preparing the clearing…</p>
+    <p class="study-note">Environment study · illustrated characters · your encounter is untouched</p>
+    <p id="travel-status" class="sr-only" role="status"></p>
+    <noscript><p class="fallback-message">Enable JavaScript to explore this local scene. Your saved encounter is unchanged.</p></noscript>
+  </main>
+</body>
+</html>
