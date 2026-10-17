@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "issue": "SCRUM-36",
+  "verifiedDate": "2026-10-14",
+  "runtimeBytes": 18038716,
+  "runtimeFileCount": 26,
+  "character": {
+    "path": "warg/warg-groom.glb",
+    "status": "provisional",
+    "kind": "animated quadruped",
+    "rigged": true,
+    "joints": 41,
+    "animations": 2,
+    "animationNames": [
+      "Idle",
+      "IdlePant"
+    ],
+    "triangles": 7071,
+    "textureDimensions": [
+      1024,
+      1024
+    ],
+    "heightMeters": 1.2,
+    "facing": "+Z",
+    "up": "+Y",
+    "qualityRequirementMet": false,
+    "coatVariants": {
+      "orin": "embedded brown",
+      "sera": "warg/black.jpg",
+      "vela": "warg/ash.jpg"
+    },
+    "groom": "Shortened detached locks; original closed body, rig and authored clips retained; semantic fur mask for material treatment.",
+    "retainedOriginal": "warg/warg.glb"
+  },
+  "files": [
+    {
+      "path": "rock-moss/rock-moss.gltf",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rock_moss_set_01/rock_moss_set_01_1k.gltf",
+      "md5": "75113cc1c21806cca5d8badad4737af7",
+      "bytes": 9987,
+      "sha256": "c36675aca9c6b2be7785c2534cf413b03ec82a5a2a5407a2b1c0cdb0346c9727",
+      "license": "CC0-1.0",
+      "mimeType": "model/gltf+json"
+    },
+    {
+      "path": "rock-moss/textures/rock_moss_set_01_nor_gl_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_nor_gl_1k.jpg",
+      "md5": "eb7ebd31ad08e78d0497900652ff1568",
+      "bytes": 209975,
+      "sha256": "eb4aad3f207f1dc5b624d74ae240372171626a66912bd71adf7bd3e518181d6e",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "rock-moss/rock_moss_set_01.bin",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/rock_moss_set_01/rock_moss_set_01.bin",
+      "md5": "207a51c9f56d34732e9814bbf9cc07b1",
+      "bytes": 1466380,
+      "sha256": "de8360e6175879aaf02c171911069cf5f1852547f9ca7f10e440085dbcc3315e",
+      "license": "CC0-1.0",
+      "mimeType": "application/octet-stream"
+    },
+    {
+      "path": "rock-moss/textures/rock_moss_set_01_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_rough_1k.jpg",
+      "md5": "ed9d8a2c863262f76f881346e8047c6a",
+      "bytes": 82624,
+      "sha256": "4d6ec46623abd8e2cdb855f59c7ce31873ad61b36b60e4de579e9e776a497c6b",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "rock-moss/textures/rock_moss_set_01_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_diff_1k.jpg",
+      "md5": "b8742301e6b4bc5683d2de712e83f772",
+      "bytes": 168099,
+      "sha256": "40cea65d8aa4ee73a93b04af19963834d061eee9779c3fc2c1cba76eef812ccc",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "fern/fern.gltf",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/fern_02/fern_02_1k.gltf",
+      "md5": "cf276874d37bfb73c299504a6b355b77",
+      "bytes": 6899,
+      "sha256": "33974295ee19670af4877705fc7d91f33f42d6302f0d44a625e072271223031f",
+      "license": "CC0-1.0",
+      "mimeType": "model/gltf+json"
+    },
+    {
+      "path": "fern/textures/fern_02_arm_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_arm_1k.jpg",
+      "md5": "1bbb2b22951f450720d28e17d93a2987",
+      "bytes": 280359,
+      "sha256": "ebfb5d76ce9cbdaec20bcd22dce9b755f0b1b8650ef29ca13555e3e6961025d7",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "fern/textures/fern_02_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_diff_1k.jpg",
+      "md5": "82c18a6cfd5ae91c37c0e078f591181c",
+      "bytes": 315705,
+      "sha256": "a828a6e7b4c01c826911e2eac4b3afc7457dab7b3b392a31c681ed88b7d50029",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "fern/textures/fern_02_nor_gl_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/fern_02/fern_02_nor_gl_1k.jpg",
+      "md5": "43aed63dff79554f6064627515afd9d7",
+      "bytes": 367222,
+      "sha256": "45bce132c6e96a0864bc89ab5da51361ab3f4afa83a6669ae499ab5ca811f621",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "fern/fern_02.bin",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/fern_02/fern_02.bin",
+      "md5": "c061e9255f7d36ae9ce0e92ef3e100b2",
+      "bytes": 176176,
+      "sha256": "fe1abb762bcbbc7ad9e86925c8080437a62add257d9280e9142fdc85c226e64c",
+      "license": "CC0-1.0",
+      "mimeType": "application/octet-stream"
+    },
+    {
+      "path": "forest-floor/diffuse.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/forest_leaves_04/forest_leaves_04_diff_1k.jpg",
+      "md5": "4ab1368d2d0d7fee652caa5f71f706bf",
+      "bytes": 423500,
+      "sha256": "a898e6ef0668a40faaf1bcbc6b024f6ef437ec424a10fa47aa6d35d013c9dade",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "forest-floor/normal.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/forest_leaves_04/forest_leaves_04_nor_gl_1k.jpg",
+      "md5": "ca21a728629bf25d9dcbe327e0f005db",
+      "bytes": 581919,
+      "sha256": "6b7c4086fc28b7b1f11f4d04aedcc27772ce3bb894cfc00835b4637092c1bb0c",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "forest-floor/arm.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/forest_leaves_04/forest_leaves_04_arm_1k.jpg",
+      "md5": "9acce765bc598c57f7ddd7fe75a2fc3e",
+      "bytes": 355419,
+      "sha256": "e253ba0615d1da2376a18d8edf26dd02a0be92e5729efd3402be02f7f2ae53be",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "bark/diffuse.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_diff_1k.jpg",
+      "md5": "7d3a558ed614c7e75594c7be3bf80311",
+      "bytes": 725265,
+      "sha256": "5c76836b01c3536fa0e24207b67bf4f3315b53ebe2b4ecc6f08dfcf3f8d74929",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "bark/normal.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_nor_gl_1k.jpg",
+      "md5": "bb6e3a6eea777d992cef48fabfdc538c",
+      "bytes": 1016849,
+      "sha256": "05c46455531781b6cf18cae0648cf627f60ee942adaa8bcbfd1592fc2506a9e0",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "bark/arm.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_bark_arm_1k.jpg",
+      "md5": "21d1abd15e40951825a4f3da110b20ea",
+      "bytes": 801278,
+      "sha256": "336a4680cd571b6076b67afee2310b290b8900d9d126eb39ec1ae92e95be2ea9",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "wolf/wolf.glb",
+      "bytes": 955328,
+      "sha256": "99304c2e723864679170630d30662cd81756bc07472c71f66957705e4138b9cc",
+      "license": "CC-BY-SA-3.0",
+      "source": "https://opengameart.org/content/wolf-0",
+      "author": "Sirren for PARPG",
+      "derived": true,
+      "mimeType": "model/gltf-binary"
+    },
+    {
+      "path": "pine/pine.gltf",
+      "bytes": 3799,
+      "sha256": "df9f9b79519ef162491f4a3c0245344efe62c8bfecda72f24385e414d956db58",
+      "license": "CC0-1.0",
+      "mimeType": "model/gltf+json",
+      "source": "https://polyhaven.com/a/pine_sapling_small",
+      "derived": true
+    },
+    {
+      "path": "pine/pine.bin",
+      "bytes": 1255620,
+      "sha256": "33b208c3e7418a26935d734737d7d7abf347c43015bc0914b4c6d2f2d00ba069",
+      "license": "CC0-1.0",
+      "mimeType": "application/octet-stream",
+      "source": "https://polyhaven.com/a/pine_sapling_small",
+      "derived": true
+    },
+    {
+      "path": "pine/twig-diffuse.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_diff_1k.jpg",
+      "md5": "dacc918bb421968e9ccc1956d78a2dbe",
+      "bytes": 477942,
+      "sha256": "54af7d6fb664b5a38bcb118b557bc50e01e86ec54d6f1a573c3e32c649a53362",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "pine/twig-normal.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_nor_gl_1k.jpg",
+      "md5": "eebc5a81f8f6231d8e18ec4ad7292798",
+      "bytes": 692711,
+      "sha256": "76af87821d7ff00e25768d5d97a449394fe64a21ae55d099da7f5ed46d9098c8",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "pine/twig-arm.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/pine_sapling_small/pine_sapling_small_twig_arm_1k.jpg",
+      "md5": "b5062030fc42ec7bd12eb3f052054104",
+      "bytes": 394056,
+      "sha256": "2eb0aa44124b5a4ae9401e00b23b3c916f4c3f421616ce1bb932f248fc061288",
+      "license": "CC0-1.0",
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/warg.glb",
+      "bytes": 3169108,
+      "sha256": "e97b8563f061bb59f94090c0fceb96c7bc71e4517b360767c87ecc184b735026",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "model/gltf-binary"
+    },
+    {
+      "path": "warg/ash.jpg",
+      "bytes": 324417,
+      "sha256": "c5fe52a844c3c57468649ce13efcc6e2b771740a2f944d03cda1e2de5d4a6730",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/black.jpg",
+      "bytes": 247575,
+      "sha256": "dd98e2618dfe2ec7ecfcedf3c4dabd5b221fc398fb9712cfed675502efc11c4f",
+      "license": "CC0-1.0",
+      "source": "https://algumacoisaqq.itch.io/fantasy-creatures-wolf-giant-rat-spider-wasp-centipede",
+      "author": "Daniel Gruginski (algumacoisaqq)",
+      "derived": true,
+      "mimeType": "image/jpeg"
+    },
+    {
+      "path": "warg/warg-groom.glb",
+      "url": "https://github.com/danielgruginski/Beasts",
+      "bytes": 3530504,
+      "sha256": "3349c9c75ba9c3f5210ab7995d6a0de10f824d6df318459fa255fc509969f9f6",
+      "license": "CC0-1.0",
+      "mimeType": "model/gltf-binary"
+    }
+  ],
+  "models": [
+    {
+      "path": "fern/fern.gltf",
+      "meshCount": 4,
+      "vertices": [
+        1660,
+        1568,
+        544,
+        565
+      ],
+      "triangles": [
+        2384,
+        2248,
+        784,
+        816
+      ],
+      "license": "CC0-1.0",
+      "source": "https://polyhaven.com/a/fern_02"
+    },
+    {
+      "path": "rock-moss/rock-moss.gltf",
+      "meshCount": 6,
+      "vertices": [
+        6078,
+        6192,
+        2741,
+        5691,
+        8538,
+        4748
+      ],
+      "triangles": [
+        11000,
+        10996,
+        5000,
+        10589,
+        16548,
+        8994
+      ],
+      "license": "CC0-1.0",
+      "source": "https://polyhaven.com/a/rock_moss_set_01"
+    },
+    {
+      "path": "wolf/wolf.glb",
+      "meshCount": 3,
+      "triangles": 3024,
+      "animations": 0,
+      "skins": 0,
+      "license": "CC-BY-SA-3.0",
+      "source": "https://opengameart.org/content/wolf-0"
+    },
+    {
+      "path": "pine/pine.gltf",
+      "meshCount": 1,
+      "primitiveCount": 2,
+      "vertices": [
+        315,
+        34332
+      ],
+      "triangles": [
+        486,
+        24000
+      ],
+      "sourceTriangles": 122235,
+      "license": "CC0-1.0",
+      "source": "https://polyhaven.com/a/pine_sapling_small",
+      "modification": "Variant b extracted; foliage simplified with meshoptimizer1.3.0, attribute-aware, target24000 triangles, error0.0015851600328460336; unused vertices/buffer views removed; original materials/maps retained",
+      "heightMeters": 1.0465238094329834
+    }
+  ],
+  "activeSceneBytes": 13914280
+}
