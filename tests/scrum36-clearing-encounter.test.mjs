@@ -1,8 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fresh,act,used,restore,result} from '../public/wild/portrait-proof/clearing-state.js';
+import {readFileSync} from 'node:fs';
+import {fresh,act,used,restore,result,MORNING_TASKS,morningCapacity,morningUsed,noonResult,world} from '../public/wild/portrait-proof/clearing-state.js';
 
 const plan=()=>act(fresh(),'start');
+test('renderer uses the active motion value emitted by the shared scene control',()=>{
+  const controls=readFileSync(new URL('../public/wild/portrait-proof/encounter.js',import.meta.url),'utf8');
+  const renderer=readFileSync(new URL('../public/wild/portrait-proof/forest.js',import.meta.url),'utf8');
+  const active=controls.match(/dataset\.motion\s*=\s*paused\s*\?\s*'paused'\s*:\s*'([^']+)'/)[1];
+  const gates=[...renderer.matchAll(/dataset\.motion[!=]==?'([^']+)'/g)].map(match=>match[1]);
+  assert.ok(gates.length>=3);assert.ok(gates.every(value=>value===active));
+});
 function committed(tasks,records=[],watch='none'){let state=act(plan(),'watch',watch);for(const key of records)state=act(state,'read',key);for(const key of tasks)state=act(state,'assign',key);return act(state,'commit');}
 
 test('investigation is optional, idempotent knowledge and does not allocate crew',()=>{
@@ -50,7 +58,7 @@ test('saved intro, in-progress plan and committed night restore; fresh restart c
 });
 test('corrupt, unsupported, forged over-capacity and impossible phase saves are rejected',()=>{
   assert.equal(restore('{broken'),null);assert.equal(restore('null'),null);
-  const bad=[{...fresh(),version:3},{...plan(),seen:['map','map']},{...plan(),seen:['__proto__']},{...plan(),crew:{inspect:-1,repair:0,supplies:0}},{...plan(),crew:{inspect:1,repair:2,supplies:1}},{...plan(),crew:{inspect:1,repair:1,supplies:0}},{...plan(),crew:{inspect:1,repair:0}},{...fresh(),phase:'dawn'},{...fresh(),seen:['report']},{...fresh(),phase:'hacked'},{...plan(),watch:'__proto__'},{...plan(),challenged:true},{...fresh(),watch:'none'},{...committed(['repair']),watch:'orin'},{...committed(['inspect']),watch:null}];
+  const bad=[{...fresh(),version:99},{...plan(),seen:['map','map']},{...plan(),seen:['__proto__']},{...plan(),crew:{inspect:-1,repair:0,supplies:0}},{...plan(),crew:{inspect:1,repair:2,supplies:1}},{...plan(),crew:{inspect:1,repair:1,supplies:0}},{...plan(),crew:{inspect:1,repair:0}},{...fresh(),phase:'dawn'},{...fresh(),seen:['report']},{...fresh(),phase:'hacked'},{...plan(),watch:'__proto__'},{...plan(),challenged:true},{...fresh(),watch:'none'},{...committed(['repair']),watch:'orin'},{...committed(['inspect']),watch:null}];
   for(const state of bad)assert.equal(restore(JSON.stringify(state)),null);
 });
 
@@ -107,7 +115,76 @@ test('completed legacy nights retain their outcomes, with no retroactive council
 });
 test('legacy plans keep allocations but changed testimony is unread and new council decision is explicit',()=>{
   const old={version:1,phase:'planning',seen:['map','report'],crew:{inspect:1,repair:0,supplies:1}};
-  const migrated=restore(JSON.stringify(old));assert.equal(migrated.version,2);assert.deepEqual(migrated.crew,old.crew);
+  const migrated=restore(JSON.stringify(old));assert.equal(migrated.version,3);assert.deepEqual(migrated.crew,old.crew);
   assert.deepEqual(migrated.seen,['map']);assert.equal(migrated.watch,null);assert.equal(migrated.challenged,false);
   assert.equal(act(migrated,'commit'),migrated);assert.deepEqual(restore(JSON.stringify(migrated)),migrated);
+});
+const morning=(tasks=[],watch='orin')=>act(act(committed(tasks,[],watch),'dawn'),'morning');
+const noon=state=>act(act(state,'morning-commit'),'noon');
+test('injury reserves a full morning escort and cannot borrow capacity from noon',()=>{
+  const injured=morning(['repair'],'none');assert.equal(morningCapacity(injured),1);
+  const checked=act(injured,'morning-assign','check');assert.equal(morningUsed(checked),1);
+  assert.equal(act(checked,'morning-assign','supplies'),checked);
+  const done=noon(checked);assert.equal(noonResult(done).escort,true);assert.equal(noonResult(done).open,true);
+  assert.match(noonResult(done).crossing,/higher approach/);assert.match(noonResult(done).escortText,/whole morning/);
+  assert.equal(act(done,'morning-assign','supplies'),done);assert.equal(act(done,'morning'),done);
+});
+test('morning repair cannot unlock a simultaneous check; completed stores cannot be repeated',()=>{
+  const start=morning(['supplies']);assert.equal(morningCapacity(start),2);
+  assert.equal(act(start,'morning-assign','check'),start);assert.equal(act(start,'morning-assign','supplies'),start);
+  const repaired=act(start,'morning-assign','repair');assert.equal(morningUsed(repaired),2);
+  assert.equal(act(repaired,'morning-assign','check'),repaired);
+  const out=noonResult(noon(repaired));assert.equal(out.open,false);assert.equal(out.repaired,true);assert.equal(out.protectedStores,true);
+  assert.match(out.crossing,/remains closed/);assert.ok(out.pending.some(x=>/Verify/.test(x)));
+});
+test('witnessed hearing preserves Sera custody memory and does not manufacture an admission',()=>{
+  const start=morning(['supplies'],'sera'),heard=act(start,'morning-assign','hearing'),out=noonResult(noon(heard));
+  assert.equal(out.hearing,true);assert.match(out.testimony,/no admission/);assert.match(out.memory,/confined her/);
+  assert.equal(out.pending.some(x=>/Hear both/.test(x)),false);
+  assert.match(noonResult(noon(start)).memory,/withholds a new briefing/);
+  let challenged=act(act(plan(),'read','leader'),'read','report');challenged=act(challenged,'challenge');
+  challenged=act(act(act(challenged,'watch','orin'),'commit'),'dawn');
+  assert.match(noonResult(noon(act(act(challenged,'morning'),'morning-assign','hearing'))).testimony,/earlier admission/);
+});
+test('all night routes and morning subsets preserve capacity, facts and saves through noon',()=>{
+  for(const [watch,tasks]of [['orin',[]],['orin',['inspect']],['orin',['supplies']],['sera',[]],['sera',['inspect']],['sera',['supplies']],['none',['inspect']],['none',['repair']],['none',['supplies']],['none',['inspect','supplies']]])for(let mask=0;mask<16;mask++){
+    let state=morning(tasks,watch);const history=result(state);
+    Object.keys(MORNING_TASKS).forEach((key,i)=>{if(mask&(1<<i))state=act(state,'morning-assign',key);});
+    assert.ok(morningUsed(state)<=morningCapacity(state));assert.deepEqual(restore(JSON.stringify(state)),state);
+    const locked=act(state,'morning-commit');assert.deepEqual(restore(JSON.stringify(locked)),locked);
+    assert.equal(act(locked,'morning-assign','hearing'),locked);
+    const done=act(locked,'noon'),out=noonResult(done);assert.deepEqual(restore(JSON.stringify(done)),done);
+    assert.deepEqual(result(done),history);assert.equal(out.open,Boolean(state.morning.check));
+    assert.equal(out.escort,watch!=='orin');assert.equal(out.protectedStores,Boolean(state.crew.supplies||state.morning.supplies));
+  }
+});
+test('schema2 migrates without changing the committed night; schema1 cannot acquire a new morning history',()=>{
+  for(const current of [fresh(),plan(),committed(['repair']),act(committed(['inspect'],[],'sera'),'dawn')]){
+    const {morning:ignored,...old}=current;old.version=2;
+    const loaded=restore(JSON.stringify(old));assert.equal(loaded.version,3);assert.deepEqual(result(loaded),result(old));assert.equal(loaded.morning,null);
+  }
+  const old={version:1,phase:'dawn',seen:[],crew:{inspect:1,repair:0,supplies:0}},saved=restore(JSON.stringify(old));
+  assert.equal(act(saved,'morning'),saved);
+});
+test('forged morning saves cannot skip eligibility, exceed capacity or inject earlier work',()=>{
+  const start=morning(['supplies']),injured=morning(['repair'],'none');
+  const invalid=[{...start,morning:{repair:0,check:1,supplies:0,hearing:0}},
+    {...start,morning:{repair:0,check:0,supplies:1,hearing:0}},
+    {...injured,morning:{repair:0,check:1,supplies:0,hearing:1}},
+    {...start,morning:[0,0,0,0]},{...start,morning:null},{...start,morning:{repair:0,check:0,supplies:0}},
+    {...start,morning:{repair:1,check:0,supplies:0,hearing:0}},
+    {...fresh(),morning:{repair:0,check:0,supplies:0,hearing:0}},
+    {...start,version:2},{...start,watch:null}];
+  for(const state of invalid)assert.equal(restore(JSON.stringify(state)),null);
+});
+test('world projection shows committed activity and completes props only when a shift advances',()=>{
+  let state=act(plan(),'watch','none');state=act(state,'assign','repair');
+  assert.deepEqual(world(state).jobs,['idle','idle']);assert.equal(world(state).crossing,'damaged');
+  state=act(state,'commit');assert.deepEqual(world(state).jobs,['crossing','crossing']);assert.equal(world(state).crossing,'damaged');
+  state=act(state,'dawn');assert.equal(world(state).crossing,'reset');assert.deepEqual(world(state).jobs,['idle','idle']);
+  state=act(act(state,'morning'),'morning-assign','check');assert.equal(world(state).crossing,'reset');
+  state=act(state,'morning-commit');assert.deepEqual(world(state).jobs,['escort','crossing']);assert.equal(world(state).crossing,'reset');
+  assert.equal(world(act(state,'noon')).crossing,'open');
+  const stores=act(morning([], 'orin'),'morning-assign','supplies');
+  assert.equal(world(stores).stores,'exposed');assert.equal(world(noon(stores)).stores,'protected');
 });

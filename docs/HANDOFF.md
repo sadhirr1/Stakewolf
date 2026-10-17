@@ -2,7 +2,15 @@
 
 Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
 
-## Current checkpoint — conflicting stories and a costly council watch
+## Current checkpoint — changing clearing and playable morning
+
+Owner approved dynamic consequences after the council dispute. The same one-portrait preview at `http://127.0.0.1:4181/` now continues dawn→morning orders→noon. Escort reserves one worker if Orin was free; repair/check prerequisites, supplies and witnessed-hearing choices carry real costs. Noon preserves pending work, admissions and custody memory. Look around the clearing shows crossing/store changes and two moving worker lanterns. No new cast, assets, service or purchases. This is one authored dispute, not an AI-driven campaign.
+
+Coordinator authored; independent reviewer `cast_gate` found and prompted correction of the motion-control mismatch and minor testimony-history wording. Final 24 focused checks passed; desktop and mobile opposite paths, reload, keyboard assignment and actual motion/pause were verified. [Evidence and exact limits](evidence/scrum36-living-clearing.md). Schema3 upgrades schema2 without rewriting nights; committed schema1 endings remain unchanged and cannot enter a newly invented morning. Private portrait remains ignored.
+
+Continue existing draft PR22, publishing only explicitly reviewed files from verified parent `baf8f2f005c620894f5e62a475db3ba56e37297d`; final commit/reviewer verdict is linked in SCRUM-36. Preserve unrelated dirty root and earlier prototypes. The next action is owner playtest of this night→noon loop before adding later days or outside inputs. Worker markers and timber/water props are functional prototype visuals, not accepted cinematic assets. SCRUM-36 stays In Review; November6/13 risks remain. Schedules stay off; account meter1→4% observed in the same window, no precise task usage or hours claimed.
+
+## Preceding checkpoint — conflicting stories and a costly council watch
 
 Owner accepted the playable clearing, then asked for stronger Werewolf-style conflict/consequences with low usage. The same one-portrait forest now has Orin/Sera's incompatible accounts, an optional challenge, a watch decision that consumes one of two workers, and a night event with consequences for tomorrow's capacity. Watching Orin prevents his announced unsafe passage; otherwise a traveler is injured and needs a worker's escort tomorrow. Watching Sera produces a witnessed-hearing obligation. No character expansion or new art. Preview remains `http://127.0.0.1:4181/`.
 
