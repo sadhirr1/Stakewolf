@@ -1,6 +1,14 @@
 # SCRUM-36 — one leader in the forest
 
-One human council leader supplied by the owner on October 15, 2026. After approving the portrait direction as better, the owner requested a single forest encounter with subtle movement. This is a local 2.5D atmosphere test, not a rigged 3D character, playable encounter, or release acceptance. The owner declined the CC5 acquisition route.
+One human council leader supplied by the owner on October 15, 2026. The owner accepted this forest direction for a bounded playable test on October 17. This now contains one authored clearing encounter; it is not a complete game or a rigged 3D character. The owner declined the CC5 acquisition route.
+
+## Play one night
+
+Enter the clearing, inspect the dated route map and scout report, then allocate two people. Inspection costs one, resetting the anchor costs both, and protecting supplies costs one. Unassigned people do no work. Reading changes the leader's response, not physical outcomes. Give the orders once, advance to first light, and inspect the three retained obligations. Repair still needs inspection; inspection alone makes no repair; unprotected supplies are exposed without an invented theft or loss.
+
+State saves locally under `stakewolf-clearing-v1`; reload restores the same plan or immutable committed result. Restart asks for confirmation and resets only this encounter. Unsupported/corrupt saves are rejected; unavailable storage leaves a usable in-memory attempt with a notice. The next morning's work is recorded but not playable in this increment. There are no external feeds, live AI calls, victory score or hidden agenda resolution. Target length is a short encounter; play duration has not been measured.
+
+Run the focused checks with `node --test tests/scrum36-clearing-encounter.test.mjs`. See [playable verification](../../../docs/evidence/scrum36-playable-clearing.md).
 
 Run `node scripts/serve-portrait-proof.mjs` from the repository root and open http://127.0.0.1:4181/. The original comparison is retained at `/study`. No new dependencies. The server serves exact preview routes and the existing allowlisted forest assets, binding to loopback only. Other character models and repository files are not exposed. The main game, wolf proof and previous council proof are unchanged.
 
@@ -16,4 +24,4 @@ Assets remain ignored, outside the public repository, in `.tmp-scrum36/portrait-
 
 In `/study`, Close-up and Portrait alter framing only. Neutral and Warm apply CSS colour treatment to the cutout; this is not physical relighting. Original displays the source without colour treatment and disables those controls. The comparison itself has no autonomous motion or GPU renderer. Asset-loading failures are visible and the alternate image remains selectable.
 
-Public redistribution of artwork is not part of this test. The background-removal prompt and original verification are retained in `docs/evidence/scrum36-owner-portrait.md`; the forest checkpoint is in `docs/evidence/scrum36-forest-portrait.md`. No claim of production asset clearance, exact original facial fidelity, target-device performance or gameplay acceptance. Judge this one scene before expanding the cast.
+Public redistribution of artwork is not part of this test. The background-removal prompt and original verification are retained in `docs/evidence/scrum36-owner-portrait.md`; the prior atmosphere checkpoint is in `docs/evidence/scrum36-forest-portrait.md`. No claim of production asset clearance, exact original facial fidelity, target-device performance or full-game acceptance. Judge this one playable scene before expanding the cast.

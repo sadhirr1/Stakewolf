@@ -1,6 +1,14 @@
 # Stakewolf — start here
 
-Last direction/checkpoint update: October 15, 2026, SCRUM-36 / coordination SCRUM-18.
+Last direction/checkpoint update: October 17, 2026, SCRUM-36 / coordination SCRUM-18.
+
+## Current checkpoint — one playable clearing with the owner portrait
+
+This entry takes precedence over the historical character evaluations below. The owner accepted the one-human forest direction for a short playable test. Preview: `http://127.0.0.1:4181/`, start with `node scripts/serve-portrait-proof.mjs`. One leader, two dated evidence items, two-person crew allocation, one night commitment and dawn obligations; no cast expansion or new artwork. The `/study` comparison and earlier `/wild/` prototype are preserved.
+
+Coordinator authored; `cast_gate` independently reviewed and ran all eight focused checks. Desktop and mobile journeys, reload, replay confirmation, keyboard actions and mobile transition focus were checked. See [the precise result and verification limits](evidence/scrum36-playable-clearing.md) and [local setup](../public/wild/portrait-proof/README.md). Saves use only `stakewolf-clearing-v1`; the next morning's obligations are recorded, not playable yet. The illustrated face is not rigged 3D.
+
+Continue existing draft PR22; preserve the dirty checkout and publish only reviewed files. The owner should play this one encounter before more cast or locations are added. SCRUM-36 remains In Review; November 6/13 targets remain at risk. Schedules stay off. No purchases, new generation, external feeds or reset credits in this increment.
 
 ## Read this before continuing
 
