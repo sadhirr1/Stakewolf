@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101222">
+  <meta name="description" content="Five interactive directions for Stakewolf. An independent portfolio and creative playground for sadhir.tech.">
+  <title>Five Other Worlds — Stakewolf / Sadhir.tech</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#worlds">Skip to the experiments</a>
+  <header class="masthead">
+    <a class="wordmark" href="#top" aria-label="Back to top">S<span class="mark-dot">·</span><span class="wordmark-name">SADHIR.TECH<br><small>A WORK IN PROGRESS</small></span></a>
+    <nav aria-label="Main navigation"><a href="#worlds">The experiments <span>05</span></a><a href="#portfolio">Selected work <span>01</span></a></nav>
+    <span class="edition">EXPLORATION / 001</span>
+  </header>
+  <main id="top">
+    <section class="intro" aria-labelledby="intro-title">
+      <p class="eyebrow"><span class="tiny-star" aria-hidden="true">✳</span> STAKEWOLF, REIMAGINED</p>
+      <h1 id="intro-title">Same instinct.<br><em>Other worlds.</em></h1>
+      <div class="intro-aside"><p>Trust. Doubt. Consequence.</p><p>Five ways to turn those instincts into something you can feel. Step inside. Change something.</p><a href="#worlds">Explore the possibilities <span aria-hidden="true">↘</span></a></div>
+      <span class="large-index" aria-hidden="true">05</span>
+    </section>
+
+    <section id="worlds" class="worlds" aria-label="Five interactive creative directions">
+      <div class="world-topline"><span>CHOOSE A WORLD</span><span>SMALL INTERACTIONS. OPEN POSSIBILITIES.</span><button id="motion" type="button" aria-pressed="false">Pause motion <span aria-hidden="true">Ⅱ</span></button></div>
+      <div class="world-nav" role="group" aria-label="Choose a direction">
+        <button type="button" data-world="0" aria-pressed="true"><small>01 / EXPLORATION</small><span>Afterlight <b>↗</b></span></button>
+        <button type="button" data-world="1" aria-pressed="false"><small>02 / CONFRONTATION</small><span>The Verdict <b>↗</b></span></button>
+        <button type="button" data-world="2" aria-pressed="false"><small>03 / EMERGENCE</small><span>Chorus <b>↗</b></span></button>
+        <button type="button" data-world="3" aria-pressed="false"><small>04 / DISCOVERY</small><span>Cabinet of Motives <b>↗</b></span></button>
+        <button type="button" data-world="4" aria-pressed="false"><small>05 / INTERCEPTION</small><span>Dead Air <b>↗</b></span></button>
+      </div>
+      <article class="stage" id="stage" data-theme="0" aria-labelledby="world-title">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage-scrim" aria-hidden="true"></div>
+        <div class="stage-caption"><span id="world-number">WORLD 01 / 05</span><span id="world-type">A PLACE YOU ENTER</span></div>
+        <div class="stage-copy">
+          <p class="stage-kicker" id="world-kicker">FOLLOW WHAT'S MISSING.</p>
+          <h2 id="world-title">After<em>light.</em></h2>
+          <p id="world-summary">A forest that reveals itself through attention. The path you illuminate changes what remains in the dark.</p>
+          <button class="world-action" id="world-action" type="button">Send a lantern <span aria-hidden="true">↗</span></button>
+        </div>
+        <span class="scene-note" id="scene-note">A lantern, a clearing, an unanswered question.</span>
+        <div class="stage-controls">
+          <div class="range-block"><div><label for="world-value" id="value-label">Lantern reach</label><output for="world-value" id="value-output">50</output></div><input id="world-value" type="range" min="0" max="100" value="50"></div>
+          <p id="interaction-hint">Move across the clearing, or change the light below.</p>
+          <button id="save-world" class="save-world" type="button" aria-pressed="false"><span aria-hidden="true">☆</span> Keep this direction</button>
+        </div>
+      </article>
+      <div class="world-readout"><p id="live-status" role="status" aria-live="polite">Afterlight selected. Try the lantern.</p><span>INTERACTIVE ART STUDY · NOT A FINISHED GAME</span></div>
+
+      <div class="direction-detail" aria-label="About this direction">
+        <div><p class="eyebrow">THE EXPERIENCE</p><h3 id="detail-headline">The world is the interface.</h3></div>
+        <p id="detail-experience">You discover places, notice absences and decide where to put your attention. The environment carries the tension before anyone speaks.</p>
+        <div class="detail-tradeoff"><span>WHAT IT WOULD TAKE</span><p id="detail-cost">A strong environment, deliberate camera work and a few convincing characters. The most demanding route for art production.</p></div>
+      </div>
+    </section>
+
+    <section class="compare-section" aria-labelledby="compare-title">
+      <div class="section-heading"><p class="eyebrow">DIFFERENT BY DESIGN</p><h2 id="compare-title">Choose the feeling.<br><em>Then build the world.</em></h2><p>These are five possible foundations. Each changes what the player actually does, not just the colour of the screen.</p></div>
+      <div class="comparison-list">
+        <button type="button" data-jump="0"><span class="row-num">01</span><span class="row-title">Afterlight</span><span class="row-description">Explore a world that withholds its secrets.</span><span class="row-tag">CINEMATIC EXPLORATION</span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-jump="1"><span class="row-num">02</span><span class="row-title">The Verdict</span><span class="row-description">Put two versions of the truth on the same stage.</span><span class="row-tag">INTERACTIVE THEATRE</span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-jump="2"><span class="row-num">03</span><span class="row-title">Chorus</span><span class="row-description">Watch a community become the sum of your choices.</span><span class="row-tag">LIVING SYSTEM</span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-jump="3"><span class="row-num">04</span><span class="row-title">Cabinet of Motives</span><span class="row-description">Read people through the things they leave behind.</span><span class="row-tag">TACTILE MYSTERY</span><b aria-hidden="true">↗</b></button>
+        <button type="button" data-jump="4"><span class="row-num">05</span><span class="row-title">Dead Air</span><span class="row-description">Find a human signal inside a world of interference.</span><span class="row-tag">SIGNAL HUNTING</span><b aria-hidden="true">↗</b></button>
+      </div>
+      <p class="saved-note" id="saved-note">No favourite yet. Keep a direction above to remember it on this device.</p>
+    </section>
+
+    <section id="portfolio" class="portfolio" aria-labelledby="portfolio-title">
+      <div class="portfolio-heading"><p class="eyebrow">A HOME FOR THE WORK</p><h2 id="portfolio-title">Curiosity,<br><em>with somewhere to live.</em></h2><p>A portfolio built around things worth exploring. Stakewolf gets a world of its own; future projects get room to be different.</p></div>
+      <a class="featured-project" href="#worlds"><div class="project-glyph" aria-hidden="true"><span></span><span></span><span></span><i>SW</i></div><div><span class="eyebrow">01 / FEATURED EXPERIMENT</span><h3>Stakewolf<span aria-hidden="true">↗</span></h3><p>Trust, doubt and the worlds they create.<br>Explore five possible directions.</p></div></a>
+      <div class="project-placeholder"><span>02 / YOUR NEXT PROJECT</span><p>Something else<br><em>belongs here.</em></p><small>PLACEHOLDER · PROJECT TO BE CHOSEN</small></div>
+      <div class="project-placeholder"><span>03 / ROOM TO EXPERIMENT</span><p>Leave a little<br><em>space for surprise.</em></p><small>PLACEHOLDER · PROJECT TO BE CHOSEN</small></div>
+    </section>
+    <section class="domain-note" aria-label="Proposed domain structure"><span class="eyebrow">THE PROPOSED ADDRESS</span><div><strong>sadhir.tech</strong><p>Your portfolio and project stories.</p></div><span class="domain-arrow" aria-hidden="true">↳</span><div><strong>play.sadhir.tech</strong><p>Stakewolf's dedicated experience.</p></div><p class="domain-disclaimer">Planned structure only. This preview has not changed your domain or DNS.</p></section>
+  </main>
+  <footer><a href="#top">SADHIR.TECH <span aria-hidden="true">↑</span></a><p>Five Other Worlds / Stakewolf<br>Original interactive studies · October 2026</p><p>Portfolio identity and future projects<br>to be decided. Existing prototype preserved.</p></footer>
+  <noscript><div class="no-script">This page needs JavaScript for its interactive scenes. You can still read and compare the five directions below.</div></noscript>
+</body>
+</html>
