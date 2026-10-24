@@ -1,5 +1,22 @@
 # SCRUM-37 verification record
 
+## 2026-10-24 follow-up — local answer coaching
+
+Owner requested missed-evidence, conflicting-view and interview-improvement feedback, keeping usage low. Coordinator authored interface/state integration and documentation; `answer_feedback` authored the pure coaching module and tests. Separate `answer_qa` independently reviewed both and authored retained UI regression tests; coordinator read and accepted those tests.
+
+Resolved review findings: detached record-toggle events could contaminate a later attempt; opening a record immediately before an ask/render could be lost before its queued event; feedback referred to received replies that were no longer visible. Added active-element/phase guards, synchronous capture before ask/commit/finish, and expandable received replies. Browser review also found an explicit short uncertainty statement was missed and a next-step prompt prioritized a record already cited; reduced the uncertainty wording threshold and prioritized uncited/unconsulted records. Independent QA accepted the final two fixes with 11/11 engine tests passing.
+
+Actual verification on Windows / Node 24.21.0:
+
+- Coordinator final combined run: `node --test tests/adapt.test.mjs tests/feedback.test.mjs tests/feedback-ui.test.mjs` — **30/30 passed** (10 adaptation, 11 coaching, 9 integration tests).
+- Independent QA ran the earlier 27-test suite, then 9/9 affected integration tests after received-reply coverage, then 11/11 final coaching tests after the browser findings. Do not conflate these separate runs with an independently executed final combined suite.
+- App, feedback and server syntax checks passed. Retained tests exercise all nine cases, blank/name-dropping/negated answers, exact excerpts, phase-specific openings, two-question budget, received-vs-unasked replies, hidden-motive exclusion, escaped text, duplicate action guards, detached/pending record events, clean replay and unchanged original history during rehearsal.
+- Browser: completed the adaptive Accessibility flow using a synthetic UI JD. Opened Audit scope and asked Design before committing; opened Keyboard walkthrough afterwards and left Support tags unopened. Debrief correctly showed all three access states, initial/final references and public views. Confirmed received-reply disclosure, keyboard Enter rehearsal, detected names/wording, and preserved original text. Final rerun verified Support tags received priority and “The estimate remains unknown.” was detected.
+- Browser visual inspection at 935×604: overview, coaching cards and rehearsal readable; document scroll width 920, no horizontal overflow. Console error entries were empty. No new mobile viewport, cross-browser or screen-reader audit is claimed in this follow-up.
+- Initial sandbox preview could not be reached. It was stopped, restarted with authorized loopback access, and returned HTTP 200 before the successful browser checks. This was an environment issue, not a passing initial browser run.
+
+Scope limits: exact names and conservative wording patterns, not semantic correctness/persuasion assessment; no score, inferred beliefs, paid inference, private transcript publication or persistence. Domain/educational validity remains unverified. Sanitized evidence is this record plus Jira; screenshots use synthetic test input only. Reviewed source is checkpointed to the existing PR25, and the Site keeps its owner-only audience.
+
 ## 2026-10-24 follow-up — JD adaptation
 
 Owner accepted the initial homepage/flow and requested actual role-specific adaptation. Coordinator authored interface/integration; `jd_engine` authored adapt.mjs and its retained tests; `practice_flow_qa` independently reviewed both.

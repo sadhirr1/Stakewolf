@@ -1,6 +1,6 @@
 # Stakewolf practice preview — SCRUM-37
 
-Homepage accepted by the owner; local JD adaptation increment, 2026-10-24. Implements the connected interface proposed in SCRUM-19 and GitHub PR24. This is a bounded design prototype, not a validated interview assessment product.
+Homepage and JD adaptation accepted by the owner; local answer-coaching increment, 2026-10-24. Implements the connected interface proposed in SCRUM-19 and GitHub PR24. This is a bounded design prototype, not a validated interview assessment product.
 
 ## Try it
 
@@ -17,10 +17,10 @@ General practice retains the three introductory samples. Interview preparation n
 
 - Local phrase matching with visible supporting clauses and editable skill selection. Six authored modules, no live AI or inference cost.
 - User-entered text and activity remain in browser memory and clear on refresh. No account, uploads, analytics or browser storage.
-- Text notes are displayed verbatim, never automatically graded. Reflection follows the selected recommendation.
+- Answer coaching distinguishes evidence openings, direct name references and conservative wording cues. Case-linked prompts and a separate rehearsal help the learner review their response. No correctness judgment or ability score is produced. See FEEDBACK.md for the rules and limitations.
 - New evidence is authored and fixed for each round; adaptive rounds also show a separate consequence linked to the first recommendation.
 - Target level changes the interview-question framing, not calibrated difficulty.
 - ADAS material is illustrative and requires expert review before external assessment use.
 - No DNS changes, purchases, schedules or further feature work are part of this checkpoint.
 
-See REVIEW.md for actual checks and limitations. Next review should check whether matched responsibilities and stakeholder conflicts are useful preparation. Broader role coverage, open-ended dialogue and validated feedback remain future increments. Previous November targets require reforecast for the platform pivot; this preview does not establish release readiness.
+See REVIEW.md for actual checks and limitations. Complete a round, choose Review my answer, inspect the evidence/public-view comparison, and use Check my rehearsal to practise a final explanation without overwriting the original attempt. Next owner review should check whether these prompts are useful and where the local matching misses the intended meaning. Broader role coverage, open-ended dialogue and validated assessment remain future increments. Previous November targets require reforecast for the platform pivot; this preview does not establish release readiness.
