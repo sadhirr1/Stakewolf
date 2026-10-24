@@ -1,5 +1,7 @@
 # Stakewolf
 
+> **Current direction — October 24, 2026:** General PM practice and JD-based interview preparation, using Werewolf-inspired evidence, incentives and decision defence across PM roles. See [the revised platform plan](docs/pm-practice-plan.md). Planning only; earlier scenes are historical prototypes. November 6/13 remain the recorded baseline pending an owner-approved reforecast; their feasibility for this scope is unverified. Schedules remain off.
+
 A product management simulation inspired by Werewolf: stakeholders have competing objectives, decisions change relationships, and consequences unfold over time.
 
 ## Project status
@@ -64,3 +66,4 @@ The initial team setup has been cross-reviewed by product, engineering and QA ag
 During the release window, work sessions are scheduled hourly from 6 a.m. through 1 p.m. and the daily scrum at 8 p.m., America/Los_Angeles. These schedules are configured in the project chat, not by this repository. They require the local computer and app to be available and sufficient usage capacity. Eight scheduled opportunities do not guarantee eight uninterrupted hours of execution.
 
 Every role reports concrete results, evidence, review findings, blockers and its next action. Jira is authoritative for current status; this repository records the reviewed deliverables.
+
