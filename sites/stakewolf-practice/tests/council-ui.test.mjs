@@ -7,6 +7,7 @@ import {competencies,analyzeJD,makeCase} from '../dist/adapt.mjs';
 import {buildFeedback} from '../dist/feedback.mjs';
 import {councilTopics,createCouncil,councilView,councilAct} from '../dist/council.mjs';
 import {councilMarkup,councilEntry} from '../dist/council-view.mjs';
+import {newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup} from '../dist/council-chat.mjs';
 
 // Independent SCRUM-38 regression checks execute the real app event handlers.
 // The DOM double checks rendered controls and state, not native browser behavior,
@@ -32,7 +33,7 @@ function fixture(){
     }
     return nodes.get(selector);
   },querySelectorAll(){return [];}};
-  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry});
+  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   const dispatch=(action,data={})=>handlers.click({target:{closest(){return {dataset:{action,...data}};}}});
   const control=(action,data={})=>[...html.matchAll(/<button\b([^>]*)>/g)]

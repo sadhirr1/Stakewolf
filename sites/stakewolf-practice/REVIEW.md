@@ -1,3 +1,18 @@
+# 2026-10-25 follow-up — typed council questions and negotiation
+
+SCRUM-38: the owner requested local, low-usage typed interaction in both existing councils. Development specialist `council_dialogue` authored the interpreter, 33 tests and DIALOGUE.md. Coordinator authored the confirmation wrapper, UI integration and styling. Independent QA `dialogue_review` reviewed both and authored 13 real-handler tests; coordinator read and accepted those tests. QA approved the bounded increment after five fixes: stale interpretation after draft edits, unrecognised support-question placeholder, negated inspection requests, mixed locked-approach/response requests, and mixed addition/withdrawal wording. Ambiguous combinations now request clarification rather than partially applying them.
+
+Actual checks:
+
+- Independent QA ran all **98 tests: 52 existing + 33 interpreter + 13 handler tests**, all passing on Node v24.21.0. Five syntax checks passed. Coordinator also previously ran the original 52 successfully; no additional combined rerun is claimed.
+- Retained handler coverage includes all six stakeholders, hidden-source boundaries, shared investigation budget, immutable pending previews, explicit confirmation, stale-state/speaker guards, repeated-offer idempotence, escaped user text, bounded transcript, keyboard submission, aftermath capacity/locked commitments and old coaching/history compatibility.
+- Final browser Accessibility: natural support question answered; “Please do not open the keyboard walkthrough” produced no offer; positive inspection required confirmation; a compound local-repair/independent-checks offer reserved 4/6 only after confirmation. In round two, typed error-announcement funding brought work to 6/6. Earlier browser check verified editing a draft removed its stale offer and a refusal did not reserve work.
+- Final browser Platform/API: typed evidence question opened the consumer record only after confirmation. “Can we keep both API versions and agree retirement criteria?” previewed 0 to 3/6, Pia supporting and Ren opposing. Confirmation applied the offer; a typed capacity question returned 3/6 reserved and 3 remaining.
+- Visual inspection at actual 1280x720: offer, capacity/support preview and explicit confirmation readable; page width1265, no horizontal overflow; no console errors. Focus moved to the new reply/interpretation. Mobile, cross-browser and screen-reader audit not performed this increment. Screenshot uses synthetic test text; this review and linked Jira/GitHub evidence provide the durable record.
+
+Limits: authored local pattern matching, not a language model or arbitrary negotiation. Existing proposals, promises, costs, sources and response work only; no discounts or invented facts. Player must confirm changes. Messages and activity live in memory only; last12 exchanges shown. Two rounds, no further simulation of deferred work. Objectives remain hidden in normal play, not protected from client inspection. No inference API cost, purchases, dependencies or schedules. Broader educational validity and the November release forecast remain unresolved. Next: owner tries natural questions and bargains in both councils before expanding coverage.
+
+---
 # SCRUM-37 / SCRUM-38 verification record
 
 ## 2026-10-25 — two-round council engine
