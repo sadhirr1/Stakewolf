@@ -4,8 +4,9 @@ import {buildFeedback} from './feedback.mjs';
 import {councilTopics,createCouncil,councilView,councilAct} from './council.mjs';
 import {councilMarkup,councilEntry} from './council-view.mjs';
 import {newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup} from './council-chat.mjs';
+import {newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup} from './council-report.mjs';
 const app=document.querySelector('#app');
-const state={councilChat:null,council:null,councilOrigin:'general',view:'home',mode:'general',caseId:'general',jd:'',role:'ui',matches:[],stage:'investigate',opened:new Set(),asked:new Set(),choice:null,firstChoice:null,note:'',revision:'',history:[],level:'PM',origin:'general',analysis:null,selected:[],activeCase:null,activeSkill:null,openedBefore:[],attempt:null,rehearsal:'',rehearsalResult:null};
+const state={councilAttempt:null,councilChat:null,council:null,councilOrigin:'general',view:'home',mode:'general',caseId:'general',jd:'',role:'ui',matches:[],stage:'investigate',opened:new Set(),asked:new Set(),choice:null,firstChoice:null,note:'',revision:'',history:[],level:'PM',origin:'general',analysis:null,selected:[],activeCase:null,activeSkill:null,openedBefore:[],attempt:null,rehearsal:'',rehearsalResult:null};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const roleLabels={general:'Cross-functional PM',ui:'UI / UX PM',adas:'ADAS PM',platform:'Platform / technical PM',growth:'Growth PM'};
 const currentCase=()=>state.activeCase||cases[state.caseId];
@@ -38,10 +39,12 @@ function feedbackPanel(c){
 
 function review(){let c=currentCase();return `${header('03 / REFLECT','A decision is only<br><em>part of the story.</em>','Here is the path you took. Review the evidence you explored and the signals in your answer. Use the coaching prompts to make your next explanation more specific.')}${feedbackPanel(c)}<details class="original-trace"><summary>Revisit your original decision & consequences</summary><div class="review-layout"><section><div class="trace-metrics"><div><strong>${state.asked.size}<small>/${state.activeCase?2:c.people.length}</small></strong><span>Questions asked</span></div><div><strong>${state.opened.size}<small>/${c.evidence.length}</small></strong><span>Records opened</span></div><div><strong>${state.choice===state.firstChoice?'Held':'Revised'}</strong><span>Your recommendation</span></div></div><div class="timeline"><article><span>01</span><div><p class="eyebrow">YOUR FIRST POSITION</p><h3>${esc(c.choices[state.firstChoice].title)}</h3><p class="quoted">${esc(state.note)||'You did not add a reasoning note.'}</p></div></article><article><span>02</span><div><p class="eyebrow">THE NEW EVIDENCE</p><p>${esc(c.update)}</p>${state.activeCase?`<p><strong>Consequence of your first choice:</strong> ${esc(c.choices[state.firstChoice].outcome)}</p>`:''}</div></article><article><span>03</span><div><p class="eyebrow">YOUR FINAL POSITION</p><h3>${esc(c.choices[state.choice].title)}</h3><p class="quoted">${esc(state.revision)||'You did not add a revision note.'}</p></div></article></div></section><aside class="reflection"><span class="eyebrow">REFLECTION GUIDE / PREPARED CONTENT</span><h2>Go beyond<br><em>who was right.</em></h2><p>${esc(c.lesson)}</p><div class="reflection-rule"></div><h3>A question for your recommendation</h3><p>${esc(c.choices[state.choice].reflection)}</p><p class="small">This prompt follows your selected option. It is not an AI assessment of your reasoning.</p></aside></div></details>${state.activeCase?`<section class="agenda-reveal"><p class="eyebrow">AFTER THE DISCUSSION / PRIVATE INCENTIVES</p><h2>What was each person protecting?</h2><p>${esc(c.reveal)}</p><div>${c.people.map(p=>`<article><h3>${esc(p.name)}</h3><p>${esc(p.privateAim)}</p><small>Related claim evidence: ${esc(p.source)}</small></article>`).join('')}</div><p class="small">This reveals the authored simulation, not a diagnosis of real people. The coaching uses only public evidence and your answers; hidden incentives are not a hindsight test.</p></section>`:''}<div class="review-bottom"><div><p class="eyebrow">KEEP THE QUESTIONING GOING</p><h2>Different evidence.<br>Same curious mind.</h2><p>${esc(c.next)}</p></div><div>${button('Try another round '+arrow,'general','button dark')}${state.mode==='interview'?button('Back to my preparation path','path','text-button'):button('Prepare for a role →','jd','text-button')}</div></div>`;}
 function activity(){return `${header('YOUR ACTIVITY','Small rounds.<br><em>Useful perspective.</em>','A simple record of completed previews in this tab. It clears on refresh; there is no account or long-term skills assessment yet.')}<section class="surface activity">${state.history.length?state.history.map((h,i)=>`<article><span class="step-number">${String(i+1).padStart(2,'0')}</span><div><p class="eyebrow">${esc(h.mode==='interview'?'INTERVIEW PREPARATION':'GENERAL PRACTICE')}</p><h2>${esc(h.skill)}</h2><p>${h.questions} ${h.caseId==='council'?'messages':'questions'} · ${h.records} records opened · ${esc(h.decision)}</p></div><span class="outline-badge">Completed preview</span></article>`).join(''):`<div class="empty-state"><span class="empty-symbol">↗</span><h2>Your first round starts here.</h2><p>Complete a practice preview to see your activity.</p>${button('Explore practice','general','button dark')}</div>`}</section>`;}
-function council(){return councilMarkup(councilView(state.council),state.councilOrigin,councilChatMarkup(state.council,state.councilChat));}
+function council(){return councilMarkup(councilView(state.council),state.councilOrigin,councilChatMarkup(state.council,state.councilChat),councilReportMarkup(state.council,state.councilAttempt));}
 function sendCouncilMessage(){
  if(state.view!=='council'||!state.councilChat)return;
+ const messageCount=state.councilChat.total;
  state.councilChat=submitCouncilMessage(state.council,state.councilChat,state.councilChat.draft);
+ if(state.councilChat.total>messageCount)state.councilAttempt=noteCouncilQuestion(state.councilAttempt,state.council.phase,state.councilChat.messages.at(-1));
  render();const log=document.querySelector('.chat-log');log?.scrollTo?.({top:log.scrollHeight});
  document.querySelector(state.councilChat.pending?'#chat-response':'.chat-exchange:last-child')?.focus();
 }
@@ -57,11 +60,11 @@ if(a==='start-council'){
   if(!councilTopics.some(t=>t.id===el.dataset.topic))return;
   state.councilOrigin=state.view==='path'?'interview':'general';
   state.mode=state.councilOrigin;
-  state.council=createCouncil(el.dataset.topic);state.councilChat=newCouncilChat(state.council);return go('council');
+  state.council=createCouncil(el.dataset.topic);state.councilChat=newCouncilChat(state.council);state.councilAttempt=newCouncilAttempt();return go('council');
 }
 if(a==='talk-confirm'||a==='talk-cancel'){
  if(state.view!=='council'||!state.councilChat)return;
- if(a==='talk-confirm'){const result=confirmCouncilMessage(state.council,state.councilChat);state.council=result.state;state.councilChat=result.chat;}
+ if(a==='talk-confirm'){const actions=state.councilChat.pending?.actions||[];const result=confirmCouncilMessage(state.council,state.councilChat);state.councilAttempt=noteCouncilChange(state.councilAttempt,state.council,result.state,'typed',actions);state.council=result.state;state.councilChat=result.chat;}
  else state.councilChat={...state.councilChat,pending:null,notice:'Interpretation dismissed. No changes made.'};
  render();const log=document.querySelector('.chat-log');log?.scrollTo?.({top:log.scrollHeight});document.querySelector('#chat-response')?.focus();return;
 }
@@ -70,6 +73,7 @@ if(a.startsWith('council-')){
   const type=a.slice(8),before=state.council.phase;
   const scroll=window.scrollY;
   const next=councilAct(state.council,{type,recordId:el.dataset.id,commitmentId:el.dataset.id,proposalId:el.dataset.id,workId:el.dataset.id});
+  state.councilAttempt=type==='replay'?newCouncilAttempt():noteCouncilChange(state.councilAttempt,state.council,next,'preset',[{type}]);
   state.council=next;
   if(type==='replay'){state.councilChat=newCouncilChat(next);}else if(next!==undefined&&state.councilChat?.pending){state.councilChat={...state.councilChat,pending:null,notice:'Previous interpretation cleared. Ask again using the updated council.'};}
   if(next.phase!==before){

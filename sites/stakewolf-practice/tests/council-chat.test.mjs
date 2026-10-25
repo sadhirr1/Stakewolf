@@ -1,3 +1,4 @@
+import {newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup} from '../dist/council-report.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
@@ -31,7 +32,7 @@ function fixture(topic='accessibility'){
     }
     return nodes.get(selector);
   },querySelectorAll(){return [];}};
-  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
+  const context=vm.createContext({newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   const dispatch=(action,data={})=>handlers.click({target:{closest(){return {dataset:{action,...data}};}}});
   const control=(action,data={})=>[...html.matchAll(/<button\b([^>]*)>/g)]
