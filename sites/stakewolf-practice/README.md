@@ -1,6 +1,8 @@
-# Stakewolf practice preview — SCRUM-37
+# Stakewolf practice preview — SCRUM-37 / SCRUM-38
 
 Homepage and JD adaptation accepted by the owner; local answer-coaching increment, 2026-10-24. Implements the connected interface proposed in SCRUM-19 and GitHub PR24. This is a bounded design prototype, not a validated interview assessment product.
+
+The October 25 council increment adds two connected rounds in Accessibility and Platform / API. Enter either council from the homepage or General practice, or from its corresponding responsibility in a JD preparation path. Inspect two sources, choose an approach, offer capacity-backed promises, then fund or defer work in the next round. The debrief reveals private objectives and records what actually moved forward. See COUNCIL.md for the local engine contract.
 
 ## Try it
 
@@ -20,6 +22,7 @@ General practice retains the three introductory samples. Interview preparation n
 - Answer coaching distinguishes evidence openings, direct name references and conservative wording cues. Case-linked prompts and a separate rehearsal help the learner review their response. No correctness judgment or ability score is produced. See FEEDBACK.md for the rules and limitations.
 - New evidence is authored and fixed for each round; adaptive rounds also show a separate consequence linked to the first recommendation.
 - Target level changes the interview-question framing, not calibrated difficulty.
+- Council negotiation uses prepared conditions, fixed private objectives and a six-unit work budget. Promises reserve work and are fulfilled automatically when round two finishes. Selected response work changes consequences; unselected work remains deferred. Replay keeps the same motives. Client-side concealment is not protection against source inspection. Councils inherit the selected JD responsibility, not arbitrary new scenario generation or level-calibrated negotiation.
 - ADAS material is illustrative and requires expert review before external assessment use.
 - No DNS changes, purchases, schedules or further feature work are part of this checkpoint.
 

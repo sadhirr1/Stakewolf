@@ -1,4 +1,24 @@
-# SCRUM-37 verification record
+# SCRUM-37 / SCRUM-38 verification record
+
+## 2026-10-25 — two-round council engine
+
+Owner requested a working, low-usage council prototype in two existing practice areas. Development/Game Design specialist `council_engine` authored the deterministic engine, scenario definitions, 13 engine tests and COUNCIL.md. Coordinator authored integration, rendering and styles; separate QA specialist `council_review` independently reviewed both and authored 9 real-handler regression tests. Coordinator inspected and accepted the QA tests. Independent review found no blocking defects in this bounded increment; this is not release or educational-validity acceptance.
+
+Implemented: Accessibility and Platform / API councils accessible from home, General practice and matching JD responsibilities; three stakeholders with concealed motives; two-source investigation budget; evidence/proposal/promise-dependent support; six-unit next-round capacity; locked promises; decision-specific response work, reactions and deferrals; final motive reveal and replay. Support is not a grade. No network inference or new dependencies.
+
+Actual verification:
+
+- Coordinator ran the existing 30 adaptation/coaching/UI tests: 30 passed.
+- Engine author ran 13 council tests: 13 passed, including all proposal/promise combinations, immutable state, information boundaries, hard capacity limits, terminal guards and replay.
+- Independent QA ran all 52 practice tests: 52 passed. After strengthening sidebar and role-specific reaction assertions, the affected 9 UI tests passed again. Coordinator reviewed those retained tests; no unmeasured final rerun is implied.
+- Browser: Accessibility entered through General practice; Keyboard walkthrough inspected using Enter; local repair plus independent checks reserved 4/6 units and won Engineering support; error-announcement response brought allocation to 6/6; the unaffordable interim route was disabled and remained deferred. Final trace retained the keyboard-triggered inspection and actual funded work. Focus returned to the toggled work button.
+- Browser: a synthetic Platform JD led to the systems council and retained interview context. Two investigations exhausted the budget. Versioned migration plus retirement and rollback promises won two stakeholders but reserved 5/6 units, leaving both additional responses unfunded. A replay with only retirement reserved funded the parser fixture and left dual-format maintenance deferred. Different bargains produced different delivered/deferred records.
+- Browser visuals inspected at the actual 1280×720 viewport; document width was 1265 with no horizontal overflow. Inspected negotiation, current positions, locked commitments and round-two allocation. No console error entries. No mobile emulation, cross-browser or screen-reader audit claimed.
+- Browser review prompted an interface refinement: current stakeholder positions now remain beside the capacity ledger so support changes can be seen while bargaining. The author replaced generic positional reaction mapping with role-specific response mapping; independent QA reviewed the final mapping.
+
+Scope limits: fixed fictional cases and agendas; choices drive authored reactions. Promises cannot be broken in round two: their effort is reserved and delivered automatically. Unfunded response work is explicitly carried forward, but this prototype ends after round two; there is no third-round simulation. Activity is in memory only. Hidden objectives are excluded from ordinary play until the debrief, but remain inspectable in client source. There is no proficiency score, live AI, multiplayer, employer-question prediction or validated assessment. Previous November release dates require reforecast for the platform pivot.
+
+Reviewed source is checkpointed with SCRUM-38 to existing draft PR25 and the existing owner-private Site. This document and linked Jira evidence are the durable handoff; a local screenshot alone is not treated as durable verification.
 
 ## 2026-10-24 follow-up — local answer coaching
 

@@ -5,6 +5,8 @@ import vm from 'node:vm';
 import {cases,profiles} from '../dist/content.mjs';
 import {competencies,analyzeJD,makeCase} from '../dist/adapt.mjs';
 import {buildFeedback} from '../dist/feedback.mjs';
+import {councilTopics,createCouncil,councilView,councilAct} from '../dist/council.mjs';
+import {councilMarkup,councilEntry} from '../dist/council-view.mjs';
 
 // Executes the real handlers with a small DOM double. This verifies state and
 // generated markup, not browser layout, native focus, or browser event ordering.
@@ -28,7 +30,7 @@ function fixture(){
   }});
   const document={querySelector(selector){return selector==='#app'?app:placeholder;},
     querySelectorAll(selector){if(selector==='[data-record]')return records;if(selector==='[data-record][open]')return records.filter(r=>r.open);return [];}};
-  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback});
+  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry});
   vm.runInContext(source,context,{filename:'app.mjs'});
   return {subject:context.subject,get html(){return html;},get records(){return records;},
     click(action,data={}){handlers.click({target:{closest(){return {dataset:{action,...data}};}}});},
