@@ -1,5 +1,6 @@
 // SCRUM-38: authored, deterministic two-round practice. No network or player scoring.
 // Motives are hidden from councilView until the debrief, not from source inspection.
+import {buildCouncilVariants, variantStanding} from './council-variants.mjs';
 const CAPACITY = 6;
 const INVESTIGATIONS = 2;
 const decisionWork = (id, title, detail) => ({id, title, detail, cost:2, origin:'decision', consequence:'This work was reserved by the council decision.'});
@@ -90,20 +91,39 @@ const cases = {
 
 export const councilTopics = Object.freeze(Object.entries(cases).map(([id,c])=>Object.freeze({id,title:id==='accessibility'?'Accessibility':'Platform / API',description:c.description})));
 
-export function createCouncil(topic) {
+const variants = buildCouncilVariants(cases);
+const variantIds = Object.freeze(['original','b','c']);
+const variantId = s => s.variantId === undefined ? 'original' : s.variantId;
+const caseFor = s => variants[s.topic][variantId(s)];
+
+export function councilVariantIds(topic) {
   if (!Object.hasOwn(cases,topic)) throw new RangeError(`Unsupported council topic: ${String(topic)}`);
-  return {version:1,topic,phase:'council',opened:[],proposalId:null,commitmentIds:[],workIds:[]};
+  return variantIds;
+}
+
+export function createCouncil(topic, id='original') {
+  if (!councilVariantIds(topic).includes(id)) throw new RangeError(`Unsupported council situation: ${String(id)}`);
+  return {version:1,topic,variantId:id,phase:'council',opened:[],proposalId:null,commitmentIds:[],workIds:[]};
+}
+
+export function createFreshCouncil(topic, previousId, random=Math.random) {
+  const available=councilVariantIds(topic).filter(id=>id!==previousId);
+  if (typeof random!=='function') throw new TypeError('Council randomness must be a function.');
+  const value=random();
+  if (typeof value!=='number' || !Number.isFinite(value) || value<0 || value>=1) throw new RangeError('Council randomness must return a number from 0 up to, but not including, 1.');
+  return createCouncil(topic,available[Math.floor(value*available.length)]);
 }
 
 const selected = (items, ids) => items.filter(item=>ids.includes(item.id));
-const proposal = s => cases[s.topic].proposals.find(p=>p.id===s.proposalId);
-const reservedCost = s => (s.proposalId ? 2 : 0) + selected(cases[s.topic].commitments,s.commitmentIds).reduce((sum,c)=>sum+c.cost,0);
-const responseWork = s => cases[s.topic].responses[s.proposalId] || [];
+const proposal = s => caseFor(s).proposals.find(p=>p.id===s.proposalId);
+const reservedCost = s => (s.proposalId ? 2 : 0) + selected(caseFor(s).commitments,s.commitmentIds).reduce((sum,c)=>sum+c.cost,0);
+const responseWork = s => caseFor(s).responses[s.proposalId] || [];
 const totalCost = s => reservedCost(s) + selected(responseWork(s),s.workIds).reduce((sum,w)=>sum+w.cost,0);
 const validIds = (ids, items) => Array.isArray(ids) && new Set(ids).size===ids.length && ids.every(id=>items.some(item=>item.id===id));
 function validState(s) {
   if (!s || s.version!==1 || !Object.hasOwn(cases,s.topic) || !['council','aftermath','debrief'].includes(s.phase)) return false;
-  const c = cases[s.topic];
+  if (!variantIds.includes(variantId(s))) return false;
+  const c = caseFor(s);
   if (!validIds(s.opened,c.records) || s.opened.length>INVESTIGATIONS || !validIds(s.commitmentIds,c.commitments)) return false;
   if (s.proposalId!==null && !c.proposals.some(p=>p.id===s.proposalId)) return false;
   if (s.phase!=='council' && !s.proposalId) return false;
@@ -116,6 +136,7 @@ function standing(s, id) {
   const read = key=>s.opened.includes(key);
   const p = s.proposalId;
   if (!p) return {support:'conditional',condition:'Choose an approach to hear my conditions.'};
+  if (variantId(s)!=='original') return variantStanding(s,id);
   if (id==='design') return has('showcase') && (p==='repair' || read('audit'))
     ? {support:'supports',condition:'Your limited showcase promise protects a visible milestone; I back this approach.'}
     : {support:p==='replace'?'opposes':'conditional',condition:'I need a revised showcase promise. For a fallback or replacement, open the audit scope so we can agree how to explain the change.'};
@@ -137,7 +158,7 @@ function standing(s, id) {
 }
 
 function workView(s) {
-  const c = cases[s.topic], p = proposal(s);
+  const c = caseFor(s), p = proposal(s);
   if (!p) return [];
   return [
     {...p.work,selected:true,locked:true,outcome:p.summary},
@@ -147,7 +168,7 @@ function workView(s) {
 }
 
 function trace(s) {
-  const c = cases[s.topic];
+  const c = caseFor(s);
   const lines = s.opened.map(id=>`Investigated: ${c.records.find(r=>r.id===id).title}.`);
   if (s.phase!=='council') lines.push(`Round 1: ${proposal(s).title}. Promises: ${selected(c.commitments,s.commitmentIds).map(c=>c.title).join('; ') || 'none'}. Reserved ${reservedCost(s)} of ${CAPACITY} capacity.`);
   if (s.phase==='debrief') lines.push(`Round 2: ${selected(responseWork(s),s.workIds).map(w=>w.title).join('; ') || 'no extra response work'}. Used ${totalCost(s)} of ${CAPACITY} capacity; unselected response work deferred.`);
@@ -177,10 +198,10 @@ function reactions(s, stakeholders) {
 
 export function councilView(s) {
   if (!validState(s)) throw new TypeError('Invalid council state. Start a new council.');
-  const c = cases[s.topic], p = proposal(s), work = workView(s);
+  const c = caseFor(s), p = proposal(s), work = workView(s);
   const stakeholders = c.stakeholders.map(({id,name,role,claim})=>({id,name,role,claim,...standing(s,id)}));
   const view = {
-    topic:s.topic,title:c.title,intro:c.intro,phase:s.phase,round:s.phase==='council'?1:2,error:null,
+    topic:s.topic,variantId:variantId(s),variantLabel:`Situation ${['A','B','C'][variantIds.indexOf(variantId(s))]}`,title:c.title,intro:c.intro,phase:s.phase,round:s.phase==='council'?1:2,error:null,
     stakeholders,
     records:c.records.map(({id,title,text})=>({id,title,opened:s.opened.includes(id),...(s.opened.includes(id)?{text}:{})})),
     investigationRemaining:INVESTIGATIONS-s.opened.length,investigation:{remaining:INVESTIGATIONS-s.opened.length,limit:INVESTIGATIONS},
@@ -214,19 +235,19 @@ export function councilView(s) {
 
 export function councilAct(s, action) {
   if (!validState(s) || !action || typeof action!=='object') return s;
-  if (action.type==='replay') return createCouncil(s.topic);
+  if (action.type==='replay') return createCouncil(s.topic,variantId(s));
   if (s.phase==='council') {
     if (action.type==='investigate') {
-      if (s.opened.length>=INVESTIGATIONS || s.opened.includes(action.recordId) || !cases[s.topic].records.some(r=>r.id===action.recordId)) return s;
+      if (s.opened.length>=INVESTIGATIONS || s.opened.includes(action.recordId) || !caseFor(s).records.some(r=>r.id===action.recordId)) return s;
       return {...s,opened:[...s.opened,action.recordId]};
     }
     if (action.type==='propose') {
-      if (s.proposalId===action.proposalId || !cases[s.topic].proposals.some(p=>p.id===action.proposalId)) return s;
+      if (s.proposalId===action.proposalId || !caseFor(s).proposals.some(p=>p.id===action.proposalId)) return s;
       const next={...s,proposalId:action.proposalId};
       return reservedCost(next)<=CAPACITY?next:s;
     }
     if (action.type==='promise') {
-      if (!cases[s.topic].commitments.some(c=>c.id===action.commitmentId)) return s;
+      if (!caseFor(s).commitments.some(c=>c.id===action.commitmentId)) return s;
       const next={...s,commitmentIds:s.commitmentIds.includes(action.commitmentId)?s.commitmentIds.filter(id=>id!==action.commitmentId):[...s.commitmentIds,action.commitmentId]};
       return reservedCost(next)<=CAPACITY?next:s;
     }

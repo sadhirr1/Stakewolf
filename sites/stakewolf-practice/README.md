@@ -6,6 +6,8 @@ The October 25 council increment adds two connected rounds in Accessibility and 
 
 Completed councils now save locally. Use **Your activity → Review feedback** or **Compare with previous** after a retry. Comparison shows recorded differences and original coaching side by side; it does not infer an ability score or treat more support/spending as improvement.
 
+Each council now has **three coherent situations**. After the debrief, **Try a new situation** changes evidence, stakeholder objectives, bargaining conditions and consequences without repeating the situation just played. **Repeat this situation** keeps the facts for deliberate practice. Facts stay fixed within an attempt. Saved comparisons identify whether the situations match; different situations are not a calibrated improvement test. See VARIATIONS.md.
+
 ## Try it
 
 Private preview: https://stakewolf-practice.v4nswe.chatgpt.site
@@ -24,7 +26,7 @@ General practice retains the three introductory samples. Interview preparation n
 - Answer coaching distinguishes evidence openings, direct name references and conservative wording cues. Case-linked prompts and a separate rehearsal help the learner review their response. No correctness judgment or ability score is produced. See FEEDBACK.md for the rules and limitations.
 - New evidence is authored and fixed for each round; adaptive rounds also show a separate consequence linked to the first recommendation.
 - Target level changes the interview-question framing, not calibrated difficulty.
-- Council negotiation uses prepared conditions, fixed private objectives and a six-unit work budget. Promises reserve work and are fulfilled automatically when round two finishes. Selected response work changes consequences; unselected work remains deferred. Replay keeps the same motives. Client-side concealment is not protection against source inspection. Councils inherit the selected JD responsibility, not arbitrary new scenario generation or level-calibrated negotiation.
+- Council negotiation uses prepared conditions, situation-specific private objectives and a six-unit work budget. Promises reserve work and are fulfilled automatically when round two finishes. Selected response work changes consequences; unselected work remains deferred. Repeat keeps the same motives; a new situation changes them. The three-situation pool can recur. Client-side concealment is not protection against source inspection. Councils inherit the selected JD responsibility, not arbitrary new scenario generation or level-calibrated negotiation.
 - ADAS material is illustrative and requires expert review before external assessment use.
 - No DNS changes, purchases, schedules or further feature work are part of this checkpoint.
 

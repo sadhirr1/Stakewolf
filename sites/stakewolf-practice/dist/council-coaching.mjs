@@ -9,7 +9,7 @@ const excerpt = text => {
   return compact.length > 180 ? `${compact.slice(0, 179)}…` : compact;
 };
 const closingFacts = view => ({
-  topic:view.topic, capacity:view.capacity, cost:view.cost,
+  topic:view.topic, variantId:view.variantId ?? 'original', capacity:view.capacity, cost:view.cost,
   records:view.records?.filter(row => row.opened).map(row => row.id),
   proposals:view.proposals?.filter(row => row.selected).map(row => row.id),
   commitments:view.commitments?.filter(row => row.selected).map(row => row.id),

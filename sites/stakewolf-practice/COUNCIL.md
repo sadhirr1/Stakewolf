@@ -1,5 +1,7 @@
 # SCRUM-38 council prototype
 
+October 25 variation increment: this contract describes the original situation. Each topic also has two authored alternatives with different evidence, objectives, support rules and consequences. See VARIATIONS.md for selection, stable attempt identity, deliberate repeat and legacy compatibility. The original situation remains unchanged.
+
 This is a bounded, deterministic two-round extension to the PM practice site. It reuses the accessibility and systems case premises in `dist/adapt.mjs`: three public stakeholder claims, three source records, and fixed private incentives. It is not the historical five-round release candidate and does not establish release acceptance.
 
 Development/Game Design owns `dist/council.mjs`, `tests/council.test.mjs`, and this contract. The coordinator owns the UI integration. A separate QA reviewer must review the engine, interaction, and evidence before integration approval; this document is not self-approval.

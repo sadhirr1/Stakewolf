@@ -9,13 +9,13 @@ Development owns this module, `tests/council-saves.test.mjs` and this contract. 
 - `STORAGE_KEY` is `stakewolf.councils.v1`; `MAX_SAVED` is 20.
 - `createSavedCouncil(state, attempt, {id, completedAt, origin})` returns a deeply frozen, detached JSON-safe snapshot only for a completed debrief. Incomplete or invalid state/metadata returns `null`. Supply one stable ID per attempted council, a canonical UTC ISO timestamp and a short origin such as `general` or `interview`. Replay requires a new ID. IDs accept 1–100 ASCII letters, digits, underscores or hyphens; origin accepts at most 80 characters and defaults to `practice`.
 - `loadSavedCouncils(storage)`, `saveCouncil(storage, snapshot)`, `deleteSavedCouncil(storage, id)` and `clearSavedCouncils(storage)` return `{items, error}`. `error` is `null` on success or a readable message on failure. Items are detached and deeply frozen. Supply a storage object with `getItem`, `setItem` and `removeItem`; callers must also catch a denied `window.localStorage` getter before passing it.
-- `compareSavedCouncils(older, newer)` returns `{rows:[{label,before,after}], changes:[strings], prompt, limits:[strings]}` only for different IDs with matching topic and supported case version. Invalid or incompatible inputs return `null`.
+- `compareSavedCouncils(older, newer)` returns `{rows:[{label,before,after}], changes:[strings], prompt, limits:[strings], sameSituation, context}` only for different IDs with matching topic and supported case versions. Different situations are explicitly identified; invalid or incompatible inputs return `null`.
 
 The storage envelope is `{schemaVersion:1, items:[...]}`. Each snapshot contains exactly:
 
 ```text
 schemaVersion: 1
-caseVersion: 'council-v1'
+caseVersion: 'council-v1' | 'council-v1:b' | 'council-v1:c'
 id, completedAt, origin, topic, title
 decision: {id,title}
 records: [{id,title}]
@@ -42,7 +42,9 @@ Fresh-read merging reduces stale-tab overwrites; browser local storage has no tr
 
 ## Comparison and rendering
 
-Compare named records, retained message counts, confirmed approaches, promises, each stakeholder’s closing support, reserved/used capacity, delivered work and deferred work. Explain differences without grading attempts or treating more support, spending, evidence or promises as universally better. A retry already knows the fixed case’s later evidence and motives; this is not a blind assessment of improved skill. Delivered promises were automatic, while additional response choices were discretionary.
+Compare situation labels, named records, retained message counts, confirmed approaches, promises, each stakeholder’s closing support, reserved/used capacity, delivered work and deferred work. Explain differences without grading attempts or treating more support, spending, evidence or promises as universally better. Same-situation retries benefit from hindsight. Different situations change facts and bargaining rules, so outcomes are not a like-for-like improvement score. Delivered promises were automatic, while additional response choices were discretionary.
+
+Original saves retain `council-v1` and their original feedback. The two new authored situations use `:b` and `:c`; validation reconstructs each snapshot against its own situation. `savedCouncilVariant` maps those supported versions to engine IDs; unknown versions still fail safely. Re-entering a council consults the newest saved situation when no in-tab choice exists and avoids repeating it. No unfinished attempt is resumed or saved.
 
 All saved strings, including feedback excerpts and externally edited local storage, are untrusted text. Render them through the app’s HTML escaping function. Never insert saved strings as HTML. Immutable saved feedback means the original text is preserved, not that browser storage is authenticated against manual edits.
 

@@ -58,6 +58,34 @@ const result = (reply,kind='answer',pending=null,topic) => ({reply,kind,pending,
 const hits = (map,text) => Object.entries(map).filter(([,pattern])=>pattern.test(text)).map(([id])=>id);
 const cost = view => view.aftermath?.cost ?? view.cost;
 const normalize = text => text.toLowerCase().replace(/[’‘]/g,"'").replace(/[–—]/g,'-').replace(/\s+/g,' ').trim();
+const withTitles = (patterns,items) => Object.fromEntries(Object.entries(patterns).map(([id,pattern]) => {
+  const title = items.find(item=>item.id===id)?.title;
+  const exact = title && normalize(title).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return [id,exact ? new RegExp(`${pattern.source}|(?:^|\\W)${exact}(?:$|\\W)`) : pattern];
+}));
+const currentVocabulary = view => {
+  const base = vocabulary[view.topic];
+  return {...base,
+    sources:withTitles(base.sources,view.records),
+    proposals:withTitles(base.proposals,view.proposals),
+    promises:withTitles(base.promises,view.commitments),
+    work:withTitles(base.work,view.aftermath?.work || [])
+  };
+};
+function protectOfferTitles(input,view) {
+  // A displayed title may contain "and". Keep that named item together while
+  // still checking any separate, unsupported part of a compound offer.
+  const titles = [...view.proposals,...view.commitments,...(view.aftermath?.work || [])]
+    .map(item=>normalize(item.title)).sort((a,b)=>b.length-a.length);
+  let protectedInput=input;
+  titles.forEach((title,index)=>{protectedInput=protectedInput.replaceAll(title,`\x00${index}\x00`);});
+  return {protectedInput,titles};
+}
+function offerClauses(input,view) {
+  const {protectedInput,titles}=protectOfferTitles(input,view);
+  return protectedInput.split(/\s+(?:and|but|then|also)\s+|[.;,]\s*/).filter(Boolean)
+    .map(clause=>clause.replace(/\x00(\d+)\x00/g,(_,index)=>titles[index]));
+}
 const uncertain = /\b(maybe|perhaps|possibly|not sure|unsure|might|either|instead of|rather than)\b|\bor\b/;
 const negative = /\b(no|not|never|without|don't|do not|can't|cannot|won't|wouldn't|shouldn't|isn't|aren't|doesn't)\b/;
 const withdrawal = /\b(withdraw|remove|drop|cancel|unpromise|stop funding|defer)\b/;
@@ -119,7 +147,7 @@ export function interpretCouncilMessage(state,stakeholderId,text,{history=[]}={}
   if (typeof text!=='string' || !text.trim()) return result('Ask a question or describe an offer in your own words.','clarify');
   if (text.length>600) return result('Please keep this message to 600 characters so I can interpret one bounded question or offer.','limit');
   if (/[<>`\x00-\x08\x0b\x0c\x0e-\x1f]/.test(text)) return result('Please use a plain-text question or offer without markup or code.','clarify');
-  const input = normalize(text), lex=vocabulary[view.topic];
+  const input = normalize(text), lex=currentVocabulary(view);
   if (/\b(hidden|secret|private|agenda|objective|real motive|really want|incentive)\b/.test(input)) {
     if (view.debrief) {
       const reveal=view.debrief.reveals.find(p=>p.id===person.id);
@@ -140,7 +168,9 @@ export function interpretCouncilMessage(state,stakeholderId,text,{history=[]}={}
   const entities=proposals.length+promises.length+work.length;
   if ((/^(?:please )?(?:don't|do not|never)\b/.test(input) || /\b(inspect|investigate|open)\b/.test(input)) && (negative.test(input)||uncertain.test(input))) return result('I heard a negative or uncertain inspection request. No record will be opened. Ask one positive question or explicitly name the record you want to inspect.','clarify');
   // Inspect requests and factual challenges take priority over overlapping proposal words.
-  if (!intent || /\b(inspect|investigate|open|evidence|record|source|proof|prove|claim|how do you know)\b/.test(input)) {
+  // Words such as "evidence" inside a named commitment are not a source request.
+  const sourceIntentInput=intent?protectOfferTitles(input,view).protectedInput:input;
+  if (!intent || /\b(inspect|investigate|open|evidence|record|source|proof|prove|claim|how do you know)\b/.test(sourceIntentInput)) {
     if (sources.length>1) return result('That touches more than one source. Ask about one named record at a time; each unopened record uses one investigation.','clarify');
     if (sources.length===1) return sourceReply(view,person,sources[0]);
     if (evidenceQuestion.test(input)) return sourceReply(view,person,Object.keys(lex.owners).find(id=>lex.owners[id]===person.id));
@@ -148,7 +178,7 @@ export function interpretCouncilMessage(state,stakeholderId,text,{history=[]}={}
   if ((entities && intent) && (uncertain.test(input) || negative.test(input))) return result('I heard uncertainty, a negative, or alternatives. Please name one positive offer, or explicitly say “withdraw” followed by the promise or optional work you want removed. Nothing has changed.','clarify');
   if (proposals.length>1) return result('Those are different approaches. Which single approach should I interpret? Nothing has changed.','clarify');
   if (intent && entities) {
-    const clauses=input.split(/\s+(?:and|but|then|also)\s+|[.;,]\s*/).filter(Boolean);
+    const clauses=offerClauses(input,view);
     if (remove && clauses.some(clause=>!withdrawal.test(clause)&&/\b(promise|fund|allocate|give|reserve|offer|agree|choose|select|propose|keep|start)\b/.test(clause))) return result('That mixes adding and withdrawing work. Please make one offer to add work or one explicit withdrawal at a time, so neither intention is lost.','clarify');
     if (clauses.some(clause=>!hits(lex.proposals,clause).length&&!hits(lex.promises,clause).length&&!hits(lex.work,clause).length&&!/^(?:a )?(?:drill|revised date|review date)\b/.test(clause))) return result('Part of that offer does not match an available approach, promise, or response item. Please restate the supported offer on its own; I will not quietly drop the extra condition.','clarify');
     if (view.phase==='debrief') return result('This attempt is complete. We can discuss its evidence and outcomes; replay with the existing control to make a new offer.','limit');
@@ -204,7 +234,15 @@ export function interpretCouncilMessage(state,stakeholderId,text,{history=[]}={}
 }
 
 /** Natural examples, not a required menu. The same three are safe in every phase. */
-export function dialogueExamples(topic,stakeholderId) {
+export function dialogueExamples(topicOrView,stakeholderId) {
+  const view = topicOrView && typeof topicOrView==='object' ? topicOrView : null;
+  const topic = view ? view.topic : topicOrView;
+  if (view && view.variantId && view.variantId!=='original') {
+    const ownRecordId = Object.entries(vocabulary[topic]?.owners || {}).find(([,owner])=>owner===stakeholderId)?.[0];
+    const record = view.records?.find(record=>record.id===ownRecordId);
+    if (!record || !view.stakeholders?.some(person=>person.id===stakeholderId)) return [];
+    return [`What does the ${record.title.toLowerCase()} establish?`,'What would change your mind?','How much capacity remains?'];
+  }
   const examples={
     accessibility:{
       design:['What did the audit actually check?','What would you need to support the local repair?','Can we plan a revised showcase?'],

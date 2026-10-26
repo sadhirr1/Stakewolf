@@ -1,4 +1,4 @@
-import {STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils} from '../dist/council-saves.mjs';
+import {STORAGE_KEY,savedCouncilVariant,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils} from '../dist/council-saves.mjs';
 import {previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup} from '../dist/council-history.mjs';
 import {newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup} from '../dist/council-report.mjs';
 import assert from 'node:assert/strict';
@@ -8,7 +8,7 @@ import vm from 'node:vm';
 import {cases,profiles} from '../dist/content.mjs';
 import {competencies,analyzeJD,makeCase} from '../dist/adapt.mjs';
 import {buildFeedback} from '../dist/feedback.mjs';
-import {councilTopics,createCouncil,councilView,councilAct} from '../dist/council.mjs';
+import {councilTopics,createCouncil,createFreshCouncil,councilView,councilAct} from '../dist/council.mjs';
 import {councilMarkup,councilEntry} from '../dist/council-view.mjs';
 import {newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup} from '../dist/council-chat.mjs';
 
@@ -34,7 +34,7 @@ function fixture(topic='accessibility'){
     }
     return nodes.get(selector);
   },querySelectorAll(){return [];}};
-  const context=vm.createContext({STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils,previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
+  const context=vm.createContext({STORAGE_KEY,savedCouncilVariant,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils,previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,createFreshCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   const dispatch=(action,data={})=>handlers.click({target:{closest(){return {dataset:{action,...data}};}}});
   const control=(action,data={})=>[...html.matchAll(/<button\b([^>]*)>/g)]

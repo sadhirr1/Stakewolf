@@ -5,6 +5,9 @@ import {buildCouncilCoaching} from './council-coaching.mjs';
 export const STORAGE_KEY = 'stakewolf.councils.v1';
 export const MAX_SAVED = 20;
 const CASE_VERSION = 'council-v1';
+// Keep the original snapshot schema intact: suffixes identify reviewed situations.
+export const savedCouncilVariant = item => ({'council-v1':'original','council-v1:b':'b','council-v1:c':'c'})[item?.caseVersion] ?? null;
+export const savedCouncilLabel = item => ({original:'Situation A',b:'Situation B',c:'Situation C'})[savedCouncilVariant(item)] ?? 'Unknown situation';
 const MAX_BYTES = 1024 * 1024;
 const corrupt = 'Saved councils could not be read safely. They have been kept unchanged. Clear saved councils to start again.';
 const unavailable = 'Browser storage is unavailable. Completed councils cannot be saved or loaded.';
@@ -52,7 +55,7 @@ function validFeedback(value) {
 }
 
 function validSnapshot(value) {
-  if (!keys(value,fields) || value.schemaVersion !== 1 || value.caseVersion !== CASE_VERSION
+  if (!keys(value,fields) || value.schemaVersion !== 1 || !savedCouncilVariant(value)
     || !id(value.id) || !iso(value.completedAt) || !text(value.origin,80)
     || !['accessibility','systems'].includes(value.topic) || !text(value.title,200)
     || !named(value.decision) || !list(value.records,2,named) || !unique(value.records)
@@ -64,7 +67,7 @@ function validSnapshot(value) {
     || !integer(value.questionCount,60) || !validFeedback(value.feedback)) return false;
   // Reconstruct only to validate public facts; saved feedback is never regenerated.
   try {
-    const base = createCouncil(value.topic);
+    const base = createCouncil(value.topic,savedCouncilVariant(value));
     const commitments = value.promises.map(row => row.id);
     const reservedIds = [`${value.decision.id}-work`,...commitments.map(id => `promise-${id}`)];
     const state = {...base,phase:'debrief',proposalId:value.decision.id,opened:value.records.map(row => row.id),commitmentIds:commitments,workIds:value.fulfilled.filter(row => !reservedIds.includes(row.id)).map(row => row.id)};
@@ -79,7 +82,7 @@ export function createSavedCouncil(state,attempt={},metadata={}) {
     if (view.phase !== 'debrief') return null;
     const questions = Array.isArray(attempt?.questions) ? attempt.questions : [];
     const snapshot = {
-      schemaVersion:1,caseVersion:CASE_VERSION,id:metadata.id,completedAt:metadata.completedAt,
+      schemaVersion:1,caseVersion:view.variantId && view.variantId !== 'original' ? `${CASE_VERSION}:${view.variantId}` : CASE_VERSION,id:metadata.id,completedAt:metadata.completedAt,
       origin:metadata.origin ?? 'practice',...facts(view),
       questionCount:Math.min(60,questions.filter(row => row && ['council','aftermath'].includes(row.phase)
         && view.stakeholders.some(person => person.id === row.speakerId)
@@ -149,8 +152,10 @@ export function clearSavedCouncils(storage) {
 export function compareSavedCouncils(older,newer) {
   try {
     if (!validSnapshot(older) || !validSnapshot(newer) || older.id === newer.id
-      || older.topic !== newer.topic || older.caseVersion !== newer.caseVersion) return null;
+      || older.topic !== newer.topic) return null;
+    const sameSituation = older.caseVersion === newer.caseVersion;
     const rows = [
+      {label:'Situation',before:`${savedCouncilLabel(older)} — ${older.title}`,after:`${savedCouncilLabel(newer)} — ${newer.title}`},
       {label:'Records opened',before:names(older.records),after:names(newer.records)},
       {label:'Retained messages',before:String(older.questionCount),after:String(newer.questionCount)},
       {label:'Confirmed approach',before:older.decision.title,after:newer.decision.title},
@@ -163,10 +168,11 @@ export function compareSavedCouncils(older,newer) {
     ];
     const changes = rows.filter(row => row.before !== row.after).map(row => `${row.label}: “${row.before}” → “${row.after}”.`);
     if (!changes.length) changes.push('These attempts recorded the same evidence, approach, promises, support and work. Their reasoning may still differ; it was not measured.');
-    return freeze({rows,changes,
+    return freeze({rows,changes,sameSituation,
+      context:sameSituation ? 'Same situation: the evidence and objectives are unchanged. Use this to examine a different decision, with the benefit of hindsight.' : 'Different situations: evidence, stakeholder objectives and consequences changed. The same record name can contain different findings. Differences in support or delivery are not a like-for-like improvement score.',
       prompt:'Choose one changed decision or trade-off. What evidence justified it, what did it leave unresolved, and what would make you choose differently?',
       limits:[
-        'A retry knows the same fixed case, including its later evidence and revealed motives. This comparison is not a blind assessment or proof of improved skill.',
+        sameSituation ? 'A retry knows the same fixed case, including its later evidence and revealed motives. This comparison is not a blind assessment or proof of improved skill.' : 'Different authored situations let you practise applying judgment, but their difficulty is not calibrated. This comparison is not a blind assessment or proof of improved skill.',
         'More records, support, promises or spending do not establish a better decision. These are recorded differences, not scores.',
         'Delivered promises followed automatically from reserved capacity. Additional response choices and deferred consequences should be considered separately.',
         'Saved feedback is the original bounded text. It is not regenerated; no full job description or complete conversation is saved.'

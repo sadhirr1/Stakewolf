@@ -1,3 +1,20 @@
+# 2026-10-25 follow-up — varied council retries
+
+SCRUM-38: three coherent authored situations per Accessibility and Platform / API council. Changed claims, records, private objectives, support rules, promises, next-round work and consequences. Facts remain fixed within an attempt. Try a new situation avoids the immediately previous situation; Repeat this situation retains it. First entry uses the original; re-entry considers the last in-tab or newest saved situation. No live AI, new dependencies or running API cost. The finite pool can recur and its difficulty is not calibrated.
+
+Authorship and review: Development/Game Design council_variants authored engine, packs, 12 new tests and VARIATIONS.md. Development variant_dialogue adapted local dialogue/coaching and added 19 tests. Coordinator integrated retry controls, variant-aware save/history/comparison, 3 save tests and local serving. Independent council_variants_qa reviewed these and authored 8 real-handler tests, independently reviewed by the coordinator. Review caught an evidence-based retirement promise being mistaken for an inspection; author fixed it and QA retested. No blocking findings remain for this bounded increment.
+
+Actual verification:
+
+- Independent QA ran node --test tests/*.test.mjs in the isolated Site directory: 189 passed, zero failed. Tests cover all six situations, every proposal/promise combination, different support at equal budgets, private-information boundaries, exact-title dialogue, stable facts, repeat/new selection, legacy storage and same/different-situation comparison. No root suite or CI result claimed.
+- Browser at 1280 x 720: entering Accessibility selected B against saved A. A typed timed-walkthrough request previewed one inspection; Enter confirmed the exact current evidence. The fallback won Engineering backing; next-round work reflected timeout/recovery and warning announcements. Completion saved its feedback and motive reveal. Repeat kept B and reset inspections; a new situation chose A, avoiding B.
+- Your activity displayed both older original saves and new B saves. Cross-situation comparison rendered the different-context notice, labels, changed records, promises, support and work. Screenshot inspected and retained locally at .tmp-pm-preview/council-variations.png; this written evidence is retained with source.
+- Platform re-entry moved from original to B. A typed partner-readiness request returned current parsing/callback-retry limitations after confirmation. Page width 1265 within 1280 viewport; no console error entries.
+- No mobile, cross-browser, screen-reader or educational-validity study performed. This remains an authored local simulation with bounded phrase matching and browser-only storage. It is not unlimited generation or an improvement score. Original feedback is preserved; unknown save versions remain protected. November delivery targets still require reforecast for the platform pivot.
+
+Next: owner tries new versus repeated situations and checks whether changed evidence changes their recommendation. Broader role coverage and more situations require a separate increment; no schedules restarted.
+
+---
 # 2026-10-25 follow-up — saved council attempts and retry comparison
 
 SCRUM-38: Development specialist council_saves authored storage/comparison,16 tests and SAVED-ATTEMPTS.md. Coordinator authored completion capture, history/review/comparison screens and integration. Independent council_saves_qa reviewed both and authored10 real-handler tests; coordinator independently reviewed those tests. All bounded review findings resolved: immutable duplicate-ID protection, unreadable-history clear affordance, saved-heading focus, cancellation focus restoration, cross-tab deletion banner refresh, and the obsolete refresh-copy assertion.
