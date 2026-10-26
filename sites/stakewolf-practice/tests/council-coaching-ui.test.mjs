@@ -1,3 +1,5 @@
+import {STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils} from '../dist/council-saves.mjs';
+import {previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup} from '../dist/council-history.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
@@ -32,7 +34,7 @@ function fixture(topic='accessibility'){
     }
     return nodes.get(selector);
   },querySelectorAll(){return [];}};
-  const context=vm.createContext({document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup});
+  const context=vm.createContext({STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils,previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   const dispatch=(action,data={})=>handlers.click({target:{closest(){return {dataset:{action,...data}};}}});
   const control=(action,data={})=>[...html.matchAll(/<button\b([^>]*)>/g)]

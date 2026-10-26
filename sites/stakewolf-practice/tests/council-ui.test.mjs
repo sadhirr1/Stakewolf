@@ -1,3 +1,5 @@
+import {STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils} from '../dist/council-saves.mjs';
+import {previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup} from '../dist/council-history.mjs';
 import {newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup} from '../dist/council-report.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -34,7 +36,7 @@ function fixture(){
     }
     return nodes.get(selector);
   },querySelectorAll(){return [];}};
-  const context=vm.createContext({newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
+  const context=vm.createContext({STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils,previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   const dispatch=(action,data={})=>handlers.click({target:{closest(){return {dataset:{action,...data}};}}});
   const control=(action,data={})=>[...html.matchAll(/<button\b([^>]*)>/g)]
@@ -65,7 +67,7 @@ test('home and general practice each reach both named councils and return to gen
     assert.equal(f.subject.state.council.topic,topic);
     assert.equal(f.subject.state.councilOrigin,'general');
     assert.match(f.html,/GENERAL PRACTICE \/ TWO CONNECTED ROUNDS/);
-    assert.match(f.html,/progress clears on refresh/);
+    assert.match(f.html,/Unfinished rounds reset on refresh/i);
     f.click('back-practice');assert.equal(f.subject.state.view,'general');
   }
 });

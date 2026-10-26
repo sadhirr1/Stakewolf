@@ -1,3 +1,5 @@
+import {STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils} from '../dist/council-saves.mjs';
+import {previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup} from '../dist/council-history.mjs';
 import {newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup} from '../dist/council-report.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -32,7 +34,7 @@ function fixture(){
   }});
   const document={querySelector(selector){return selector==='#app'?app:placeholder;},
     querySelectorAll(selector){if(selector==='[data-record]')return records;if(selector==='[data-record][open]')return records.filter(r=>r.open);return [];}};
-  const context=vm.createContext({newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
+  const context=vm.createContext({STORAGE_KEY,createSavedCouncil,loadSavedCouncils,saveCouncil,deleteSavedCouncil,clearSavedCouncils,previousSaved,savedCouncilsMarkup,savedCouncilMarkup,councilComparisonMarkup,newCouncilAttempt,noteCouncilQuestion,noteCouncilChange,councilReportMarkup,document,window:{scrollTo(){},scrollY:0},cases,profiles,competencies,analyzeJD,makeCase,buildFeedback,councilTopics,createCouncil,councilView,councilAct,councilMarkup,councilEntry,newCouncilChat,submitCouncilMessage,confirmCouncilMessage,councilChatMarkup});
   vm.runInContext(source,context,{filename:'app.mjs'});
   return {subject:context.subject,get html(){return html;},get records(){return records;},
     click(action,data={}){handlers.click({target:{closest(){return {dataset:{action,...data}};}}});},
