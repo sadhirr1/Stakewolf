@@ -35,6 +35,33 @@ test('unknown, generic design and driver language do not invent competency cover
   }
 });
 
+test('ordinary tech test coverage and evidence do not select the specialist automotive exercise',()=>{
+  const result=analyzeJD('Software platform product manager. Own API strategy, test coverage and test evidence. Lead roadmap ownership and success metrics.');
+  assert.ok(ids(result).includes('systems'));
+  assert.ok(ids(result).includes('prioritization'));
+  assert.ok(ids(result).includes('experimentation'));
+  assert.ok(!ids(result).includes('validation'));
+  assert.ok(result.roles.some(role=>role.id==='platform'));
+  assert.ok(!result.roles.some(role=>role.id==='adas'));
+  assert.ok(!result.warnings.some(warning=>/ADAS/i.test(warning)));
+});
+
+test('explicit automotive context retains its relevant specialist exercise and caution',()=>{
+  const result=analyzeJD('Automotive product manager. Own validation evidence and test coverage.');
+  assert.ok(ids(result).includes('validation'));
+  assert.ok(result.roles.some(role=>role.id==='adas'));
+  assert.ok(result.warnings.some(warning=>/ADAS/i.test(warning)));
+  assert.equal(makeCase('validation',{role:'adas'}).skill,competencies.find(skill=>skill.id==='validation').label);
+});
+
+test('negated automotive requirements do not enable the specialist gate for generic validation language',()=>{
+  const result=analyzeJD('No automotive or ADAS experience required. Own API strategy, validation evidence and test coverage.');
+  assert.ok(ids(result).includes('systems'));
+  assert.ok(!ids(result).includes('validation'));
+  assert.ok(!result.roles.some(role=>role.id==='adas'));
+  assert.ok(!result.warnings.some(warning=>/ADAS/i.test(warning)));
+});
+
 test('empty and non-string inputs return a usable empty result',()=>{
   for(const input of ['', ' \n ',null,undefined,42,{},[]]){
     const result=analyzeJD(input);
@@ -111,7 +138,7 @@ test('level changes the responsibility and role changes the transfer question wi
     assert.equal(new Set(['ui','adas','platform','growth','general'].map(role=>makeCase(id,{role}).interviewQuestions[1])).size,5);
     assert.deepEqual(junior.evidence,senior.evidence);
     assert.deepEqual(pm.choices,senior.choices);
-    assert.ok(senior.label.endsWith('ADAS context'));
+    assert.ok(senior.label.endsWith('ADAS specialist example'));
   }
 });
 

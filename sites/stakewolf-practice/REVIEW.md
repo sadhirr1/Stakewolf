@@ -1,3 +1,14 @@
+# 2026-10-26 — software-product focus correction
+
+Owner clarified ADAS was an example, not the priority. Coordinator updated General practice to feature software growth and UX beside the existing Accessibility and Platform/API councils; removed featured ADAS card/sample; added a synthetic Growth JD sample and ordered sample controls Platform/API, Growth, UI/UX. ADAS remains an explicitly labelled optional specialist role/responsibility. Generic software test evidence/coverage no longer auto-selects the authored ADAS exercise; positive automotive context is required. Future Data/AI content is prioritized in the plan, not claimed as implemented.
+
+Independent QA council_variants_qa reviewed source, behavior and planning consistency, added three matcher regressions and updated one intentional label assertion; coordinator reviewed the tests. Targeted adaptation, council UI/variation UI and feedback UI suites: 39/39 passed, zero failed. QA's read-only actual-handler probe checked all three samples produce their intended role and nonempty path without validation, while ADAS remains optional. Review found stale documentation that still prioritized ADAS and three featured rounds; corrected before checkpoint.
+
+Browser at desktop size: General practice showed software focus, both councils and no ADAS card. Growth sample populated the synthetic software JD; Enter built Growth context with experimentation, research and prioritization, optional ADAS unchecked. Revised sample controls inspected visually. Existing councils, history and saved feedback were not modified. Syntax checks passed for app and matcher. No new test or broad full-suite rerun beyond the stated targeted39; no mobile/cross-browser audit claimed. No model calls, new services or running cost.
+
+Next: grow technology-specific depth in a separate bounded increment, e.g. data/AI evaluation or developer-product trade-offs. The current correction does not implement those additional packs. Werewolf evidence, hidden incentives, negotiation and consequences remain the shared mechanism.
+
+---
 # 2026-10-25 follow-up — varied council retries
 
 SCRUM-38: three coherent authored situations per Accessibility and Platform / API council. Changed claims, records, private objectives, support rules, promises, next-round work and consequences. Facts remain fixed within an attempt. Try a new situation avoids the immediately previous situation; Repeat this situation retains it. First entry uses the original; re-entry considers the last in-tab or newest saved situation. No live AI, new dependencies or running API cost. The finite pool can recur and its difficulty is not calibrated.

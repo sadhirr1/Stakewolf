@@ -14,10 +14,10 @@ Private preview: https://stakewolf-practice.v4nswe.chatgpt.site
 
 For a local preview, run `node serve.mjs` in this directory, then open http://127.0.0.1:4184/. Requires an installed Node runtime; no packages or build step.
 
-1. General practice → choose one of three rounds → investigate claims and records → recommend → respond to new evidence → review your trace.
+1. General practice → choose an introductory exercise or a two-round council → investigate claims and records → recommend → respond to new evidence → review your trace.
 2. Interview preparation → paste a JD or use a synthetic sample → review matched responsibilities and their supporting wording → confirm context and select skills → practise a relevant three-stakeholder discussion → inspect consequences and private incentives.
 
-General practice retains the three introductory samples. Interview preparation now selects from six distinct responsibility modules, with role/level-specific interview prompts, three competing stakeholder accounts, a two-question budget, decision-specific consequences and a private-incentive reveal. See ADAPTATION.md for the matching rules and limits.
+General practice features software growth and user-experience exercises alongside the two councils. Interview preparation offers Platform/API, Growth and UI/UX sample JDs, then selects from the supported responsibility modules, with role/level-specific interview prompts, three competing stakeholder accounts, a two-question budget, decision-specific consequences and a private-incentive reveal. ADAS remains an optional specialist example: generic test language no longer selects it automatically. Data/AI-specific exercises are a future content priority, not current expert coverage. See ADAPTATION.md for the matching rules and limits.
 
 ## Boundaries
 

@@ -11,9 +11,9 @@ export const competencies = [
 
 const roleProfiles = [
   {id:'ui',label:'UI / UX',terms:['ui','ux','user experience','user interface','interaction design']},
-  {id:'adas',label:'ADAS context',terms:['adas','automotive','driver assistance','driver-assistance','vehicle engineering']},
   {id:'platform',label:'Platform / API',terms:['api','apis','platform','developer experience','data pipelines']},
-  {id:'growth',label:'Growth',terms:['growth','acquisition funnel','conversion optimization','conversion optimisation']}
+  {id:'growth',label:'Growth',terms:['growth','acquisition funnel','conversion optimization','conversion optimisation']},
+  {id:'adas',label:'ADAS specialist example',terms:['adas','automotive','advanced driver assistance','advanced driver-assistance','driver assistance','driver-assistance','vehicle engineering']}
 ];
 const roleLabels = {general:'General PM',...Object.fromEntries(roleProfiles.map(r=>[r.id,r.label]))};
 const skillFocus = {research:'sample and recruitment choices',accessibility:'task access and verification',experimentation:'metrics and comparison groups',prioritization:'capacity and deferred commitments',systems:'dependencies and migration ownership',validation:'scope limits and review ownership'};
@@ -61,8 +61,10 @@ export function analyzeJD(input) {
   if (typeof input !== 'string' || !input.trim()) return {matches:[],roles:[],warnings:['Paste a job description to find supported practice topics.']};
   const text = input.slice(0,20000);
   if (input.length>20000) warnings.push('Only the first 20,000 characters were checked. Shorten the description to review the rest.');
-  const matches = competencies.map(({id,label,terms})=>({id,label,...evidenceFor(text,terms)})).filter(m=>m.score>0).sort((a,b)=>b.score-a.score);
   const roles = roleProfiles.map(({id,label,terms})=>({id,label,...evidenceFor(text,terms)})).filter(r=>r.score>0).map(({score,...role})=>role);
+  // Generic software test language does not imply the authored automotive exercise.
+  const specialistContext = roles.some(r=>r.id==='adas');
+  const matches = competencies.filter(c=>c.id!=='validation'||specialistContext).map(({id,label,terms})=>({id,label,...evidenceFor(text,terms)})).filter(m=>m.score>0).sort((a,b)=>b.score-a.score);
   if (!matches.length) warnings.push('No supported competency phrases found. Choose a practice topic yourself; missing requirements remain unknown.');
   if (matches.length && !roles.length) roles.push({id:'general',label:roleLabels.general,evidence:[]});
   if (matches.some(m=>m.id==='validation') || roles.some(r=>r.id==='adas')) warnings.push('Validation content is an illustrative scope exercise. It is not expert ADAS preparation, certification or a safety assessment.');

@@ -5,6 +5,7 @@ The owner accepted the homepage and requested actual JD adaptation with role-spe
 ## How adaptation works
 
 - `analyzeJD` recognises specific responsibility phrases, keeps supporting clauses, and ranks six supported skill modules. Unsupported input leaves the selection empty rather than silently assuming UI or ADAS.
+- Software products are the default focus. Platform/API, Growth and UI/UX are the featured sample JDs. Automatic matching of the authored ADAS validation exercise requires positive automotive/driver-assistance context; generic software test evidence or coverage does not establish that specialty. Explicit manual specialist selection remains available. This does not add data/AI-specific content or semantic understanding.
 - The user confirms role context and can add/remove responsibilities. Suggested questions and practice rounds follow these selections. Senior/PM/Associate change question framing; there is no calibrated difficulty or hiring score.
 - Each responsibility has its own three-stakeholder exercise, source records, questions and private incentives. Role context frames the interview questions; it does not turn every module into a domain-specific simulation.
 - The learner can question two of three stakeholders, inspect records, commit to an approach, see that approach's authored consequence plus new evidence, and revise or hold the recommendation.
