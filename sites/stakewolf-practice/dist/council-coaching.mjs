@@ -1,5 +1,8 @@
 // SCRUM-38: local reflection on recorded choices, never a proficiency assessment.
 import {councilView} from './council.mjs';
+import {platformDecisionLens} from './platform-tradeoffs.mjs';
+import {accessibilityDecisionLens} from './accessibility-tradeoffs.mjs';
+import {councilOpportunityCosts} from './council-opportunity-costs.mjs';
 
 const LIMIT = 60;
 const count = value => Number.isSafeInteger(value) && value > 0 ? value : 0;
@@ -72,7 +75,7 @@ export function buildCouncilCoaching(state, attempt = {}) {
   } else {
     questioning.push('No typed-message examples are available in this attempt log. Preset controls can still inspect sources and make the same decisions; this does not show whether you challenged a claim mentally.');
   }
-  const questioningNext = opened.length
+  let questioningNext = opened.length
     ? `Use ${opened[0].title} to rehearse: “What does this record establish, what remains unknown, and what check would justify the next claim?” Explain how that distinction affects ${selected.title.toLowerCase()}.`
     : `On replay, choose a public claim to examine and ask which record could test it. For example, ask what ${view.records[0].title} covers before deciding whether to spend an investigation on it.`;
 
@@ -83,7 +86,7 @@ export function buildCouncilCoaching(state, attempt = {}) {
       : 'You closed without reserving any promises. That kept capacity available and left the displayed support conditions as they stood.',
     ...close.stakeholders.map(person => `${person.name} ${person.support === 'supports' ? 'supported the approach' : person.support === 'opposes' ? 'opposed the approach' : 'offered conditional support'} at closing: ${person.condition}`)
   ];
-  const negotiationNext = promises.length
+  let negotiationNext = promises.length
     ? `Compare keeping “${promises[0].title}” with leaving its ${promises[0].cost} ${promises[0].cost === 1 ? 'unit' : 'units'} available. Ask the affected stakeholder what public concern the promise addresses, then explain which trade-off you would defend.`
     : `Pick one closing support condition and ask what concrete commitment it would require. Compare its capacity cost with keeping room for response work; explain why you would accept or decline it.`;
 
@@ -97,11 +100,29 @@ export function buildCouncilCoaching(state, attempt = {}) {
     `The council reservation left ${room} units for new information. The final plan left ${unused} ${unused === 1 ? 'unit' : 'units'} unused. Spending every unit is not itself an objective.`
   ];
   const nextWork = deferred.find(work => work.cost <= unused) || deferred[0];
-  const consequencesNext = !nextWork
+  let consequencesNext = !nextWork
     ? 'Rehearse the limits of the funded outcomes: what remains unverified, and what would change the next decision?'
     : nextWork.cost <= unused
     ? `“${nextWork.title}” would fit in the ${unused} unused units. Rehearse an explicit reason to fund it or leave it deferred, including the stated consequence and what evidence would change that decision.`
     : `Compare funding “${nextWork.title}” with your current plan on replay. Name which reservation or response you would need to change, the consequence of that change, and why you would keep or revise your choice.`;
+
+  const lens = platformDecisionLens(view) || accessibilityDecisionLens(view);
+  if (lens) {
+    const opportunity = councilOpportunityCosts(state);
+    questioning.push(...lens.evidence.filter(row=>row.opened).map(row=>`Decision relevance — ${row.title}: ${row.detail}`));
+    const missing = lens.evidence.find(row=>!row.opened);
+    questioningNext = `${missing ? missing.detail : 'State the boundary of the evidence you inspected.'} For “${selected.title}”, explain which known fact supports your route and which assumption still needs a check.`;
+    negotiation.push(`What this route protects: ${lens.protects}`,`What you accept in exchange: ${lens.cost}`);
+    negotiationNext = `Defend “${selected.title}” against another route: name the benefit you protected, the cost you accepted and one condition that would change your mind. ${lens.reconsider}`;
+    consequences.push(opportunity.unavoidable);
+    for (const alternative of opportunity.alternatives) {
+      consequences.push(...alternative.swaps.map(swap=>swap.explanation));
+    }
+    const affordable = opportunity.alternatives.find(row=>row.required===0);
+    consequencesNext = affordable
+      ? `“${affordable.title}” would fit in the ${unused} unused units without changing a promise or funded response. Explain why you would fund it or leave it deferred deliberately, including the stated consequence and what evidence would change your mind.`
+      : `Use the replay comparisons above to defend keeping or changing your bargain. Name the work or support you would lose, and the remaining risk after funding the alternative. These are capacity comparisons, not recommendations or ${view.topic==='accessibility'?'proof that a task is accessible':'predictions of customer acceptance'}.`;
+  }
 
   const limits = [
     'This is deterministic, local reflection from public records, confirmed choices and retained message examples. It does not measure professional competence or infer whether you understood a source.',

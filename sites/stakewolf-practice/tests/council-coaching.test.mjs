@@ -145,8 +145,9 @@ test('an affordable deferral invites a reason without prescribing maximum spendi
 test('an unaffordable response invites a specific trade-off rather than pretending more work fits',()=>{
   const {state,attempt} = completed('accessibility','repair',[{type:'promise',commitmentId:'verification'}],'announce');
   const result = buildCouncilCoaching(state,attempt);
-  assert.match(section(result,'consequences').next,/Provide a verified interim save route/);
-  assert.match(section(result,'consequences').next,/which reservation or response you would need to change/);
+  assert.match(section(result,'consequences').next,/Use the replay comparisons above/);
+  assert.match(section(result,'consequences').next,/Name the work or support you would lose/);
+  assert.match(section(result,'consequences').observations.join(' '),/Replay comparison:.*Provide a verified interim save route/);
   assert.match(text(result),/final plan left 0 units unused/);
 });
 
